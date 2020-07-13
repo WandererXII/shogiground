@@ -12,8 +12,8 @@ export function callUserFunction(f: Callback | undefined, ...args: any[]): void 
 export function toggleOrientation(state: State): void {
   state.orientation = opposite(state.orientation);
   state.animation.current =
-  state.draggable.current =
-  state.selected = undefined;
+    state.draggable.current =
+    state.selected = undefined;
 }
 
 export function reset(state: State): void {
@@ -220,7 +220,7 @@ function isMovable(state: State, orig: cg.Key): boolean {
   return !!piece && (
     state.movable.color === 'both' || (
       state.movable.color === piece.color &&
-        state.turnColor === piece.color
+      state.turnColor === piece.color
     ));
 }
 
@@ -235,7 +235,7 @@ function canDrop(state: State, orig: cg.Key, dest: cg.Key): boolean {
   return !!piece && (orig === dest || !state.pieces.has(dest)) && (
     state.movable.color === 'both' || (
       state.movable.color === piece.color &&
-        state.turnColor === piece.color
+      state.turnColor === piece.color
     ));
 }
 
@@ -243,24 +243,24 @@ function canDrop(state: State, orig: cg.Key, dest: cg.Key): boolean {
 function isPremovable(state: State, orig: cg.Key): boolean {
   const piece = state.pieces.get(orig);
   return !!piece && state.premovable.enabled &&
-  state.movable.color === piece.color &&
+    state.movable.color === piece.color &&
     state.turnColor !== piece.color;
 }
 
 function canPremove(state: State, orig: cg.Key, dest: cg.Key): boolean {
   return orig !== dest &&
-  isPremovable(state, orig) &&
-  premove(state.pieces, orig, state.premovable.castle).includes(dest);
+    isPremovable(state, orig) &&
+    premove(state.pieces, orig, state.premovable.castle).includes(dest);
 }
 
 function canPredrop(state: State, orig: cg.Key, dest: cg.Key): boolean {
   const piece = state.pieces.get(orig);
   const destPiece = state.pieces.get(dest);
   return !!piece &&
-  (!destPiece || destPiece.color !== state.movable.color) &&
-  state.predroppable.enabled &&
-  (piece.role !== 'pawn' || (dest[1] !== '1' && dest[1] !== '8')) &&
-  state.movable.color === piece.color &&
+    (!destPiece || destPiece.color !== state.movable.color) &&
+    state.predroppable.enabled &&
+    (piece.role !== 'pawn' || (dest[1] !== '1' && dest[1] !== '8')) &&
+    state.movable.color === piece.color &&
     state.turnColor !== piece.color;
 }
 
@@ -321,17 +321,17 @@ export function cancelMove(state: State): void {
 
 export function stop(state: State): void {
   state.movable.color =
-  state.movable.dests =
-  state.animation.current = undefined;
+    state.movable.dests =
+    state.animation.current = undefined;
   cancelMove(state);
 }
 
 export function getKeyAtDomPos(pos: cg.NumberPair, asWhite: boolean, bounds: ClientRect): cg.Key | undefined {
-  let file = Math.floor(8 * (pos[0] - bounds.left) / bounds.width);
-  if (!asWhite) file = 7 - file;
-  let rank = 7 - Math.floor(8 * (pos[1] - bounds.top) / bounds.height);
-  if (!asWhite) rank = 7 - rank;
-  return (file >= 0 && file < 8 && rank >= 0 && rank < 8) ? pos2key([file, rank]) : undefined;
+  let file = Math.floor(9 * (pos[0] - bounds.left) / bounds.width);
+  if (!asWhite) file = 8 - file;
+  let rank = 8 - Math.floor(9 * (pos[1] - bounds.top) / bounds.height);
+  if (!asWhite) rank = 8 - rank;
+  return (file >= 0 && file < 9 && rank >= 0 && rank < 9) ? pos2key([file, rank]) : undefined;
 }
 
 export function whitePov(s: State): boolean {

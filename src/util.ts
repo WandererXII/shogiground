@@ -1,10 +1,10 @@
 import * as cg from './types';
 
-export const invRanks: readonly cg.Rank[] = ['8', '7', '6', '5', '4', '3', '2', '1'];
+export const invRanks: readonly cg.Rank[] = ['9', '8', '7', '6', '5', '4', '3', '2', '1'];
 
 export const allKeys: readonly cg.Key[] = Array.prototype.concat(...cg.files.map(c => cg.ranks.map(r => c + r)));
 
-export const pos2key = (pos: cg.Pos): cg.Key => allKeys[8 * pos[0] + pos[1]];
+export const pos2key = (pos: cg.Pos): cg.Key => allKeys[9 * pos[0] + pos[1]];
 
 export const key2pos = (k: cg.Key): cg.Pos => [k.charCodeAt(0) - 97, k.charCodeAt(1) - 49];
 
@@ -36,7 +36,7 @@ export const opposite = (c: cg.Color): cg.Color => c === 'white' ? 'black' : 'wh
 
 export const distanceSq = (pos1: cg.Pos, pos2: cg.Pos): number => {
   const dx = pos1[0] - pos2[0],
-  dy = pos1[1] - pos2[1];
+    dy = pos1[1] - pos2[1];
   return dx * dx + dy * dy;
 }
 
@@ -44,13 +44,13 @@ export const samePiece = (p1: cg.Piece, p2: cg.Piece): boolean =>
   p1.role === p2.role && p1.color === p2.color;
 
 const posToTranslateBase = (pos: cg.Pos, asWhite: boolean, xFactor: number, yFactor: number): cg.NumberPair => [
-  (asWhite ? pos[0] : 7 - pos[0]) * xFactor,
-  (asWhite ? 7 - pos[1] : pos[1]) * yFactor
+  (asWhite ? pos[0] : 8 - pos[0]) * xFactor,
+  (asWhite ? 8 - pos[1] : pos[1]) * yFactor
 ];
 
 export const posToTranslateAbs = (bounds: ClientRect): (pos: cg.Pos, asWhite: boolean) => cg.NumberPair => {
-  const xFactor = bounds.width / 8,
-  yFactor = bounds.height / 8;
+  const xFactor = bounds.width / 9,
+    yFactor = bounds.height / 9;
   return (pos, asWhite) => posToTranslateBase(pos, asWhite, xFactor, yFactor);
 }
 

@@ -14,29 +14,29 @@ type SquareClasses = Map<cg.Key, string>;
 // in case of bugs, blame @veloce
 export function render(s: State): void {
   const asWhite: boolean = whitePov(s),
-  posToTranslate = s.dom.relative ? util.posToTranslateRel : util.posToTranslateAbs(s.dom.bounds()),
-  translate = s.dom.relative ? util.translateRel : util.translateAbs,
-  boardEl: HTMLElement = s.dom.elements.board,
-  pieces: cg.Pieces = s.pieces,
-  curAnim: AnimCurrent | undefined = s.animation.current,
-  anims: AnimVectors = curAnim ? curAnim.plan.anims : new Map(),
-  fadings: AnimFadings = curAnim ? curAnim.plan.fadings : new Map(),
-  curDrag: DragCurrent | undefined = s.draggable.current,
-  squares: SquareClasses = computeSquareClasses(s),
-  samePieces: Set<cg.Key> = new Set(),
-  sameSquares: Set<cg.Key> = new Set(),
-  movedPieces: Map<PieceName, cg.PieceNode[]> = new Map(),
-  movedSquares: Map<string, cg.SquareNode[]> = new Map(); // by class name
+    posToTranslate = s.dom.relative ? util.posToTranslateRel : util.posToTranslateAbs(s.dom.bounds()),
+    translate = s.dom.relative ? util.translateRel : util.translateAbs,
+    boardEl: HTMLElement = s.dom.elements.board,
+    pieces: cg.Pieces = s.pieces,
+    curAnim: AnimCurrent | undefined = s.animation.current,
+    anims: AnimVectors = curAnim ? curAnim.plan.anims : new Map(),
+    fadings: AnimFadings = curAnim ? curAnim.plan.fadings : new Map(),
+    curDrag: DragCurrent | undefined = s.draggable.current,
+    squares: SquareClasses = computeSquareClasses(s),
+    samePieces: Set<cg.Key> = new Set(),
+    sameSquares: Set<cg.Key> = new Set(),
+    movedPieces: Map<PieceName, cg.PieceNode[]> = new Map(),
+    movedSquares: Map<string, cg.SquareNode[]> = new Map(); // by class name
   let k: cg.Key,
-  el: cg.PieceNode | cg.SquareNode | undefined,
-  pieceAtKey: cg.Piece | undefined,
-  elPieceName: PieceName,
-  anim: AnimVector | undefined,
-  fading: cg.Piece | undefined,
-  pMvdset: cg.PieceNode[] | undefined,
-  pMvd: cg.PieceNode | undefined,
-  sMvdset: cg.SquareNode[] | undefined,
-  sMvd: cg.SquareNode | undefined;
+    el: cg.PieceNode | cg.SquareNode | undefined,
+    pieceAtKey: cg.Piece | undefined,
+    elPieceName: PieceName,
+    anim: AnimVector | undefined,
+    fading: cg.Piece | undefined,
+    pMvdset: cg.PieceNode[] | undefined,
+    pMvd: cg.PieceNode | undefined,
+    sMvdset: cg.SquareNode[] | undefined,
+    sMvd: cg.SquareNode | undefined;
 
   // walk over all board dom elements, apply animations and flag moved pieces
   el = boardEl.firstChild as cg.PieceNode | cg.SquareNode | undefined;
@@ -151,8 +151,8 @@ export function render(s: State): void {
       else {
 
         const pieceName = pieceNameOf(p),
-        pieceNode = createEl('piece', pieceName) as cg.PieceNode,
-        pos = key2pos(k);
+          pieceNode = createEl('piece', pieceName) as cg.PieceNode,
+          pos = key2pos(k);
 
         pieceNode.cgPiece = pieceName;
         pieceNode.cgKey = k;
@@ -178,7 +178,7 @@ export function render(s: State): void {
 export function updateBounds(s: State): void {
   if (s.dom.relative) return;
   const asWhite: boolean = whitePov(s),
-  posToTranslate = util.posToTranslateAbs(s.dom.bounds());
+    posToTranslate = util.posToTranslateAbs(s.dom.bounds());
   let el = s.dom.elements.board.firstChild as cg.PieceNode | cg.SquareNode | undefined;
   while (el) {
     if ((isPieceNode(el) && !el.cgAnimating) || isSquareNode(el)) {
@@ -200,8 +200,8 @@ function removeNodes(s: State, nodes: HTMLElement[]): void {
 }
 
 function posZIndex(pos: cg.Pos, asWhite: boolean): string {
-  let z = 2 + pos[1] * 8 + (7 - pos[0]);
-  if (asWhite) z = 67 - z;
+  let z = 2 + pos[1] * 9 + (8 - pos[0]);
+  if (asWhite) z = 84 - z; //67
   return z + '';
 }
 

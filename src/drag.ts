@@ -24,8 +24,8 @@ export function start(s: State, e: cg.MouchEvent): void {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (e.touches && e.touches.length > 1) return; // support one finger touch only
   const bounds = s.dom.bounds(),
-  position = util.eventPosition(e)!,
-  orig = board.getKeyAtDomPos(position, board.whitePov(s), bounds);
+    position = util.eventPosition(e)!,
+    orig = board.getKeyAtDomPos(position, board.whitePov(s), bounds);
   if (!orig) return;
   const piece = s.pieces.get(orig);
   const previouslySelected = s.selected;
@@ -37,8 +37,8 @@ export function start(s: State, e: cg.MouchEvent): void {
   // (and the board is not for viewing only), touches are likely intended to
   // select squares.
   if (e.cancelable !== false &&
-      (!e.touches || !s.movable.color || piece || previouslySelected || pieceCloseTo(s, position))) /* eslint-disable-line */
-        e.preventDefault();
+    (!e.touches || !s.movable.color || piece || previouslySelected || pieceCloseTo(s, position))) /* eslint-disable-line */
+    e.preventDefault();
   const hadPremove = !!s.premovable.current;
   const hadPredrop = !!s.predroppable.current;
   s.stats.ctrlKey = e.ctrlKey;
@@ -79,8 +79,8 @@ export function start(s: State, e: cg.MouchEvent): void {
 
 function pieceCloseTo(s: State, pos: cg.NumberPair): boolean {
   const asWhite = board.whitePov(s),
-  bounds = s.dom.bounds(),
-  radiusSq = Math.pow(bounds.width / 8, 2);
+    bounds = s.dom.bounds(),
+    radiusSq = Math.pow(bounds.width / 9, 2);
   for (const key in s.pieces) {
     const center = computeSquareCenter(key as cg.Key, asWhite, bounds);
     if (util.distanceSq(center, pos) <= radiusSq) return true;
@@ -134,8 +134,8 @@ function processDrag(s: State): void {
 
         const bounds = s.dom.bounds();
         util.translateAbs(cur.element, [
-          cur.pos[0] - bounds.left - bounds.width / 16,
-          cur.pos[1] - bounds.top - bounds.height / 16
+          cur.pos[0] - bounds.left - bounds.width / 18,
+          cur.pos[1] - bounds.top - bounds.height / 18
         ]);
       }
     }
@@ -207,12 +207,12 @@ function removeDragElements(s: State): void {
 function computeSquareCenter(key: cg.Key, asWhite: boolean, bounds: ClientRect): cg.NumberPair {
   const pos = util.key2pos(key);
   if (!asWhite) {
-    pos[0] = 7 - pos[0];
-    pos[1] = 7 - pos[1];
+    pos[0] = 8 - pos[0];
+    pos[1] = 8 - pos[1];
   }
   return [
-    bounds.left + bounds.width * pos[0] / 8 + bounds.width / 16,
-    bounds.top + bounds.height * (7 - pos[1]) / 8 + bounds.height / 16
+    bounds.left + bounds.width * pos[0] / 9 + bounds.width / 18,
+    bounds.top + bounds.height * (8 - pos[1]) / 9 + bounds.height / 18
   ];
 }
 
