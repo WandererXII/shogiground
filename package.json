@@ -1,10 +1,10 @@
 {
-  "name": "chessground",
+  "name": "shogiground",
   "version": "7.8.1",
-  "description": "lichess.org chess ui",
+  "description": "lishogi.org shogi ui",
   "type": "commonjs",
-  "main": "chessground.js",
-  "typings": "chessground.d.ts",
+  "main": "shogiground.js",
+  "typings": "shogiground.d.ts",
   "dependencies": {},
   "devDependencies": {
     "@rollup/plugin-commonjs": "^13.0.0",
@@ -30,18 +30,18 @@
     "/src/*.ts",
     "!/rollup.config.js"
   ],
-  "repository": "https://github.com/ornicar/chessground",
+  "repository": "https://github.com/WandererXII/shogiground",
   "keywords": [
-    "chess",
-    "lichess",
-    "lichess.org",
-    "chessboard",
+    "shogi",
+    "lishogi",
+    "lishogi.org",
+    "shogiboard",
     "ui",
     "typescript"
   ],
-  "author": "Thibault Duplessis (https://github.com/ornicar)",
+  "author": "Thibault Duplessis (https://github.com/ornicar) - chessground, modified for shogi WandererXII (WandererXII/shogiground)",
   "license": "GPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/ornicar/chessground/issues"
+    "url": "https://github.com/WandererXII/shogiground/issues"
   }
 }

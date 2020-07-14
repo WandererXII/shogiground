@@ -6,12 +6,12 @@ export default {
   input: 'src/index.js',
   output: [
     {
-      file: 'dist/chessground.js',
+      file: 'dist/shogiground.js',
       format: 'iife',
       name: 'Chessground',
     },
     {
-      file: 'dist/chessground.min.js',
+      file: 'dist/shogiground.min.js',
       format: 'iife',
       name: 'Chessground',
       plugins: [

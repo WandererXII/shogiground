@@ -1,18 +1,24 @@
 import { pos2key, invRanks } from './util'
 import * as cg from './types'
 
-export const initial: cg.FEN = 'rnbqkbnr/pppppppp/8/8/8/8/8/PPPPPPPP/RNBQKBNR';
+export const initial: cg.FEN = 'rnbskbnr/pppppppp/8/8/8/8/8/PPPPPPPP/RNBQKBNR';
 
-const roles: { [letter: string]: cg.Role } = { p: 'pawn', r: 'rook', n: 'knight', b: 'bishop', q: 'queen', k: 'king' };
+const roles: { [letter: string]: cg.Role } = {
+  'p': 'pawn', 'l': 'lance', 'n': 'knight', 's': 'silver', 'g': 'gold', 'b': 'bishop', 'r': 'rook', 'k': 'king',
+  '+p': 'p_pawn', '+l': 'p_lance', '+n': 'p_knight', '+s': 'p_silver', '+b': 'p_bishop', '+r': 'p_rook'
+};
 
-const letters = { pawn: 'p', rook: 'r', knight: 'n', bishop: 'b', queen: 'q', king: 'k' };
+const letters = {
+  pawn: 'p', lance: 'l', knight: 'n', silver: 's', gold: 'g', bishop: 'b', rook: 'r', king: 'k',
+  p_pawn: '+p', p_lance: '+l', p_knight: '+n', p_silver: '+s', p_bishop: '+b', p_rook: '+r'
+};
 
-export function read(fen: cg.FEN): cg.Pieces {
-  if (fen === 'start') fen = initial;
+export function read(sfen: cg.FEN): cg.Pieces {
+  if (sfen === 'start') sfen = initial;
   const pieces: cg.Pieces = new Map();
   let row = 8, col = 0;
-  for (const c of fen) {
-    switch (c) {
+  for (let i = 0; i < sfen.length; i++) {
+    switch (sfen[i]) {
       case ' ': return pieces;
       case '/':
         --row;
@@ -24,13 +30,16 @@ export function read(fen: cg.FEN): cg.Pieces {
         if (piece) piece.promoted = true;
         break;
       default:
-        const nb = c.charCodeAt(0);
-        if (nb < 57) col += nb - 48;
+        const nb = sfen[i].charCodeAt(0);
+        if (nb < 58) col += nb - 48;
         else {
-          const role = c.toLowerCase();
+          var role = sfen[i].toLowerCase();
+          if (role == "+" && sfen.length > i + 1) {
+            role += sfen[++i]
+          }
           pieces.set(pos2key([col, row]), {
             role: roles[role],
-            color: c === role ? 'black' : 'white',
+            color: sfen[i] === role ? 'black' : 'white',
           });
           ++col;
         }
