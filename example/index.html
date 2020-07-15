@@ -8,13 +8,17 @@
 </head>
 
 <body>
-    <div class="blue merida">
+    <div class="blue orangain">
         <div id="dirty" class="cg-wrap"></div>
     </div>
     <script src="../dist/shogiground.js"></script>
     <script>
-        const config = { resizable: true, fen: 'rnbqkbnrr/ppppppppp/8/8/8/8/8/PPPPPPPPP/RNBQKBNRR' };
-        const ground = Chessground(document.getElementById('dirty'), config);
+        const config = {
+            resizable: true,
+            fen: 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL',
+            orientation: 'white'
+        };
+        const ground = Shogiground(document.getElementById('dirty'), config);
     </script>
 </body>
 

@@ -56,11 +56,11 @@ function closer(piece: AnimPiece, pieces: AnimPiece[]): AnimPiece | undefined {
 
 function computePlan(prevPieces: cg.Pieces, current: State): AnimPlan {
   const anims: AnimVectors = new Map(),
-  animedOrigs: cg.Key[] = [],
-  fadings: AnimFadings = new Map(),
-  missings: AnimPiece[] = [],
-  news: AnimPiece[] = [],
-  prePieces: AnimPieces = new Map();
+    animedOrigs: cg.Key[] = [],
+    fadings: AnimFadings = new Map(),
+    missings: AnimPiece[] = [],
+    news: AnimPiece[] = [],
+    prePieces: AnimPieces = new Map();
   let curP: cg.Piece | undefined, preP: AnimPiece | undefined, vector: cg.NumberPair;
   for (const [k, p] of prevPieces) {
     prePieces.set(k, makePiece(k, p));

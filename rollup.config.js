@@ -8,12 +8,12 @@ export default {
     {
       file: 'dist/shogiground.js',
       format: 'iife',
-      name: 'Chessground',
+      name: 'Shogiground',
     },
     {
       file: 'dist/shogiground.min.js',
       format: 'iife',
-      name: 'Chessground',
+      name: 'Shogiground',
       plugins: [
         terser({
           safari10: true,

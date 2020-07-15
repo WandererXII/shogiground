@@ -93,7 +93,6 @@ export interface State {
     insert?: (elements: cg.Elements) => void; // when the board DOM has been (re)inserted
   };
   drawable: Drawable;
-  exploding?: cg.Exploding;
   dom: cg.Dom;
   hold: cg.Timer;
 }

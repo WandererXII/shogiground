@@ -8,7 +8,7 @@ import { render, updateBounds } from './render';
 import * as svg from './svg';
 import * as util from './util';
 
-export function Chessground(element: HTMLElement, config?: Config): Api {
+export function Shogiground(element: HTMLElement, config?: Config): Api {
 
   const state = defaults() as State;
 
@@ -19,17 +19,17 @@ export function Chessground(element: HTMLElement, config?: Config): Api {
     // compute bounds from existing board element if possible
     // this allows non-square boards from CSS to be handled (for 3D)
     const relative = state.viewOnly && !state.drawable.visible,
-    elements = renderWrap(element, state, relative),
-    bounds = util.memo(() => elements.board.getBoundingClientRect()),
-    redrawNow = (skipSvg?: boolean): void => {
-      render(state);
-      if (!skipSvg && elements.svg) svg.renderSvg(state, elements.svg);
-    },
-    boundsUpdated = (): void => {
-      bounds.clear();
-      updateBounds(state);
-      if (elements.svg) svg.renderSvg(state, elements.svg);
-    };
+      elements = renderWrap(element, state, relative),
+      bounds = util.memo(() => elements.board.getBoundingClientRect()),
+      redrawNow = (skipSvg?: boolean): void => {
+        render(state);
+        if (!skipSvg && elements.svg) svg.renderSvg(state, elements.svg);
+      },
+      boundsUpdated = (): void => {
+        bounds.clear();
+        updateBounds(state);
+        if (elements.svg) svg.renderSvg(state, elements.svg);
+      };
     state.dom = {
       elements,
       bounds,

@@ -1,7 +1,7 @@
 import { pos2key, invRanks } from './util'
 import * as cg from './types'
 
-export const initial: cg.FEN = 'rnbskbnr/pppppppp/8/8/8/8/8/PPPPPPPP/RNBQKBNR';
+export const initial: cg.FEN = '';
 
 const roles: { [letter: string]: cg.Role } = {
   'p': 'pawn', 'l': 'lance', 'n': 'knight', 's': 'silver', 'g': 'gold', 'b': 'bishop', 'r': 'rook', 'k': 'king',
@@ -31,11 +31,12 @@ export function read(sfen: cg.FEN): cg.Pieces {
         break;
       default:
         const nb = sfen[i].charCodeAt(0);
-        if (nb < 58) col += nb - 48;
+        if (nb < 58 && nb != 43) col += nb - 48;
         else {
           var role = sfen[i].toLowerCase();
-          if (role == "+" && sfen.length > i + 1) {
+          if (role === "+" && sfen.length > i + 1) {
             role += sfen[++i]
+            console.log(role)
           }
           pieces.set(pos2key([col, row]), {
             role: roles[role],

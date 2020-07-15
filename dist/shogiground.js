@@ -1,4 +1,4 @@
-var Chessground = (function () {
+var Shogiground = (function () {
 	'use strict';
 
 	function createCommonjsModule(fn, basedir, module) {
@@ -491,7 +491,7 @@ var Chessground = (function () {
 	exports.write = exports.read = exports.initial = void 0;
 
 
-	exports.initial = 'rnbskbnr/pppppppp/8/8/8/8/8/PPPPPPPP/RNBQKBNR';
+	exports.initial = '';
 	const roles = {
 	    'p': 'pawn', 'l': 'lance', 'n': 'knight', 's': 'silver', 'g': 'gold', 'b': 'bishop', 'r': 'rook', 'k': 'king',
 	    '+p': 'p_pawn', '+l': 'p_lance', '+n': 'p_knight', '+s': 'p_silver', '+b': 'p_bishop', '+r': 'p_rook'
@@ -521,12 +521,13 @@ var Chessground = (function () {
 	                break;
 	            default:
 	                const nb = sfen[i].charCodeAt(0);
-	                if (nb < 58)
+	                if (nb < 58 && nb != 43)
 	                    col += nb - 48;
 	                else {
 	                    var role = sfen[i].toLowerCase();
-	                    if (role == "+" && sfen.length > i + 1) {
+	                    if (role === "+" && sfen.length > i + 1) {
 	                        role += sfen[++i];
+	                        console.log(role);
 	                    }
 	                    pieces.set(util.pos2key([col, row]), {
 	                        role: roles[role],
@@ -1010,30 +1011,6 @@ var Chessground = (function () {
 
 	});
 
-	var explosion_1 = createCommonjsModule(function (module, exports) {
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.explosion = void 0;
-	function explosion(state, keys) {
-	    state.exploding = { stage: 1, keys };
-	    state.dom.redraw();
-	    setTimeout(() => {
-	        setStage(state, 2);
-	        setTimeout(() => setStage(state, undefined), 120);
-	    }, 120);
-	}
-	exports.explosion = explosion;
-	function setStage(state, stage) {
-	    if (state.exploding) {
-	        if (stage)
-	            state.exploding.stage = stage;
-	        else
-	            state.exploding = undefined;
-	        state.dom.redraw();
-	    }
-	}
-
-	});
-
 	var api = createCommonjsModule(function (module, exports) {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.start = void 0;
@@ -1042,9 +1019,9 @@ var Chessground = (function () {
 
 
 
-
 	function start(state, redrawAll) {
 	    function toggleOrientation() {
+	        console.log("Handing this in shogi...");
 	        board.toggleOrientation(state);
 	        redrawAll();
 	    }
@@ -1101,9 +1078,6 @@ var Chessground = (function () {
 	        },
 	        stop() {
 	            anim_1.render(state => { board.stop(state); drag.cancel(state); }, state);
-	        },
-	        explode(keys) {
-	            explosion_1.explosion(state, keys);
 	        },
 	        setAutoShapes(shapes) {
 	            anim_1.render(state => state.drawable.autoShapes = shapes, state);
@@ -1421,6 +1395,7 @@ var Chessground = (function () {
 
 	function renderWrap(element, s, relative) {
 	    element.innerHTML = '';
+	    console.log(["WOO: ", s.orientation]);
 	    element.classList.add('cg-wrap');
 	    for (const c of types.colors)
 	        element.classList.toggle('orientation-' + c, s.orientation === c);
@@ -1775,10 +1750,6 @@ var Chessground = (function () {
 	            addSquare(squares, k, 'current-premove');
 	    else if (s.predroppable.current)
 	        addSquare(squares, s.predroppable.current.key, 'current-premove');
-	    const o = s.exploding;
-	    if (o)
-	        for (const k of o.keys)
-	            addSquare(squares, k, 'exploding' + o.stage);
 	    return squares;
 	}
 	function addSquare(squares, key, klass) {
@@ -1798,9 +1769,9 @@ var Chessground = (function () {
 
 	});
 
-	var chessground = createCommonjsModule(function (module, exports) {
+	var shogiground = createCommonjsModule(function (module, exports) {
 	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.Chessground = void 0;
+	exports.Shogiground = void 0;
 
 
 
@@ -1809,7 +1780,7 @@ var Chessground = (function () {
 
 
 
-	function Chessground(element, config$1) {
+	function Shogiground(element, config$1) {
 	    const state$1 = state.defaults();
 	    config.configure(state$1, config$1 || {});
 	    function redrawAll() {
@@ -1842,7 +1813,7 @@ var Chessground = (function () {
 	    redrawAll();
 	    return api.start(state$1, redrawAll);
 	}
-	exports.Chessground = Chessground;
+	exports.Shogiground = Shogiground;
 	function debounceRedraw(redrawNow) {
 	    let redrawing = false;
 	    return () => {
@@ -1858,7 +1829,7 @@ var Chessground = (function () {
 
 	});
 
-	var src = chessground.Chessground;
+	var src = shogiground.Shogiground;
 
 	return src;
 
