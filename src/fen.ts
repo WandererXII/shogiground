@@ -33,14 +33,11 @@ export function read(sfen: cg.FEN): cg.Pieces {
         const nb = sfen[i].charCodeAt(0);
         if (nb < 58 && nb != 43) col += nb - 48;
         else {
-          var role = sfen[i].toLowerCase();
-          if (role === "+" && sfen.length > i + 1) {
-            role += sfen[++i]
-            console.log(role)
-          }
+          const role = (sfen[i] === "+" && sfen.length > i + 1) ? "+" + sfen[++i].toLowerCase() : sfen[i].toLowerCase();
+          const color = (sfen[i] === role || "+" + sfen[i] === role) ? 'black' : 'white';
           pieces.set(pos2key([col, row]), {
             role: roles[role],
-            color: sfen[i] === role ? 'black' : 'white',
+            color: color,
           });
           ++col;
         }

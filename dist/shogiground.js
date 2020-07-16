@@ -524,14 +524,11 @@ var Shogiground = (function () {
 	                if (nb < 58 && nb != 43)
 	                    col += nb - 48;
 	                else {
-	                    var role = sfen[i].toLowerCase();
-	                    if (role === "+" && sfen.length > i + 1) {
-	                        role += sfen[++i];
-	                        console.log(role);
-	                    }
+	                    const role = (sfen[i] === "+" && sfen.length > i + 1) ? "+" + sfen[++i].toLowerCase() : sfen[i].toLowerCase();
+	                    const color = (sfen[i] === role || "+" + sfen[i] === role) ? 'black' : 'white';
 	                    pieces.set(util.pos2key([col, row]), {
 	                        role: roles[role],
-	                        color: sfen[i] === role ? 'black' : 'white',
+	                        color: color,
 	                    });
 	                    ++col;
 	                }
@@ -1021,7 +1018,6 @@ var Shogiground = (function () {
 
 	function start(state, redrawAll) {
 	    function toggleOrientation() {
-	        console.log("Handing this in shogi...");
 	        board.toggleOrientation(state);
 	        redrawAll();
 	    }
@@ -1357,7 +1353,7 @@ var Shogiground = (function () {
 	    return el;
 	}
 	function orient(pos, color) {
-	    return color === 'white' ? pos : [7 - pos[0], 7 - pos[1]];
+	    return color === 'white' ? pos : [8 - pos[0], 8 - pos[1]];
 	}
 	function makeCustomBrush(base, modifiers) {
 	    return {
@@ -1381,7 +1377,6 @@ var Shogiground = (function () {
 	    return (shorten ? 20 : 10) / 512 * bounds.width;
 	}
 	function pos2px(pos, bounds) {
-	    console.log(pos[0], pos[1]);
 	    return [(pos[0] + 0.5) * bounds.width / 9, (8.5 - pos[1]) * bounds.height / 9];
 	}
 
@@ -1395,7 +1390,6 @@ var Shogiground = (function () {
 
 	function renderWrap(element, s, relative) {
 	    element.innerHTML = '';
-	    console.log(["WOO: ", s.orientation]);
 	    element.classList.add('cg-wrap');
 	    for (const c of types.colors)
 	        element.classList.toggle('orientation-' + c, s.orientation === c);

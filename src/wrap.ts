@@ -16,7 +16,6 @@ export function renderWrap(element: HTMLElement, s: State, relative: boolean): E
   //       piece.ghost
 
   element.innerHTML = '';
-  console.log(["WOO: ", s.orientation])
 
   // ensure the cg-wrap class is set
   // so bounds calculation can use the CSS width/height values

@@ -1,6 +1,7 @@
 import * as util from './util'
 import * as cg from './types'
 
+// todo
 type Mobility = (x1: number, y1: number, x2: number, y2: number) => boolean;
 
 function diff(a: number, b: number): number {
@@ -31,10 +32,6 @@ const bishop: Mobility = (x1, y1, x2, y2) => {
 const rook: Mobility = (x1, y1, x2, y2) => {
   return x1 === x2 || y1 === y2;
 }
-
-// const queen: Mobility = (x1, y1, x2, y2) => {
-//   return bishop(x1, y1, x2, y2) || rook(x1, y1, x2, y2);
-// }
 
 function king(color: cg.Color, rookFiles: number[], canCastle: boolean): Mobility {
   return (x1, y1, x2, y2) => (

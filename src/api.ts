@@ -76,7 +76,6 @@ export interface Api {
 export function start(state: State, redrawAll: cg.Redraw): Api {
 
   function toggleOrientation(): void {
-    console.log("Handing this in shogi...")
     board.toggleOrientation(state);
     redrawAll();
   }
