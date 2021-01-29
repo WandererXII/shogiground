@@ -15,7 +15,7 @@ export interface Config {
   autoCastle?: boolean; // immediately complete the castle by moving the rook after king move
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu?: boolean; // because who needs a context menu on a chessboard
-  resizable?: boolean; // listens to chessground.resize on document.body to clear bounds cache
+  resizable?: boolean; // listens to shogiground.resize on document.body to clear bounds cache
   addPieceZIndex?: boolean; // adds z-index values to pieces (for 3D)
   // pieceKey: boolean; // add a data-key attribute to piece elements
   highlight?: {
@@ -57,7 +57,7 @@ export interface Config {
   draggable?: {
     enabled?: boolean; // allow moves & premoves to use drag'n drop
     distance?: number; // minimum distance to initiate a drag; in pixels
-    autoDistance?: boolean; // lets chessground set distance to zero when user drags pieces
+    autoDistance?: boolean; // lets shogiground set distance to zero when user drags pieces
     showGhost?: boolean; // show ghost of piece being dragged
     deleteOnDropOff?: boolean; // delete a piece when it is dropped off the board
   };
@@ -86,6 +86,7 @@ export interface Config {
     };
     onChange?: (shapes: DrawShape[]) => void; // called after drawable shapes change
   };
+  notation?: cg.Notation;
 }
 
 export function configure(state: State, config: Config): void {
