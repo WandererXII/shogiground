@@ -1,14 +1,13 @@
-import { State } from './state'
-import * as board from './board'
-import { write as fenWrite } from './fen'
-import { Config, configure } from './config'
-import { anim, render } from './anim'
-import { cancel as dragCancel, dragNewPiece } from './drag'
-import { DrawShape } from './draw'
-import * as cg from './types'
+import { State } from './state';
+import * as board from './board';
+import { writeBoard as sfenWrite } from './sfen';
+import { Config, configure } from './config';
+import { anim, render } from './anim';
+import { cancel as dragCancel, dragNewPiece } from './drag';
+import { DrawShape } from './draw';
+import * as sg from './types';
 
 export interface Api {
-
   // reconfigure the instance. Accepts all config options, except for viewOnly & drawable.visible.
   // board will be animated accordingly, if animations are enabled.
   set(config: Config): void;
@@ -16,23 +15,23 @@ export interface Api {
   // read shogiground state; write at your own risks.
   state: State;
 
-  // get the position as a FEN string (only contains pieces, no flags)
-  getFen(): cg.FEN;
+  // get the position as a Sfen string (only contains pieces, no flags)
+  getSfen(): sg.Sfen;
 
   // change the view angle
   toggleOrientation(): void;
 
   // perform a move programmatically
-  move(orig: cg.Key, dest: cg.Key): void;
+  move(orig: sg.Key, dest: sg.Key): void;
 
   // add and/or remove arbitrary pieces on the board
-  setPieces(pieces: cg.PiecesDiff): void;
+  setPieces(pieces: sg.PiecesDiff): void;
 
   // click a square programmatically
-  selectSquare(key: cg.Key | null, force?: boolean): void;
+  selectSquare(key: sg.Key | null, force?: boolean): void;
 
   // put a new piece on the board
-  newPiece(piece: cg.Piece, key: cg.Key): void;
+  newPiece(piece: sg.Piece, key: sg.Key): void;
 
   // play the current premove, if any; returns true if premove was played
   playPremove(): boolean;
@@ -41,7 +40,7 @@ export interface Api {
   cancelPremove(): void;
 
   // play the current predrop, if any; returns true if premove was played
-  playPredrop(validate: (drop: cg.Drop) => boolean): boolean;
+  playPredrop(): boolean;
 
   // cancel the current predrop, if any
   cancelPredrop(): void;
@@ -59,37 +58,35 @@ export interface Api {
   setAutoShapes(shapes: DrawShape[]): void;
 
   // square name at this DOM position (like "e4")
-  getKeyAtDomPos(pos: cg.NumberPair): cg.Key | undefined;
+  getKeyAtDomPos(pos: sg.NumberPair): sg.Key | undefined;
 
-  // only useful when CSS changes the board width/height ratio (for 3D)
-  redrawAll: cg.Redraw;
+  // only useful when CSS changes the board width/height ratio (for ratio change)
+  redrawAll: sg.Redraw;
 
-  // for crazyhouse and board editors
-  dragNewPiece(piece: cg.Piece, event: cg.MouchEvent, force?: boolean): void;
+  // for piece dropping and board editors
+  dragNewPiece(piece: sg.Piece, event: sg.MouchEvent, force?: boolean): void;
 
   // unbinds all events
   // (important for document-wide events like scroll and mousemove)
-  destroy: cg.Unbind;
+  destroy: sg.Unbind;
 }
 
 // see API types and documentations in dts/api.d.ts
-export function start(state: State, redrawAll: cg.Redraw): Api {
-
+export function start(state: State, redrawAll: sg.Redraw): Api {
   function toggleOrientation(): void {
     board.toggleOrientation(state);
     redrawAll();
   }
 
   return {
-
     set(config): void {
       if (config.orientation && config.orientation !== state.orientation) toggleOrientation();
-      (config.fen ? anim : render)(state => configure(state, config), state);
+      (config.sfen ? anim : render)(state => configure(state, config), state);
     },
 
     state,
 
-    getFen: () => fenWrite(state.pieces),
+    getSfen: () => sfenWrite(state.pieces),
 
     toggleOrientation,
 
@@ -122,9 +119,9 @@ export function start(state: State, redrawAll: cg.Redraw): Api {
       return false;
     },
 
-    playPredrop(validate): boolean {
+    playPredrop(): boolean {
       if (state.predroppable.current) {
-        const result = board.playPredrop(state, validate);
+        const result = board.playPredrop(state);
         state.dom.redraw();
         return result;
       }
@@ -140,35 +137,41 @@ export function start(state: State, redrawAll: cg.Redraw): Api {
     },
 
     cancelMove(): void {
-      render(state => { board.cancelMove(state); dragCancel(state); }, state);
+      render(state => {
+        board.cancelMove(state);
+        dragCancel(state);
+      }, state);
     },
 
     stop(): void {
-      render(state => { board.stop(state); dragCancel(state); }, state);
+      render(state => {
+        board.stop(state);
+        dragCancel(state);
+      }, state);
     },
 
     setAutoShapes(shapes: DrawShape[]): void {
-      render(state => state.drawable.autoShapes = shapes, state);
+      render(state => (state.drawable.autoShapes = shapes), state);
     },
 
     setShapes(shapes: DrawShape[]): void {
-      render(state => state.drawable.shapes = shapes, state);
+      render(state => (state.drawable.shapes = shapes), state);
     },
 
-    getKeyAtDomPos(pos): cg.Key | undefined {
-      return board.getKeyAtDomPos(pos, board.whitePov(state), state.dom.bounds());
+    getKeyAtDomPos(pos): sg.Key | undefined {
+      return board.getKeyAtDomPos(pos, board.sentePov(state), state.dimensions, state.dom.bounds());
     },
 
     redrawAll,
 
     dragNewPiece(piece, event, force): void {
-      dragNewPiece(state, piece, event, force)
+      dragNewPiece(state, piece, event, force);
     },
 
     destroy(): void {
       board.stop(state);
       state.dom.unbind && state.dom.unbind();
       state.dom.destroyed = true;
-    }
+    },
   };
 }

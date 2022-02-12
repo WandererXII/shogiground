@@ -1,16 +1,16 @@
-import { State } from "./state";
-import * as util from "./util";
-import * as cg from "./types";
+import { State } from './state';
+import * as util from './util';
+import * as sg from './types';
 
 export type Mutation<A> = (state: State) => A;
 
 // 0,1 animation goal
 // 2,3 animation current status
-export type AnimVector = cg.NumberQuad;
+export type AnimVector = sg.NumberQuad;
 
-export type AnimVectors = Map<cg.Key, AnimVector>;
+export type AnimVectors = Map<sg.Key, AnimVector>;
 
-export type AnimFadings = Map<cg.Key, cg.Piece>;
+export type AnimFadings = Map<sg.Key, sg.Piece>;
 
 export interface AnimPlan {
   anims: AnimVectors;
@@ -19,14 +19,12 @@ export interface AnimPlan {
 
 export interface AnimCurrent {
   start: DOMHighResTimeStamp;
-  frequency: cg.KHz;
+  frequency: sg.KHz;
   plan: AnimPlan;
 }
 
 export function anim<A>(mutation: Mutation<A>, state: State): A {
-  return state.animation.enabled
-    ? animate(mutation, state)
-    : render(mutation, state);
+  return state.animation.enabled ? animate(mutation, state) : render(mutation, state);
 }
 
 export function render<A>(mutation: Mutation<A>, state: State): A {
@@ -36,13 +34,13 @@ export function render<A>(mutation: Mutation<A>, state: State): A {
 }
 
 interface AnimPiece {
-  key: cg.Key;
-  pos: cg.Pos;
-  piece: cg.Piece;
+  key: sg.Key;
+  pos: sg.Pos;
+  piece: sg.Piece;
 }
-type AnimPieces = Map<cg.Key, AnimPiece>;
+type AnimPieces = Map<sg.Key, AnimPiece>;
 
-function makePiece(key: cg.Key, piece: cg.Piece): AnimPiece {
+function makePiece(key: sg.Key, piece: sg.Piece): AnimPiece {
   return {
     key: key,
     pos: util.key2pos(key),
@@ -52,22 +50,18 @@ function makePiece(key: cg.Key, piece: cg.Piece): AnimPiece {
 
 function closer(piece: AnimPiece, pieces: AnimPiece[]): AnimPiece | undefined {
   return pieces.sort((p1, p2) => {
-    return (
-      util.distanceSq(piece.pos, p1.pos) - util.distanceSq(piece.pos, p2.pos)
-    );
+    return util.distanceSq(piece.pos, p1.pos) - util.distanceSq(piece.pos, p2.pos);
   })[0];
 }
 
-function computePlan(prevPieces: cg.Pieces, current: State): AnimPlan {
+function computePlan(prevPieces: sg.Pieces, current: State): AnimPlan {
   const anims: AnimVectors = new Map(),
-    animedOrigs: cg.Key[] = [],
+    animedOrigs: sg.Key[] = [],
     fadings: AnimFadings = new Map(),
     missings: AnimPiece[] = [],
     news: AnimPiece[] = [],
     prePieces: AnimPieces = new Map();
-  let curP: cg.Piece | undefined,
-    preP: AnimPiece | undefined,
-    vector: cg.NumberPair;
+  let curP: sg.Piece | undefined, preP: AnimPiece | undefined, vector: sg.NumberPair;
   for (const [k, p] of prevPieces) {
     prePieces.set(k, makePiece(k, p));
   }
@@ -86,7 +80,7 @@ function computePlan(prevPieces: cg.Pieces, current: State): AnimPlan {
   for (const newP of news) {
     preP = closer(
       newP,
-      missings.filter((p) => util.samePiece(newP.piece, p.piece))
+      missings.filter(p => util.samePiece(newP.piece, p.piece))
     );
     if (preP) {
       vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];
@@ -128,13 +122,12 @@ function step(state: State, now: DOMHighResTimeStamp): void {
 
 function animate<A>(mutation: Mutation<A>, state: State): A {
   // clone state before mutating it
-  const prevPieces: cg.Pieces = new Map(state.pieces);
+  const prevPieces: sg.Pieces = new Map(state.pieces);
 
   const result = mutation(state);
   const plan = computePlan(prevPieces, state);
   if (plan.anims.size || plan.fadings.size) {
-    const alreadyRunning =
-      state.animation.current && state.animation.current.start;
+    const alreadyRunning = state.animation.current && state.animation.current.start;
     state.animation.current = {
       start: performance.now(),
       frequency: 1 / state.animation.duration,

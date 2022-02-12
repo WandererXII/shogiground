@@ -1,23 +1,23 @@
-import * as fen from "./fen";
-import { AnimCurrent } from "./anim";
-import { DragCurrent } from "./drag";
-import { Drawable } from "./draw";
-import { timer } from "./util";
-import * as cg from "./types";
+import * as sfen from './sfen';
+import { AnimCurrent } from './anim';
+import { DragCurrent } from './drag';
+import { Drawable } from './draw';
+import { timer } from './util';
+import * as sg from './types';
 
-export interface State {
-  pieces: cg.Pieces;
-  orientation: cg.Color; // board orientation. white | black
-  turnColor: cg.Color; // turn to play. white | black
-  check?: cg.Key; // square currently in check "a2"
-  lastMove?: cg.Key[]; // squares part of the last move ["c3"; "c4"]
-  selected?: cg.Key; // square currently selected "a1"
+export interface HeadlessState {
+  pieces: sg.Pieces;
+  orientation: sg.Color; // board orientation. sente | gote
+  turnColor: sg.Color; // turn to play. sente | gote
+  hands?: sg.Hands;
+  check?: sg.Key; // square currently in check "5a"
+  lastMove?: sg.Key[]; // squares part of the last move ["2b"; "8h"]
+  selected?: sg.Key; // square currently selected "1a"
   coordinates: boolean; // include coords attributes
-  autoCastle: boolean; // immediately complete the castle by moving the rook after king move
   viewOnly: boolean; // don't bind events: the user will never be able to move pieces around
-  disableContextMenu: boolean; // because who needs a context menu on a chessboard
+  disableContextMenu: boolean; // because who needs a context menu on a shogi board
   resizable: boolean; // listens to shogiground.resize on document.body to clear bounds cache
-  addPieceZIndex: boolean; // adds z-index values to pieces (for 3D)
+  blockTouchScroll: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
   pieceKey: boolean; // add a data-key attribute to piece elements
   highlight: {
     lastMove: boolean; // add last-move class to squares
@@ -30,43 +30,35 @@ export interface State {
   };
   movable: {
     free: boolean; // all moves are valid - board editor
-    color?: cg.Color | "both"; // color that can move. white | black | both
-    dests?: cg.Dests; // valid moves. {"a2" ["a3" "a4"] "b1" ["a3" "c3"]}
+    color?: sg.Color | 'both'; // color that can move. sente | gote | both
+    dests?: sg.Dests; // valid moves. {"7g" ["7f"] "5i" ["4h" "5h" "6h"]}
     showDests: boolean; // whether to add the move-dest class on squares
     events: {
-      after?: (orig: cg.Key, dest: cg.Key, metadata: cg.MoveMetadata) => void; // called after the move has been played
-      afterNewPiece?: (
-        role: cg.Role,
-        key: cg.Key,
-        metadata: cg.MoveMetadata
-      ) => void; // called after a new piece is dropped on the board
+      after?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
+      afterNewPiece?: (role: sg.Role, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after a new piece is dropped on the board
     };
-    rookCastle: boolean; // castle by moving the king to the rook
   };
   premovable: {
     enabled: boolean; // allow premoves for color that can not move
     showDests: boolean; // whether to add the premove-dest class on squares
-    castle: boolean; // whether to allow king castle premoves
-    dests?: cg.Key[]; // premove destinations for the current selection
-    current?: cg.KeyPair; // keys of the current saved premove ["e2" "e4"]
+    dests?: sg.Key[]; // premove destinations for the current selection
+    current?: sg.KeyPair; // keys of the current saved premove ["5f" "5d"]
     events: {
-      set?: (
-        orig: cg.Key,
-        dest: cg.Key,
-        metadata?: cg.SetPremoveMetadata
-      ) => void; // called after the premove has been set
+      set?: (orig: sg.Key, dest: sg.Key, metadata?: sg.SetPremoveMetadata) => void; // called after the premove has been set
       unset?: () => void; // called after the premove has been unset
     };
   };
   predroppable: {
     enabled: boolean; // allow predrops for color that can not move
+    showDropDests: boolean; // whether to add the premove-dest class on squares
+    dropDests?: sg.Key[]; // premove destinations for the drop selection
     current?: {
-      // current saved predrop {role: 'knight'; key: 'e4'}
-      role: cg.Role;
-      key: cg.Key;
+      // current saved predrop {role: 'knight'; key: '5e'}
+      role: sg.Role;
+      key: sg.Key;
     };
     events: {
-      set?: (role: cg.Role, key: cg.Key) => void; // called after the predrop has been set
+      set?: (role: sg.Role, key: sg.Key) => void; // called after the predrop has been set
       unset?: () => void; // called after the predrop has been unset
     };
   };
@@ -76,11 +68,14 @@ export interface State {
     autoDistance: boolean; // lets shogiground set distance to zero when user drags pieces
     showGhost: boolean; // show ghost of piece being dragged
     deleteOnDropOff: boolean; // delete a piece when it is dropped off the board
+    lastDropOff?: DragCurrent; // last piece that was dropped off
     current?: DragCurrent;
   };
   dropmode: {
     active: boolean;
-    piece?: cg.Piece;
+    showDropDests: boolean;
+    piece?: sg.Piece;
+    dropDests?: sg.DropDests;
   };
   selectable: {
     // disable to enforce dragging over click-click move
@@ -95,29 +90,31 @@ export interface State {
   events: {
     change?: () => void; // called after the situation changes on the board
     // called after a piece has been moved.
-    // capturedPiece is undefined or like {color: 'white'; 'role': 'queen'}
-    move?: (orig: cg.Key, dest: cg.Key, capturedPiece?: cg.Piece) => void;
-    dropNewPiece?: (piece: cg.Piece, key: cg.Key) => void;
-    select?: (key: cg.Key) => void; // called when a square is selected
-    insert?: (elements: cg.Elements) => void; // when the board DOM has been (re)inserted
+    // capturedPiece is undefined or like {color: 'sente'; 'role': 'lance'}
+    move?: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => void;
+    dropNewPiece?: (piece: sg.Piece, key: sg.Key) => void;
+    select?: (key: sg.Key) => void; // called when a square is selected
+    insert?: (elements: sg.Elements) => void; // when the board DOM has been (re)inserted
   };
   drawable: Drawable;
-  dom: cg.Dom;
-  hold: cg.Timer;
-  notation: cg.Notation;
+  hold: sg.Timer;
+  notation: sg.Notation;
+  dimensions: sg.Dimensions;
+}
+export interface State extends HeadlessState {
+  dom: sg.Dom;
 }
 
-export function defaults(): Partial<State> {
+export function defaults(): HeadlessState {
   return {
-    pieces: fen.read(fen.initial),
-    orientation: "white",
-    turnColor: "white",
+    pieces: sfen.readBoard(sfen.initial, { files: 9, ranks: 9 }),
+    orientation: 'sente',
+    turnColor: 'sente',
     coordinates: true,
-    autoCastle: true,
     viewOnly: false,
     disableContextMenu: false,
     resizable: true,
-    addPieceZIndex: false,
+    blockTouchScroll: false,
     pieceKey: false,
     highlight: {
       lastMove: true,
@@ -129,19 +126,18 @@ export function defaults(): Partial<State> {
     },
     movable: {
       free: true,
-      color: "both",
+      color: 'both',
       showDests: true,
       events: {},
-      rookCastle: true,
     },
     premovable: {
       enabled: true,
       showDests: true,
-      castle: true,
       events: {},
     },
     predroppable: {
-      enabled: false,
+      enabled: true,
+      showDropDests: true,
       events: {},
     },
     draggable: {
@@ -153,6 +149,7 @@ export function defaults(): Partial<State> {
     },
     dropmode: {
       active: false,
+      showDropDests: true,
     },
     selectable: {
       enabled: true,
@@ -160,7 +157,7 @@ export function defaults(): Partial<State> {
     stats: {
       // on touchscreen, default to "tap-tap" moves
       // instead of drag
-      dragged: !("ontouchstart" in window),
+      dragged: !('ontouchstart' in window),
     },
     events: {},
     drawable: {
@@ -170,25 +167,24 @@ export function defaults(): Partial<State> {
       shapes: [],
       autoShapes: [],
       brushes: {
-        green: { key: "g", color: "#15781B", opacity: 1, lineWidth: 10 },
-        red: { key: "r", color: "#882020", opacity: 1, lineWidth: 10 },
-        blue: { key: "b", color: "#003088", opacity: 1, lineWidth: 10 },
-        yellow: { key: "y", color: "#e68f00", opacity: 1, lineWidth: 10 },
-        paleBlue: { key: "pb", color: "#003088", opacity: 0.4, lineWidth: 15 },
-        paleGreen: { key: "pg", color: "#15781B", opacity: 0.4, lineWidth: 15 },
-        paleRed: { key: "pr", color: "#882020", opacity: 0.4, lineWidth: 15 },
+        green: { key: 'g', color: '#15781B', opacity: 1, lineWidth: 10 },
+        red: { key: 'r', color: '#882020', opacity: 1, lineWidth: 10 },
+        blue: { key: 'b', color: '#003088', opacity: 1, lineWidth: 10 },
+        yellow: { key: 'y', color: '#e68f00', opacity: 1, lineWidth: 10 },
+        paleBlue: { key: 'pb', color: '#003088', opacity: 0.4, lineWidth: 15 },
+        paleGreen: { key: 'pg', color: '#15781B', opacity: 0.4, lineWidth: 15 },
+        paleRed: { key: 'pr', color: '#882020', opacity: 0.4, lineWidth: 15 },
         paleGrey: {
-          key: "pgr",
-          color: "#4a4a4a",
+          key: 'pgr',
+          color: '#4a4a4a',
           opacity: 0.35,
           lineWidth: 15,
         },
       },
-      pieces: {
-        baseUrl: "https://lishogi.org/assets/piece/cburnett/",
-      },
-      prevSvgHash: "",
+      prevSvgHash: '',
     },
     hold: timer(),
+    notation: sg.Notation.WESTERN,
+    dimensions: { files: 9, ranks: 9 },
   };
 }

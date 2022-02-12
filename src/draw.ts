@@ -1,19 +1,20 @@
-import { State } from './state'
-import { unselect, cancelMove, getKeyAtDomPos, whitePov } from './board'
-import { eventPosition, isRightButton } from './util'
-import * as cg from './types'
+import { State } from './state';
+import { unselect, cancelMove, getKeyAtDomPos, sentePov } from './board';
+import { eventPosition, isRightButton } from './util';
+import * as sg from './types';
 
 export interface DrawShape {
-  orig: cg.Key;
-  dest?: cg.Key;
+  orig: sg.Key;
+  dest?: sg.Key;
   brush: string;
   modifiers?: DrawModifiers;
   piece?: DrawShapePiece;
+  customSvg?: string;
 }
 
 export interface DrawShapePiece {
-  role: cg.Role;
-  color: cg.Color;
+  role: sg.Role;
+  color: sg.Color;
   scale?: number;
 }
 
@@ -41,40 +42,36 @@ export interface Drawable {
   autoShapes: DrawShape[]; // computer shapes
   current?: DrawCurrent;
   brushes: DrawBrushes;
-  // drawable SVG pieces; used for crazyhouse drop
-  pieces: {
-    baseUrl: string;
-  };
   prevSvgHash: string;
-  piece?: cg.Piece;
+  piece?: sg.Piece;
 }
 
 export interface DrawCurrent {
-  orig: cg.Key; // orig key of drawing
-  dest?: cg.Key; // shape dest, or undefined for circle
-  piece?: cg.Piece;
-  mouseSq?: cg.Key; // square being moused over
-  pos: cg.NumberPair; // relative current position
+  orig: sg.Key; // orig key of drawing
+  dest?: sg.Key; // shape dest, or undefined for circle
+  piece?: sg.Piece;
+  mouseSq?: sg.Key; // square being moused over
+  pos: sg.NumberPair; // relative current position
   brush: string; // brush name for shape
 }
 
 const brushes = ['green', 'red', 'blue', 'yellow'];
 
-export function start(state: State, e: cg.MouchEvent): void {
+export function start(state: State, e: sg.MouchEvent): void {
   // support one finger touch only
-  if (e.touches && e.touches.length > 1) return; /* eslint-disable-line */
+  if (e.touches && e.touches.length > 1) return;
   e.stopPropagation();
   e.preventDefault();
   e.ctrlKey ? unselect(state) : cancelMove(state);
   const pos = eventPosition(e)!,
-    orig = getKeyAtDomPos(pos, whitePov(state), state.dom.bounds()),
+    orig = getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.bounds()),
     piece = state.drawable.piece;
   if (!orig) return;
   state.drawable.current = {
     orig,
     pos,
     piece,
-    brush: eventBrush(e)
+    brush: eventBrush(e),
   };
   processDraw(state);
 }
@@ -83,7 +80,7 @@ export function processDraw(state: State): void {
   requestAnimationFrame(() => {
     const cur = state.drawable.current;
     if (cur) {
-      const mouseSq = getKeyAtDomPos(cur.pos, whitePov(state), state.dom.bounds());
+      const mouseSq = getKeyAtDomPos(cur.pos, sentePov(state), state.dimensions, state.dom.bounds());
       if (mouseSq !== cur.mouseSq) {
         cur.mouseSq = mouseSq;
         cur.dest = mouseSq !== cur.orig ? mouseSq : undefined;
@@ -95,7 +92,7 @@ export function processDraw(state: State): void {
   });
 }
 
-export function move(state: State, e: cg.MouchEvent): void {
+export function move(state: State, e: sg.MouchEvent): void {
   if (state.drawable.current) state.drawable.current.pos = eventPosition(e)!;
 }
 
@@ -122,18 +119,20 @@ export function clear(state: State): void {
   }
 }
 
-function eventBrush(e: cg.MouchEvent): string {
+function eventBrush(e: sg.MouchEvent): string {
   const modA = (e.shiftKey || e.ctrlKey) && isRightButton(e);
-  const modB = e.altKey || e.metaKey || e.getModifierState('AltGraph');
+  const modB = e.altKey || e.metaKey || e.getModifierState?.('AltGraph');
   return brushes[(modA ? 1 : 0) + (modB ? 2 : 0)];
 }
 
 function addShape(drawable: Drawable, cur: DrawCurrent): void {
-  const similarShape = (s: DrawShape) =>
-    s.orig === cur.orig && s.dest === cur.dest;
+  const similarShape = (s: DrawShape) => s.orig === cur.orig && s.dest === cur.dest;
   // replacing the piece
   const diffPieceSameSquare = (s: DrawShape) =>
-    s.orig === cur.orig && s.piece && cur.piece && (s.piece.color !== cur.piece.color || s.piece.role !== cur.piece.role)
+    s.orig === cur.orig &&
+    s.piece &&
+    cur.piece &&
+    (s.piece.color !== cur.piece.color || s.piece.role !== cur.piece.role);
 
   const similar = drawable.shapes.find(similarShape);
   const diffPiece = drawable.shapes.find(diffPieceSameSquare);

@@ -1,38 +1,15 @@
-import * as cg from "./types";
+import * as sg from './types';
 
-export const invRanks: readonly cg.Rank[] = [
-  "9",
-  "8",
-  "7",
-  "6",
-  "5",
-  "4",
-  "3",
-  "2",
-  "1",
-];
+export const invFiles: readonly sg.File[] = [...sg.files].reverse();
 
-const promotions: { [role: string]: cg.Role } = {
-  rook: "dragon",
-  bishop: "horse",
-  silver: "promotedSilver",
-  knight: "promotedKnight",
-  lance: "promotedLance",
-  pawn: "tokin",
-};
+// 1a, 1b, 1c ...
+export const allKeys: readonly sg.Key[] = Array.prototype.concat(...sg.files.map(c => sg.ranks.map(r => c + r)));
 
-export const allKeys: readonly cg.Key[] = Array.prototype.concat(
-  ...cg.files.map((c) => cg.ranks.map((r) => c + r))
-);
+export const pos2key = (pos: sg.Pos): sg.Key => allKeys[9 * pos[0] + pos[1]];
 
-export const pos2key = (pos: cg.Pos): cg.Key => allKeys[9 * pos[0] + pos[1]];
+export const key2pos = (k: sg.Key): sg.Pos => [k.charCodeAt(0) - 49, k.charCodeAt(1) - 97];
 
-export const key2pos = (k: cg.Key): cg.Pos => [
-  k.charCodeAt(0) - 97,
-  k.charCodeAt(1) - 49,
-];
-
-export function memo<A>(f: () => A): cg.Memo<A> {
+export function memo<A>(f: () => A): sg.Memo<A> {
   let v: A | undefined;
   const ret = (): A => {
     if (v === undefined) v = f();
@@ -44,7 +21,7 @@ export function memo<A>(f: () => A): cg.Memo<A> {
   return ret;
 }
 
-export const timer = (): cg.Timer => {
+export const timer = (): sg.Timer => {
   let startAt: number | undefined;
   return {
     start() {
@@ -62,78 +39,88 @@ export const timer = (): cg.Timer => {
   };
 };
 
-export const opposite = (c: cg.Color): cg.Color =>
-  c === "white" ? "black" : "white";
+export const opposite = (c: sg.Color): sg.Color => (c === 'sente' ? 'gote' : 'sente');
 
-export const distanceSq = (pos1: cg.Pos, pos2: cg.Pos): number => {
+export const distanceSq = (pos1: sg.Pos, pos2: sg.Pos): number => {
   const dx = pos1[0] - pos2[0],
     dy = pos1[1] - pos2[1];
   return dx * dx + dy * dy;
 };
 
-export const samePiece = (p1: cg.Piece, p2: cg.Piece): boolean =>
-  p1.role === p2.role && p1.color === p2.color;
-
-export const validProm = (p1: cg.Piece, p2: cg.Piece): boolean => {
-  let r =
-    p1.color === p2.color &&
-    (promotions[p1.role] == p2.role || promotions[p2.role] == p1.role);
-  return r;
-};
+export const samePiece = (p1: sg.Piece, p2: sg.Piece): boolean => p1.role === p2.role && p1.color === p2.color;
 
 const posToTranslateBase = (
-  pos: cg.Pos,
-  asWhite: boolean,
+  pos: sg.Pos,
+  dims: sg.Dimensions,
+  asSente: boolean,
   xFactor: number,
   yFactor: number
-): cg.NumberPair => [
-  (asWhite ? pos[0] : 8 - pos[0]) * xFactor,
-  (asWhite ? 8 - pos[1] : pos[1]) * yFactor,
+): sg.NumberPair => [
+  (asSente ? dims.files - 1 - pos[0] : pos[0]) * xFactor,
+  (asSente ? pos[1] : dims.ranks - 1 - pos[1]) * yFactor,
 ];
 
 export const posToTranslateAbs = (
+  dims: sg.Dimensions,
   bounds: ClientRect
-): ((pos: cg.Pos, asWhite: boolean) => cg.NumberPair) => {
-  const xFactor = bounds.width / 9,
-    yFactor = bounds.height / 9;
-  return (pos, asWhite) => posToTranslateBase(pos, asWhite, xFactor, yFactor);
+): ((pos: sg.Pos, asSente: boolean) => sg.NumberPair) => {
+  const xFactor = bounds.width / dims.files,
+    yFactor = bounds.height / dims.ranks;
+  return (pos, asSente) => posToTranslateBase(pos, dims, asSente, xFactor, yFactor);
 };
 
-export const posToTranslateRel = (
-  pos: cg.Pos,
-  asWhite: boolean
-): cg.NumberPair => posToTranslateBase(pos, asWhite, 100, 100);
+export const posToTranslateRel =
+  (dims: sg.Dimensions): ((pos: sg.Pos, asSente: boolean) => sg.NumberPair) =>
+  (pos, asSente) =>
+    posToTranslateBase(pos, dims, asSente, 50, 50);
 
-export const translateAbs = (el: HTMLElement, pos: cg.NumberPair): void => {
-  el.style.transform = `translate(${pos[0]}px,${pos[1]}px)`;
+// we don't scale squares
+export const translateAbs = (el: HTMLElement, pos: sg.NumberPair, scale: boolean = true): void => {
+  el.style.transform = `translate(${pos[0]}px,${pos[1]}px) ${scale ? 'scale(0.5)' : ''}`;
 };
 
-export const translateRel = (
-  el: HTMLElement,
-  percents: cg.NumberPair
-): void => {
-  el.style.transform = `translate(${percents[0]}%,${percents[1]}%)`;
+export const translateRel = (el: HTMLElement, percents: sg.NumberPair, scale: boolean = true): void => {
+  const scaleRatio = scale ? 1 : 2;
+  el.style.transform = `translate(${scaleRatio * percents[0]}%,${scaleRatio * percents[1]}%) ${
+    scale ? 'scale(0.5)' : ''
+  }`;
 };
 
 export const setVisible = (el: HTMLElement, v: boolean): void => {
-  el.style.visibility = v ? "visible" : "hidden";
+  el.style.visibility = v ? 'visible' : 'hidden';
 };
 
-export const eventPosition = (e: cg.MouchEvent): cg.NumberPair | undefined => {
-  if (e.clientX || e.clientX === 0) return [e.clientX, e.clientY];
-  if (e.touches && e.targetTouches[0])
-    return [
-      e.targetTouches[0].clientX,
-      e.targetTouches[0].clientY,
-    ]; /* eslint-disable-line */
+export const eventPosition = (e: sg.MouchEvent): sg.NumberPair | undefined => {
+  if (e.clientX || e.clientX === 0) return [e.clientX, e.clientY!];
+  if (e.targetTouches?.[0]) return [e.targetTouches[0].clientX, e.targetTouches[0].clientY];
   return; // touchend has no position!
 };
 
-export const isRightButton = (e: MouseEvent): boolean =>
-  e.buttons === 2 || e.button === 2;
+export const isRightButton = (e: sg.MouchEvent): boolean => e.buttons === 2 || e.button === 2;
 
 export const createEl = (tagName: string, className?: string): HTMLElement => {
   const el = document.createElement(tagName);
   if (className) el.className = className;
   return el;
 };
+
+export const isMiniBoard = (el: HTMLElement): boolean => {
+  return Array.from(el.classList).includes('mini-board');
+};
+
+export function computeSquareCenter(
+  key: sg.Key,
+  asSente: boolean,
+  dims: sg.Dimensions,
+  bounds: ClientRect
+): sg.NumberPair {
+  const pos = key2pos(key);
+  if (asSente) {
+    pos[0] = dims.files - 1 - pos[0];
+    pos[1] = dims.ranks - 1 - pos[1];
+  }
+  return [
+    bounds.left + (bounds.width * pos[0]) / dims.files + bounds.width / (dims.files * 2),
+    bounds.top + (bounds.height * (dims.ranks - 1 - pos[1])) / dims.ranks + bounds.height / (dims.ranks * 2),
+  ];
+}

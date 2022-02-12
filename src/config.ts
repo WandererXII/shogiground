@@ -1,22 +1,22 @@
-import { State } from './state'
-import { setCheck, setSelected } from './board'
-import { read as fenRead } from './fen'
-import { DrawShape, DrawBrush } from './draw'
-import * as cg from './types'
+import { HeadlessState } from './state';
+import { setCheck, setSelected } from './board';
+import { getDimensions, readBoard as sfenRead, readHands } from './sfen';
+import { DrawShape, DrawBrushes } from './draw';
+import * as sg from './types';
 
 export interface Config {
-  fen?: cg.FEN; // chess position in Forsyth notation
-  orientation?: cg.Color; // board orientation. white | black
-  turnColor?: cg.Color; // turn to play. white | black
-  check?: cg.Color | boolean; // true for current color, false to unset
-  lastMove?: cg.Key[]; // squares part of the last move ["c3", "c4"]
-  selected?: cg.Key; // square currently selected "a1"
+  sfen?: sg.Sfen; // shogi position in Forsyth notation
+  orientation?: sg.Color; // board orientation. sente | gote
+  turnColor?: sg.Color; // turn to play. sente | gote
+  hands?: string; // pieces in hand in Forsyth notation
+  check?: sg.Color | boolean; // true for current color, false to unset
+  lastMove?: sg.Key[]; // squares part of the last move ["3c", "4c"]
+  selected?: sg.Key; // square currently selected "1a"
   coordinates?: boolean; // include coords attributes
-  autoCastle?: boolean; // immediately complete the castle by moving the rook after king move
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
-  disableContextMenu?: boolean; // because who needs a context menu on a chessboard
+  disableContextMenu?: boolean; // because who needs a context menu on a board
+  blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
   resizable?: boolean; // listens to shogiground.resize on document.body to clear bounds cache
-  addPieceZIndex?: boolean; // adds z-index values to pieces (for 3D)
   // pieceKey: boolean; // add a data-key attribute to piece elements
   highlight?: {
     lastMove?: boolean; // add last-move class to squares
@@ -28,29 +28,29 @@ export interface Config {
   };
   movable?: {
     free?: boolean; // all moves are valid - board editor
-    color?: cg.Color | 'both'; // color that can move. white | black | both | undefined
-    dests?: cg.Dests; // valid moves. {"a2" ["a3" "a4"] "b1" ["a3" "c3"]}
+    color?: sg.Color | 'both'; // color that can move. sente | gote | both | undefined
+    dests?: sg.Dests; // valid moves. {"2a" ["3a" "4a"] "1b" ["3a" "3c"]}
     showDests?: boolean; // whether to add the move-dest class on squares
     events?: {
-      after?: (orig: cg.Key, dest: cg.Key, metadata: cg.MoveMetadata) => void; // called after the move has been played
-      afterNewPiece?: (role: cg.Role, key: cg.Key, metadata: cg.MoveMetadata) => void; // called after a new piece is dropped on the board
+      after?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
+      afterNewPiece?: (role: sg.Role, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after a new piece is dropped on the board
     };
-    rookCastle?: boolean; // castle by moving the king to the rook
   };
   premovable?: {
     enabled?: boolean; // allow premoves for color that can not move
     showDests?: boolean; // whether to add the premove-dest class on squares
-    castle?: boolean; // whether to allow king castle premoves
-    dests?: cg.Key[]; // premove destinations for the current selection
+    dests?: sg.Key[]; // premove destinations for the current selection
     events?: {
-      set?: (orig: cg.Key, dest: cg.Key, metadata?: cg.SetPremoveMetadata) => void; // called after the premove has been set
-      unset?: () => void;  // called after the premove has been unset
+      set?: (orig: sg.Key, dest: sg.Key, metadata?: sg.SetPremoveMetadata) => void; // called after the premove has been set
+      unset?: () => void; // called after the premove has been unset
     };
   };
   predroppable?: {
     enabled?: boolean; // allow predrops for color that can not move
+    showDropDests?: boolean; // whether to add the premove-dest class on squares for drops
+    dropDests?: sg.Key[]; // premove destinations for the drop selection
     events?: {
-      set?: (role: cg.Role, key: cg.Key) => void; // called after the predrop has been set
+      set?: (role: sg.Role, key: sg.Key) => void; // called after the predrop has been set
       unset?: () => void; // called after the predrop has been unset
     };
   };
@@ -68,11 +68,17 @@ export interface Config {
   events?: {
     change?: () => void; // called after the situation changes on the board
     // called after a piece has been moved.
-    // capturedPiece is undefined or like {color: 'white'; 'role': 'bishop'}
-    move?: (orig: cg.Key, dest: cg.Key, capturedPiece?: cg.Piece) => void;
-    dropNewPiece?: (piece: cg.Piece, key: cg.Key) => void;
-    select?: (key: cg.Key) => void; // called when a square is selected
-    insert?: (elements: cg.Elements) => void; // when the board DOM has been (re)inserted
+    // capturedPiece is undefined or like {color: 'sente'; 'role': 'bishop'}
+    move?: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => void;
+    dropNewPiece?: (piece: sg.Piece, key: sg.Key) => void;
+    select?: (key: sg.Key) => void; // called when a square is selected
+    insert?: (elements: sg.Elements) => void; // when the board DOM has been (re)inserted
+  };
+  dropmode?: {
+    active?: boolean;
+    piece?: sg.Piece;
+    showDropDests?: boolean; // whether to add the move-dest class on squares for drops
+    dropDests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
   };
   drawable?: {
     enabled?: boolean; // can draw
@@ -80,32 +86,41 @@ export interface Config {
     eraseOnClick?: boolean;
     shapes?: DrawShape[];
     autoShapes?: DrawShape[];
-    brushes?: DrawBrush[];
+    brushes?: DrawBrushes;
     pieces?: {
       baseUrl?: string;
     };
     onChange?: (shapes: DrawShape[]) => void; // called after drawable shapes change
   };
-  notation?: cg.Notation;
+  notation?: sg.Notation;
+  dimensions?: sg.Dimensions;
 }
 
-export function configure(state: State, config: Config): void {
-
-  // don't merge destinations. Just override.
+export function configure(state: HeadlessState, config: Config): void {
+  // don't merge destinations and autoShapes. Just override.
   if (config.movable?.dests) state.movable.dests = undefined;
+  if (config.dropmode?.dropDests) state.dropmode.dropDests = undefined;
+  if (config.drawable?.autoShapes) state.drawable.autoShapes = [];
 
   merge(state, config);
 
-  // if a fen was provided, replace the pieces
-  if (config.fen) {
-    state.pieces = fenRead(config.fen);
+  // if a sfen was provided, replace the pieces
+  if (config.sfen) {
+    state.dimensions = config.dimensions || getDimensions(config.sfen);
+    const pieceToDrop = state.pieces.get('00');
+    state.pieces = sfenRead(config.sfen, state.dimensions);
+    if (pieceToDrop) state.pieces.set('00', pieceToDrop);
     state.drawable.shapes = [];
   }
 
+  if (config.hands !== undefined) {
+    state.hands = readHands(config.hands);
+  }
+
   // apply config values that could be undefined yet meaningful
-  if (config.hasOwnProperty('check')) setCheck(state, config.check || false);
-  if (config.hasOwnProperty('lastMove') && !config.lastMove) state.lastMove = undefined;
-  // in case of ZH drop last move, there's a single square.
+  if ('check' in config) setCheck(state, config.check || false);
+  if ('lastMove' in config && !config.lastMove) state.lastMove = undefined;
+  // in case of drop last move, there's a single square.
   // if the previous last move had two squares,
   // the merge algorithm will incorrectly keep the second square.
   else if (config.lastMove) state.lastMove = config.lastMove;
@@ -115,18 +130,6 @@ export function configure(state: State, config: Config): void {
 
   // no need for such short animations
   if (!state.animation.duration || state.animation.duration < 100) state.animation.enabled = false;
-
-  if (!state.movable.rookCastle && state.movable.dests) {
-    const rank = state.movable.color === 'white' ? '1' : '9',
-      kingStartPos = 'e' + rank as cg.Key,
-      dests = state.movable.dests.get(kingStartPos),
-      king = state.pieces.get(kingStartPos);
-    if (!dests || !king || king.role !== 'king') return;
-    state.movable.dests.set(kingStartPos, dests.filter(d =>
-      !((d === 'a' + rank) && dests.includes('c' + rank as cg.Key)) &&
-      !((d === 'h' + rank) && dests.includes('g' + rank as cg.Key))
-    ));
-  }
 }
 
 function merge(base: any, extend: any): void {

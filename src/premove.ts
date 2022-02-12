@@ -1,23 +1,18 @@
-import * as util from "./util";
-import * as cg from "./types";
+import * as util from './util';
+import * as sg from './types';
 
-// todo
 type Mobility = (x1: number, y1: number, x2: number, y2: number) => boolean;
 
 function diff(a: number, b: number): number {
   return Math.abs(a - b);
 }
 
-function pawn(color: cg.Color): Mobility {
-  return (x1, y1, x2, y2) =>
-    color === "white" ? x1 === x2 && y1 + 1 === y2 : x1 === x2 && y1 - 1 === y2;
+function pawn(color: sg.Color): Mobility {
+  return (x1, y1, x2, y2) => (color === 'sente' ? x1 === x2 && y1 - 1 === y2 : x1 === x2 && y1 + 1 === y2);
 }
 
-function knight(color: cg.Color): Mobility {
-  return (x1, y1, x2, y2) =>
-    diff(x1, x2) === 1 &&
-    diff(y1, y2) === 2 &&
-    (color === "white" ? y2 > y1 : y2 < y1);
+function knight(color: sg.Color): Mobility {
+  return (x1, y1, x2, y2) => diff(x1, x2) === 1 && diff(y1, y2) === 2 && (color === 'sente' ? y2 < y1 : y2 > y1);
 }
 
 const bishop: Mobility = (x1, y1, x2, y2) => {
@@ -32,24 +27,18 @@ const king: Mobility = (x1, y1, x2, y2) => {
   return diff(x1, x2) < 2 && diff(y1, y2) < 2;
 };
 
-function lance(color: cg.Color): Mobility {
-  return (x1, y1, x2, y2) =>
-    color === "white" ? x1 == x2 && y2 > y1 : x1 == x2 && y1 > y2;
+function lance(color: sg.Color): Mobility {
+  return (x1, y1, x2, y2) => (color === 'sente' ? x1 == x2 && y2 < y1 : x1 == x2 && y1 < y2);
 }
 
-function silver(color: cg.Color): Mobility {
+function silver(color: sg.Color): Mobility {
   return (x1, y1, x2, y2) =>
-    diff(x1, x2) < 2 &&
-    diff(y1, y2) < 2 &&
-    y1 != y2 &&
-    (color === "white" ? x1 != x2 || y2 > y1 : x1 != x2 || y2 < y1);
+    diff(x1, x2) < 2 && diff(y1, y2) < 2 && y1 != y2 && (color === 'sente' ? x1 != x2 || y2 < y1 : x1 != x2 || y2 > y1);
 }
 
-function gold(color: cg.Color): Mobility {
+function gold(color: sg.Color): Mobility {
   return (x1, y1, x2, y2) =>
-    diff(x1, x2) < 2 &&
-    diff(y1, y2) < 2 &&
-    (color === "white" ? y2 >= y1 || x1 == x2 : y2 <= y1 || x1 == x2);
+    diff(x1, x2) < 2 && diff(y1, y2) < 2 && (color === 'sente' ? y2 <= y1 || x1 == x2 : y2 >= y1 || x1 == x2);
 }
 
 const horse: Mobility = (x1, y1, x2, y2) => {
@@ -62,36 +51,65 @@ const dragon: Mobility = (x1, y1, x2, y2) => {
 
 const allPos = util.allKeys.map(util.key2pos);
 
-export function premove(pieces: cg.Pieces, key: cg.Key): cg.Key[] {
+export function premove(pieces: sg.Pieces, key: sg.Key, dims: sg.Dimensions): sg.Key[] {
   const piece = pieces.get(key);
   if (!piece) return [];
   const pos = util.key2pos(key),
     r = piece.role,
     mobility: Mobility =
-      r === "pawn"
+      r === 'pawn'
         ? pawn(piece.color)
-        : r === "knight"
+        : r === 'knight'
         ? knight(piece.color)
-        : r === "bishop"
+        : r === 'bishop'
         ? bishop
-        : r === "rook"
+        : r === 'rook'
         ? rook
-        : r === "king"
+        : r === 'king'
         ? king
-        : r === "silver"
+        : r === 'silver'
         ? silver(piece.color)
-        : r === "lance"
+        : r === 'lance'
         ? lance(piece.color)
-        : r === "horse"
+        : r === 'horse'
         ? horse
-        : r === "dragon"
+        : r === 'dragon'
         ? dragon
         : gold(piece.color);
   return allPos
     .filter(
-      (pos2) =>
+      pos2 =>
         (pos[0] !== pos2[0] || pos[1] !== pos2[1]) &&
-        mobility(pos[0], pos[1], pos2[0], pos2[1])
+        mobility(pos[0], pos[1], pos2[0], pos2[1]) &&
+        pos2[0] < dims.files &&
+        pos2[1] < dims.ranks
     )
     .map(util.pos2key);
+}
+
+function lastRow(dims: sg.Dimensions, pos: sg.Pos, color: sg.Color): boolean {
+  return color === 'sente' ? pos[1] === dims.ranks - 1 : pos[1] === 1;
+}
+
+function lastTwoRows(dims: sg.Dimensions, pos: sg.Pos, color: sg.Color): boolean {
+  return lastRow(dims, pos, color) || (color === 'sente' ? pos[1] === dims.ranks - 2 : pos[1] === 2);
+}
+
+export function predrop(pieces: sg.Pieces, dropPiece: sg.Piece, dims: sg.Dimensions): sg.Key[] {
+  const color = dropPiece.color;
+  const role = dropPiece.role;
+  return util.allKeys.filter(key => {
+    const p = pieces.get(key);
+    const pos = util.key2pos(key);
+    return (
+      (!p || p.color !== color) &&
+      pos[0] < dims.files &&
+      pos[1] < dims.ranks &&
+      (role === 'pawn' || role === 'lance'
+        ? !lastRow(dims, pos, color)
+        : role === 'knight'
+        ? !lastTwoRows(dims, pos, color)
+        : true)
+    );
+  });
 }

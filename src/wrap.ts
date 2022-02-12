@@ -1,108 +1,106 @@
-import { State } from "./state";
-import { setVisible, createEl } from "./util";
-//import { colors, files, ranks } from "./types";
-import { colors, Notation } from "./types";
-import { createElement as createSVG } from "./svg";
-import { Elements } from "./types";
+import { HeadlessState } from './state';
+import { setVisible, createEl, isMiniBoard } from './util';
+import { colors, Notation, Elements } from './types';
+import { createElement as createSVG, setAttributes } from './svg';
 
-export function renderWrap(
-  element: HTMLElement,
-  s: State,
-  relative: boolean
-): Elements {
-  // .cg-wrap (element passed to Shogiground)
-  //   cg-helper (12.5%)
-  //     cg-container (800%)
-  //       cg-board
-  //       svg
+export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boolean): Elements {
+  // .sg-wrap (element passed to Shogiground)
+  //     sg-container
+  //       sg-board
+  //       svg.sg-shapes
+  //         defs
+  //         g
+  //       svg.sg-custom-svgs
+  //         g
   //       coords.ranks
   //       coords.files
   //       piece.ghost
 
-  element.innerHTML = "";
+  element.innerHTML = '';
 
-  // ensure the cg-wrap class is set
+  // ensure the sg-wrap class is set
   // so bounds calculation can use the CSS width/height values
   // add that class yourself to the element before calling shogiground
   // for a slight performance improvement! (avoids recomputing style)
-  element.classList.add("cg-wrap");
+  element.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
 
-  for (const c of colors)
-    element.classList.toggle("orientation-" + c, s.orientation === c);
-  element.classList.toggle("manipulable", !s.viewOnly);
+  for (const c of colors) element.classList.toggle('orientation-' + c, s.orientation === c);
+  element.classList.toggle('manipulable', !s.viewOnly);
 
-  const helper = createEl("cg-helper");
-  element.appendChild(helper);
-  const container = createEl("cg-container");
-  helper.appendChild(container);
+  const container = createEl('sg-container');
+  element.appendChild(container);
 
-  const board = createEl("cg-board");
+  const board = createEl('sg-board');
   container.appendChild(board);
 
+  let hands;
+
+  if (isMiniBoard(element)) {
+    if (s.hands !== undefined) {
+      hands = [createEl('sg-hand'), createEl('sg-hand')];
+      container.insertBefore(hands[s.orientation === 'sente' ? 1 : 0], board);
+      container.insertBefore(hands[s.orientation === 'sente' ? 0 : 1], board.nextSibling);
+    } else {
+      element.classList.add('no-hands');
+    }
+  } else {
+    delete s.hands;
+  }
+
   let svg: SVGElement | undefined;
+  let customSvg: SVGElement | undefined;
   if (s.drawable.visible && !relative) {
-    svg = createSVG("svg");
-    svg.appendChild(createSVG("defs"));
+    svg = setAttributes(createSVG('svg'), { class: 'sg-shapes' });
+    svg.appendChild(createSVG('defs'));
+    svg.appendChild(createSVG('g'));
+    customSvg = setAttributes(createSVG('svg'), { class: 'sg-custom-svgs' });
+    customSvg.appendChild(createSVG('g'));
     container.appendChild(svg);
+    container.appendChild(customSvg);
   }
 
   if (s.coordinates) {
-    const orientClass = s.orientation === "black" ? " black" : "";
-    if(s.notation === Notation.WESTERN || s.notation === Notation.KAWASAKI){
+    const orientClass = s.orientation === 'gote' ? ' gote' : '';
+    if (s.notation === Notation.WESTERN || s.notation === Notation.KAWASAKI) {
       container.appendChild(
-        renderCoords(
-          ["9", "8", "7", "6", "5", "4", "3", "2", "1"],
-          "ranks" + orientClass
-        )
+        renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'ranks' + orientClass, s.dimensions.ranks)
       );
-    }
-    else if(s.notation === Notation.WESTERN2){
+    } else if (s.notation === Notation.WESTERN2) {
       container.appendChild(
-        renderCoords(
-          ["i", "h", "g", "f", "e", "d", "c", "b", "a"],
-          "ranks" + orientClass
-        )
+        renderCoords(['i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'], 'ranks' + orientClass, s.dimensions.ranks)
       );
-    }
-    else{
+    } else {
       container.appendChild(
-        renderCoords(
-          ["九", "八", "七", "六", "五", "四", "三", "二", "一"],
-          "ranks" + orientClass
-        )
+        renderCoords(['九', '八', '七', '六', '五', '四', '三', '二', '一'], 'ranks' + orientClass, s.dimensions.ranks)
       );
     }
     container.appendChild(
-      renderCoords(
-        ["9", "8", "7", "6", "5", "4", "3", "2", "1"],
-        "files" + orientClass
-      )
+      renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, s.dimensions.files)
     );
   }
 
   let ghost: HTMLElement | undefined;
   if (s.draggable.showGhost && !relative) {
-    ghost = createEl("piece", "ghost");
+    ghost = createEl('piece', 'ghost');
     setVisible(ghost, false);
     container.appendChild(ghost);
   }
 
   return {
+    hands,
     board,
     container,
     ghost,
     svg,
+    customSvg,
   };
 }
 
-function renderCoords(
-  elems: readonly string[],
-  className: string
-): HTMLElement {
-  const el = createEl("coords", className);
+function renderCoords(elems: readonly string[], className: string, trim: number): HTMLElement {
+  const el = createEl('coords', className);
   let f: HTMLElement;
-  for (const elem of elems) {
-    f = createEl("coord");
+  for (const elem of elems.slice(-trim)) {
+    f = createEl('coord');
     f.textContent = elem;
     el.appendChild(f);
   }
