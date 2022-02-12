@@ -1,10 +1,8 @@
-/*.js
-/*.d.ts
-/*.js.map
-
+.vscode
 node_modules
 npm-debug.log
 package-lock.json
-yarn.lock
 
-.vscode
+/*.js
+/*.d.ts
+/*.js.map
