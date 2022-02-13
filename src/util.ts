@@ -1,3 +1,4 @@
+import { HeadlessState } from './state';
 import * as sg from './types';
 
 export const invFiles: readonly sg.File[] = [...sg.files].reverse();
@@ -104,10 +105,6 @@ export const createEl = (tagName: string, className?: string): HTMLElement => {
   return el;
 };
 
-export const isMiniBoard = (el: HTMLElement): boolean => {
-  return Array.from(el.classList).includes('mini-board');
-};
-
 export function computeSquareCenter(
   key: sg.Key,
   asSente: boolean,
@@ -123,4 +120,10 @@ export function computeSquareCenter(
     bounds.left + (bounds.width * pos[0]) / dims.files + bounds.width / (dims.files * 2),
     bounds.top + (bounds.height * (dims.ranks - 1 - pos[1])) / dims.ranks + bounds.height / (dims.ranks * 2),
   ];
+}
+
+// todo with variants
+export function handRoles(s: HeadlessState): sg.Role[] {
+  if (s.dimensions.files === 5) return ['rook', 'bishop', 'gold', 'silver', 'pawn'];
+  else return ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'];
 }

@@ -1,5 +1,14 @@
 import { State } from './state';
-import { key2pos, createEl, posToTranslateRel, posToTranslateAbs, translateRel, translateAbs } from './util';
+import {
+  key2pos,
+  createEl,
+  posToTranslateRel,
+  posToTranslateAbs,
+  translateRel,
+  translateAbs,
+  opposite,
+  handRoles,
+} from './util';
 import { sentePov } from './board';
 import { AnimCurrent, AnimVectors, AnimVector, AnimFadings } from './anim';
 import { DragCurrent } from './drag';
@@ -16,7 +25,8 @@ export function render(s: State): void {
     posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()),
     translate = s.dom.relative ? translateRel : translateAbs,
     boardEl: HTMLElement = s.dom.elements.board,
-    handsEl: HTMLElement[] | undefined = s.dom.elements.hands,
+    handTopEl: HTMLElement | undefined = s.dom.elements.handTop,
+    handBotEl: HTMLElement | undefined = s.dom.elements.handBot,
     pieces: sg.Pieces = s.pieces,
     curAnim: AnimCurrent | undefined = s.animation.current,
     anims: AnimVectors = curAnim ? curAnim.plan.anims : new Map(),
@@ -167,16 +177,11 @@ export function render(s: State): void {
     }
   }
 
-  if (handsEl !== undefined) {
-    for (const i of [0, 1]) {
-      // add hands if nonexistent yet
-      const color = i === 0 ? 'sente' : 'gote';
-      const hands = handsEl[i].firstElementChild || makeHand(s, handsEl[i], color);
-      const handPieces = hands.getElementsByTagName('piece');
-      for (let j = 0; j < handPieces.length; j++) {
-        const role = handPieces[j].getAttribute('data-role') as sg.Role;
-        handPieces[j].setAttribute('data-nb', (s.hands?.get({ color, role }) || 0).toString());
-      }
+  if (s.renderHands && handTopEl && handBotEl) {
+    const topColor = opposite(s.orientation);
+    for (const r of handRoles(s)) {
+      handTopEl.appendChild(makeHandPiece({ role: r, color: topColor }, s.hands));
+      handBotEl.appendChild(makeHandPiece({ role: r, color: s.orientation }, s.hands));
     }
   }
 
@@ -261,23 +266,14 @@ function addSquare(squares: SquareClasses, key: sg.Key, klass: string): void {
   else squares.set(key, klass);
 }
 
-export function makeHand(s: State, element: HTMLElement, color: string): HTMLElement {
-  const position = (s.orientation === 'sente') !== (color == 'sente') ? 'top' : 'bottom',
-    hand = createEl('div', 'hand hand-' + position);
-  element.appendChild(hand);
-  for (const role of []) {
-    // todo
-    const c1 = createEl('div', 'hand-c1');
-    hand.appendChild(c1);
-    const c2 = createEl('div', 'hand-c2');
-    c1.appendChild(c2);
-    const piece = createEl('piece', role + ' ' + color);
-    piece.setAttribute('data-role', role);
-    piece.setAttribute('data-color', color);
-    piece.setAttribute('data-nb', '0');
-    c2.appendChild(piece);
-  }
-  return hand;
+function makeHandPiece(piece: sg.Piece, hands: sg.Hands): HTMLElement {
+  const pieceEl = createEl('piece', pieceNameOf(piece));
+  const num = hands.get(piece.color)?.get(piece.role) || 0;
+  pieceEl.setAttribute('data-role', piece.role);
+  pieceEl.setAttribute('data-color', piece.color);
+  pieceEl.setAttribute('data-nb', num.toString());
+
+  return pieceEl;
 }
 
 function appendValue<K, V>(map: Map<K, V[]>, key: K, value: V): void {

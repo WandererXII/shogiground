@@ -17,7 +17,8 @@ export type Role =
 export type Key = '00' | `${File}${Rank}`;
 export type File = typeof files[number];
 export type Rank = typeof ranks[number];
-export type Sfen = string;
+export type BoardSfen = string;
+export type HandsSfen = string;
 export type Pos = [number, number];
 export interface Piece {
   role: Role;
@@ -26,7 +27,8 @@ export interface Piece {
 }
 export type Pieces = Map<Key, Piece>;
 
-export type Hands = Map<Piece, number>;
+export type Hands = Map<Color, Hand>;
+export type Hand = Map<Role, number>;
 
 export type PiecesDiff = Map<Key, Piece | undefined>;
 
@@ -47,8 +49,9 @@ export type Dests = Map<Key, Key[]>;
 export type DropDests = Map<Role, Key[]>;
 
 export interface Elements {
-  hands?: HTMLElement[];
   board: HTMLElement;
+  handTop?: HTMLElement;
+  handBot?: HTMLElement;
   container: HTMLElement;
   ghost?: HTMLElement;
   svg?: SVGElement;

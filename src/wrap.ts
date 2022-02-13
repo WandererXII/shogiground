@@ -1,12 +1,14 @@
 import { HeadlessState } from './state';
-import { setVisible, createEl, isMiniBoard } from './util';
+import { setVisible, createEl } from './util';
 import { colors, Notation, Elements } from './types';
 import { createElement as createSVG, setAttributes } from './svg';
 
 export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boolean): Elements {
   // .sg-wrap (element passed to Shogiground)
   //     sg-container
+  //       sg-hand
   //       sg-board
+  //       sg-hand
   //       svg.sg-shapes
   //         defs
   //         g
@@ -31,20 +33,16 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   element.appendChild(container);
 
   const board = createEl('sg-board');
-  container.appendChild(board);
 
-  let hands;
-
-  if (isMiniBoard(element)) {
-    if (s.hands !== undefined) {
-      hands = [createEl('sg-hand'), createEl('sg-hand')];
-      container.insertBefore(hands[s.orientation === 'sente' ? 1 : 0], board);
-      container.insertBefore(hands[s.orientation === 'sente' ? 0 : 1], board.nextSibling);
-    } else {
-      element.classList.add('no-hands');
-    }
+  let handTop, handBot;
+  if (s.renderHands) {
+    handTop = createEl('sg-hand', 'hand-top');
+    handBot = createEl('sg-hand', 'hand-bot');
+    container.appendChild(handTop);
+    container.appendChild(board);
+    container.appendChild(handBot);
   } else {
-    delete s.hands;
+    container.appendChild(board);
   }
 
   let svg: SVGElement | undefined;
@@ -87,8 +85,9 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   }
 
   return {
-    hands,
     board,
+    handTop,
+    handBot,
     container,
     ghost,
     svg,

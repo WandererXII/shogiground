@@ -1,7 +1,7 @@
 import { pos2key, invFiles } from './util';
 import * as sg from './types';
 
-export const initial: sg.Sfen = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL';
+export const initial: sg.BoardSfen = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL';
 
 export function stringToRole(ch: string): sg.Role | undefined {
   switch (ch) {
@@ -54,14 +54,13 @@ const letters = {
   dragon: '+r',
 };
 
-export function getDimensions(sfen: sg.Sfen): sg.Dimensions {
+export function getDimensions(sfen: sg.BoardSfen): sg.Dimensions {
   // todo only if we ever need non square boards...
   const ranks = sfen.split('/').length;
   return { files: ranks, ranks: ranks };
 }
 
-export function readBoard(sfen: sg.Sfen, dims: sg.Dimensions): sg.Pieces {
-  if (sfen === 'start') sfen = initial;
+export function readBoard(sfen: sg.BoardSfen, dims: sg.Dimensions): sg.Pieces {
   const pieces: sg.Pieces = new Map();
   let x = dims.files - 1,
     y = 0;
@@ -96,29 +95,7 @@ export function readBoard(sfen: sg.Sfen, dims: sg.Dimensions): sg.Pieces {
   return pieces;
 }
 
-export function readHands(str: string): sg.Hands {
-  const hands: sg.Hands = new Map();
-
-  let num = 0;
-  for (let i = 0; i < str.length; i++) {
-    const nb = str[i].charCodeAt(0);
-    if (nb < 58 && nb > 47) num * 10 + nb - 48;
-    else {
-      const roleStr = str[i] === '+' && str.length > i + 1 ? '+' + str[++i].toLowerCase() : str[i].toLowerCase();
-      const role = stringToRole(roleStr);
-      if (role) {
-        const color = str[i] === role || '+' + str[i] === role ? 'gote' : 'sente';
-        const piece: sg.Piece = { role: role, color: color };
-        hands.set(piece, (hands.get(piece) || 0) + 1);
-      }
-      num = 0;
-    }
-  }
-
-  return hands;
-}
-
-export function writeBoard(pieces: sg.Pieces): sg.Sfen {
+export function writeBoard(pieces: sg.Pieces): sg.BoardSfen {
   return sg.ranks
     .map(y =>
       invFiles
@@ -134,3 +111,36 @@ export function writeBoard(pieces: sg.Pieces): sg.Sfen {
     .join('/')
     .replace(/1{2,}/g, s => s.length.toString());
 }
+
+export function readHands(str: sg.HandsSfen): sg.Hands {
+  const sente = new Map();
+  const gote = new Map();
+
+  let tmpNum = 0;
+  let num = 1;
+  for (let i = 0; i < str.length; i++) {
+    const nb = str[i].charCodeAt(0);
+    if (nb < 58 && nb > 47) {
+      tmpNum = tmpNum * 10 + nb - 48;
+      num = tmpNum;
+    } else {
+      const roleStr = str[i] === '+' && str.length > i + 1 ? '+' + str[++i].toLowerCase() : str[i].toLowerCase();
+      const role = stringToRole(roleStr);
+      if (role) {
+        const color = str[i] === role || '+' + str[i] === role ? 'gote' : 'sente';
+        if (color === 'sente') sente.set(role, (sente.get(role) || 0) + num);
+        else gote.set(role, (gote.get(role) || 0) + num);
+      }
+      tmpNum = 0;
+      num = 1;
+    }
+  }
+
+  return new Map([
+    ['sente', sente],
+    ['gote', gote],
+  ]);
+}
+
+// todo
+// export function writeHands()

@@ -15,8 +15,8 @@ export interface Api {
   // read shogiground state; write at your own risks.
   state: State;
 
-  // get the position as a Sfen string (only contains pieces, no flags)
-  getSfen(): sg.Sfen;
+  // get the position as a Sfen string of board
+  getSfen(): sg.BoardSfen;
 
   // change the view angle
   toggleOrientation(): void;

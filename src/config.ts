@@ -5,19 +5,19 @@ import { DrawShape, DrawBrushes } from './draw';
 import * as sg from './types';
 
 export interface Config {
-  sfen?: sg.Sfen; // shogi position in Forsyth notation
+  sfen?: sg.BoardSfen; // shogi position in Forsyth notation
   orientation?: sg.Color; // board orientation. sente | gote
   turnColor?: sg.Color; // turn to play. sente | gote
-  hands?: string; // pieces in hand in Forsyth notation
+  hands?: sg.HandsSfen; // pieces in hand in Forsyth notation
   check?: sg.Color | boolean; // true for current color, false to unset
   lastMove?: sg.Key[]; // squares part of the last move ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
   coordinates?: boolean; // include coords attributes
+  renderHands?: boolean;
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu?: boolean; // because who needs a context menu on a board
   blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
   resizable?: boolean; // listens to shogiground.resize on document.body to clear bounds cache
-  // pieceKey: boolean; // add a data-key attribute to piece elements
   highlight?: {
     lastMove?: boolean; // add last-move class to squares
     check?: boolean; // add check class to squares
@@ -113,7 +113,7 @@ export function configure(state: HeadlessState, config: Config): void {
     state.drawable.shapes = [];
   }
 
-  if (config.hands !== undefined) {
+  if (config.hands) {
     state.hands = readHands(config.hands);
   }
 

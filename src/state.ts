@@ -9,16 +9,16 @@ export interface HeadlessState {
   pieces: sg.Pieces;
   orientation: sg.Color; // board orientation. sente | gote
   turnColor: sg.Color; // turn to play. sente | gote
-  hands?: sg.Hands;
+  hands: sg.Hands;
   check?: sg.Key; // square currently in check "5a"
   lastMove?: sg.Key[]; // squares part of the last move ["2b"; "8h"]
   selected?: sg.Key; // square currently selected "1a"
   coordinates: boolean; // include coords attributes
+  renderHands: boolean;
   viewOnly: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu: boolean; // because who needs a context menu on a shogi board
   resizable: boolean; // listens to shogiground.resize on document.body to clear bounds cache
   blockTouchScroll: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
-  pieceKey: boolean; // add a data-key attribute to piece elements
   highlight: {
     lastMove: boolean; // add last-move class to squares
     check: boolean; // add check class to squares
@@ -110,12 +110,13 @@ export function defaults(): HeadlessState {
     pieces: sfen.readBoard(sfen.initial, { files: 9, ranks: 9 }),
     orientation: 'sente',
     turnColor: 'sente',
+    hands: new Map(),
     coordinates: true,
     viewOnly: false,
+    renderHands: false,
     disableContextMenu: false,
     resizable: true,
     blockTouchScroll: false,
-    pieceKey: false,
     highlight: {
       lastMove: true,
       check: true,
