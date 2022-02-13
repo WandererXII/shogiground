@@ -1,0 +1,13 @@
+.main {
+  display: flex;
+}
+
+nav {
+  min-width: 150px;
+}
+
+.main-board {
+  position: relative;
+  width: 500px;
+  height: 500px;
+}

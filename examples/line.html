@@ -1,0 +1,20 @@
+<div style="width: 500px; height: 500px">
+  <svg viewBox="0 0 810 810">
+    <path
+      d="M0 0h810M0 90h810M0 180h810M0 270h810M0 360h810M0 450h810M0 540h810M0 630h810M0 720h810M0 810h810M0 0v810M90 0v810M180 0v810M270 0v810M360 0v810M450 0v810M540 0v810M630 0v810M720 0v810M810 0v810"
+    />
+    <circle cx="270" cy="270" r="8" />
+    <circle cx="540" cy="270" r="8" />
+    <circle cx="270" cy="540" r="8" />
+    <circle cx="540" cy="540" r="8" />
+  </svg>
+</div>
+function gridSvg(variant: String): string { switch (variant) { default: return `<svg viewBox="0 0 810 810">
+  <path
+    d="M0 0h810M0 90h810M0 180h810M0 270h810M0 360h810M0 450h810M0 540h810M0 630h810M0 720h810M0 810h810M0 0v810M90 0v810M180 0v810M270 0v810M360 0v810M450 0v810M540 0v810M630 0v810M720 0v810M810 0v810"
+  />
+  <circle cx="270" cy="270" r="8" />
+  <circle cx="540" cy="270" r="8" />
+  <circle cx="270" cy="540" r="8" />
+  <circle cx="540" cy="540" r="8" /></svg
+>`; } }
