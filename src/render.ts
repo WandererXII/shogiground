@@ -8,6 +8,7 @@ import {
   translateAbs,
   opposite,
   handRoles,
+  dimensions,
 } from './util';
 import { sentePov } from './board';
 import { AnimCurrent, AnimVectors, AnimVector, AnimFadings } from './anim';
@@ -22,7 +23,9 @@ type SquareClasses = Map<sg.Key, string>;
 // in case of bugs, blame @veloce
 export function render(s: State): void {
   const asSente: boolean = sentePov(s),
-    posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()),
+    posToTranslate = s.dom.relative
+      ? posToTranslateRel(dimensions(s.variant))
+      : posToTranslateAbs(dimensions(s.variant), s.dom.bounds()),
     translate = s.dom.relative ? translateRel : translateAbs,
     boardEl: HTMLElement = s.dom.elements.board,
     handTopEl: HTMLElement | undefined = s.dom.elements.handTop,
@@ -179,7 +182,7 @@ export function render(s: State): void {
 
   if (s.renderHands && handTopEl && handBotEl) {
     const topColor = opposite(s.orientation);
-    for (const r of handRoles(s)) {
+    for (const r of handRoles(s.variant)) {
       handTopEl.appendChild(makeHandPiece({ role: r, color: topColor }, s.hands));
       handBotEl.appendChild(makeHandPiece({ role: r, color: s.orientation }, s.hands));
     }
@@ -193,7 +196,7 @@ export function render(s: State): void {
 export function updateBounds(s: State): void {
   if (s.dom.relative) return;
   const asSente: boolean = sentePov(s),
-    posToTranslate = posToTranslateAbs(s.dimensions, s.dom.bounds());
+    posToTranslate = posToTranslateAbs(dimensions(s.variant), s.dom.bounds());
   let el = s.dom.elements.board.firstChild as sg.PieceNode | sg.SquareNode | undefined;
   while (el) {
     if (isPieceNode(el) && !el.sgAnimating) translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente));

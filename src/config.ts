@@ -1,10 +1,11 @@
 import { HeadlessState } from './state';
 import { setCheck, setSelected } from './board';
-import { getDimensions, readBoard as sfenRead, readHands } from './sfen';
+import { readBoard as sfenRead, readHands } from './sfen';
 import { DrawShape, DrawBrushes } from './draw';
 import * as sg from './types';
 
 export interface Config {
+  variant?: sg.Variant; // rules used for roles in hand, premoves or board dimensions
   sfen?: sg.BoardSfen; // shogi position in Forsyth notation
   orientation?: sg.Color; // board orientation. sente | gote
   turnColor?: sg.Color; // turn to play. sente | gote
@@ -94,7 +95,6 @@ export interface Config {
     onChange?: (shapes: DrawShape[]) => void; // called after drawable shapes change
   };
   notation?: sg.Notation;
-  dimensions?: sg.Dimensions;
 }
 
 export function configure(state: HeadlessState, config: Config): void {
@@ -107,9 +107,8 @@ export function configure(state: HeadlessState, config: Config): void {
 
   // if a sfen was provided, replace the pieces
   if (config.sfen) {
-    state.dimensions = config.dimensions || getDimensions(config.sfen);
     const pieceToDrop = state.pieces.get('00');
-    state.pieces = sfenRead(config.sfen, state.dimensions);
+    state.pieces = sfenRead(config.sfen, state.variant);
     if (pieceToDrop) state.pieces.set('00', pieceToDrop);
     state.drawable.shapes = [];
   }

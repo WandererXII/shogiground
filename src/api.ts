@@ -5,6 +5,7 @@ import { Config, configure } from './config';
 import { anim, render } from './anim';
 import { cancel as dragCancel, dragNewPiece } from './drag';
 import { DrawShape } from './draw';
+import { dimensions } from './util';
 import * as sg from './types';
 
 export interface Api {
@@ -159,7 +160,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
     },
 
     getKeyAtDomPos(pos): sg.Key | undefined {
-      return board.getKeyAtDomPos(pos, board.sentePov(state), state.dimensions, state.dom.bounds());
+      return board.getKeyAtDomPos(pos, board.sentePov(state), dimensions(state.variant), state.dom.bounds());
     },
 
     redrawAll,

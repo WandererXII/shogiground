@@ -2,7 +2,7 @@ import { State } from './state';
 import * as drag from './drag';
 import * as draw from './draw';
 import { cancelDropMode, drop } from './drop';
-import { eventPosition, isRightButton } from './util';
+import { dimensions, eventPosition, isRightButton } from './util';
 import * as sg from './types';
 import { getKeyAtDomPos, sentePov } from './board';
 
@@ -92,7 +92,7 @@ function dragOrDraw(s: State, withDrag: StateMouchBind, withDraw: StateMouchBind
 
 function squareOccupied(s: State, e: sg.MouchEvent): boolean {
   const position = eventPosition(e);
-  const dest = position && getKeyAtDomPos(position, sentePov(s), s.dimensions, s.dom.bounds());
+  const dest = position && getKeyAtDomPos(position, sentePov(s), dimensions(s.variant), s.dom.bounds());
   if (dest && s.pieces.has(dest)) return true;
   return false;
 }

@@ -1,5 +1,5 @@
 import { State } from './state';
-import { key2pos, createEl } from './util';
+import { key2pos, createEl, dimensions } from './util';
 import { Drawable, DrawShape, DrawShapePiece, DrawBrush, DrawBrushes, DrawModifiers } from './draw';
 import * as sg from './types';
 
@@ -183,32 +183,28 @@ function renderShape(
   arrowDests: ArrowDests,
   bounds: ClientRect
 ): SVGElement {
+  const dims = dimensions(state.variant);
   let el: SVGElement;
   if (shape.customSvg) {
-    const orig = orient(key2pos(shape.orig), state.orientation, state.dimensions);
-    el = renderCustomSvg(shape.customSvg, orig, state.dimensions, bounds);
+    const orig = orient(key2pos(shape.orig), state.orientation, dims);
+    el = renderCustomSvg(shape.customSvg, orig, dims, bounds);
   } else if (shape.piece && !shape.dest)
-    el = renderPiece(
-      orient(key2pos(shape.orig), state.orientation, state.dimensions),
-      shape.piece,
-      state.dimensions,
-      bounds
-    );
+    el = renderPiece(orient(key2pos(shape.orig), state.orientation, dims), shape.piece, dims, bounds);
   else {
-    const orig = orient(key2pos(shape.orig), state.orientation, state.dimensions);
+    const orig = orient(key2pos(shape.orig), state.orientation, dims);
     if (shape.dest) {
       let brush: DrawBrush = brushes[shape.brush];
       if (shape.modifiers) brush = makeCustomBrush(brush, shape.modifiers);
       el = renderArrow(
         brush,
         orig,
-        orient(key2pos(shape.dest), state.orientation, state.dimensions),
+        orient(key2pos(shape.dest), state.orientation, dims),
         current,
         (arrowDests.get(shape.dest) || 0) > 1,
-        state.dimensions,
+        dims,
         bounds
       );
-    } else el = renderCircle(brushes[shape.brush], orig, current, state.dimensions, bounds);
+    } else el = renderCircle(brushes[shape.brush], orig, current, dims, bounds);
   }
   el.setAttribute('sgHash', hash);
   return el;

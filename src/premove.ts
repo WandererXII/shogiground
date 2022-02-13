@@ -28,17 +28,20 @@ const king: Mobility = (x1, y1, x2, y2) => {
 };
 
 function lance(color: sg.Color): Mobility {
-  return (x1, y1, x2, y2) => (color === 'sente' ? x1 == x2 && y2 < y1 : x1 == x2 && y1 < y2);
+  return (x1, y1, x2, y2) => (color === 'sente' ? x1 === x2 && y2 < y1 : x1 === x2 && y1 < y2);
 }
 
 function silver(color: sg.Color): Mobility {
   return (x1, y1, x2, y2) =>
-    diff(x1, x2) < 2 && diff(y1, y2) < 2 && y1 != y2 && (color === 'sente' ? x1 != x2 || y2 < y1 : x1 != x2 || y2 > y1);
+    diff(x1, x2) < 2 &&
+    diff(y1, y2) < 2 &&
+    y1 !== y2 &&
+    (color === 'sente' ? x1 !== x2 || y2 < y1 : x1 !== x2 || y2 > y1);
 }
 
 function gold(color: sg.Color): Mobility {
   return (x1, y1, x2, y2) =>
-    diff(x1, x2) < 2 && diff(y1, y2) < 2 && (color === 'sente' ? y2 <= y1 || x1 == x2 : y2 >= y1 || x1 == x2);
+    diff(x1, x2) < 2 && diff(y1, y2) < 2 && (color === 'sente' ? y2 <= y1 || x1 === x2 : y2 >= y1 || x1 === x2);
 }
 
 const horse: Mobility = (x1, y1, x2, y2) => {

@@ -1,4 +1,4 @@
-import { pos2key, invFiles } from './util';
+import { pos2key, invFiles, dimensions } from './util';
 import * as sg from './types';
 
 export const initial: sg.BoardSfen = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL';
@@ -54,14 +54,9 @@ const letters = {
   dragon: '+r',
 };
 
-export function getDimensions(sfen: sg.BoardSfen): sg.Dimensions {
-  // todo only if we ever need non square boards...
-  const ranks = sfen.split('/').length;
-  return { files: ranks, ranks: ranks };
-}
-
-export function readBoard(sfen: sg.BoardSfen, dims: sg.Dimensions): sg.Pieces {
+export function readBoard(sfen: sg.BoardSfen, variant: sg.Variant): sg.Pieces {
   const pieces: sg.Pieces = new Map();
+  const dims = dimensions(variant);
   let x = dims.files - 1,
     y = 0;
   for (let i = 0; i < sfen.length; i++) {
@@ -74,7 +69,7 @@ export function readBoard(sfen: sg.BoardSfen, dims: sg.Dimensions): sg.Pieces {
         if (y > dims.ranks - 1) return pieces;
         x = dims.files - 1;
         break;
-      default:
+      default: {
         const nb = sfen[i].charCodeAt(0);
         if (nb < 58 && nb > 47) x -= nb - 48;
         else {
@@ -90,6 +85,7 @@ export function readBoard(sfen: sg.BoardSfen, dims: sg.Dimensions): sg.Pieces {
           }
           --x;
         }
+      }
     }
   }
   return pieces;

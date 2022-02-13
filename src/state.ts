@@ -6,6 +6,7 @@ import { timer } from './util';
 import * as sg from './types';
 
 export interface HeadlessState {
+  variant: sg.Variant;
   pieces: sg.Pieces;
   orientation: sg.Color; // board orientation. sente | gote
   turnColor: sg.Color; // turn to play. sente | gote
@@ -100,7 +101,6 @@ export interface HeadlessState {
   drawable: Drawable;
   hold: sg.Timer;
   notation: sg.Notation;
-  dimensions: sg.Dimensions;
 }
 export interface State extends HeadlessState {
   dom: sg.Dom;
@@ -108,7 +108,8 @@ export interface State extends HeadlessState {
 
 export function defaults(): HeadlessState {
   return {
-    pieces: sfen.readBoard(sfen.initial, { files: 9, ranks: 9 }),
+    variant: 'shogi',
+    pieces: sfen.readBoard(sfen.initial, 'shogi'),
     orientation: 'sente',
     turnColor: 'sente',
     hands: new Map(),
@@ -188,6 +189,5 @@ export function defaults(): HeadlessState {
     },
     hold: timer(),
     notation: sg.Notation.WESTERN,
-    dimensions: { files: 9, ranks: 9 },
   };
 }

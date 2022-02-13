@@ -1,4 +1,3 @@
-import { HeadlessState } from './state';
 import * as sg from './types';
 
 export const invFiles: readonly sg.File[] = [...sg.files].reverse();
@@ -76,11 +75,11 @@ export const posToTranslateRel =
     posToTranslateBase(pos, dims, asSente, 50, 50);
 
 // we don't scale squares
-export const translateAbs = (el: HTMLElement, pos: sg.NumberPair, scale: boolean = true): void => {
+export const translateAbs = (el: HTMLElement, pos: sg.NumberPair, scale = true): void => {
   el.style.transform = `translate(${pos[0]}px,${pos[1]}px) ${scale ? 'scale(0.5)' : ''}`;
 };
 
-export const translateRel = (el: HTMLElement, percents: sg.NumberPair, scale: boolean = true): void => {
+export const translateRel = (el: HTMLElement, percents: sg.NumberPair, scale = true): void => {
   const scaleRatio = scale ? 1 : 2;
   el.style.transform = `translate(${scaleRatio * percents[0]}%,${scaleRatio * percents[1]}%) ${
     scale ? 'scale(0.5)' : ''
@@ -122,8 +121,20 @@ export function computeSquareCenter(
   ];
 }
 
-// todo with variants
-export function handRoles(s: HeadlessState): sg.Role[] {
-  if (s.dimensions.files === 5) return ['rook', 'bishop', 'gold', 'silver', 'pawn'];
-  else return ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'];
+export function handRoles(variant: sg.Variant): sg.Role[] {
+  switch (variant) {
+    case 'minishogi':
+      return ['rook', 'bishop', 'gold', 'silver', 'pawn'];
+    default:
+      return ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'];
+  }
+}
+
+export function dimensions(variant: sg.Variant): sg.Dimensions {
+  switch (variant) {
+    case 'minishogi':
+      return { files: 5, ranks: 5 };
+    default:
+      return { files: 9, ranks: 9 };
+  }
 }
