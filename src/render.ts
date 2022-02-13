@@ -6,9 +6,9 @@ import {
   posToTranslateAbs,
   translateRel,
   translateAbs,
-  opposite,
-  handRoles,
   dimensions,
+  handRoles,
+  opposite,
 } from './util';
 import { sentePov } from './board';
 import { AnimCurrent, AnimVectors, AnimVector, AnimFadings } from './anim';
@@ -181,11 +181,8 @@ export function render(s: State): void {
   }
 
   if (s.renderHands && handTopEl && handBotEl) {
-    const topColor = opposite(s.orientation);
-    for (const r of handRoles(s.variant)) {
-      handTopEl.appendChild(makeHandPiece({ role: r, color: topColor }, s.hands));
-      handBotEl.appendChild(makeHandPiece({ role: r, color: s.orientation }, s.hands));
-    }
+    updateHand(s, opposite(s.orientation), handTopEl);
+    updateHand(s, s.orientation, handBotEl);
   }
 
   // remove any element that remains in the moved sets
@@ -272,11 +269,29 @@ function addSquare(squares: SquareClasses, key: sg.Key, klass: string): void {
 function makeHandPiece(piece: sg.Piece, hands: sg.Hands): HTMLElement {
   const pieceEl = createEl('piece', pieceNameOf(piece));
   const num = hands.get(piece.color)?.get(piece.role) || 0;
-  pieceEl.setAttribute('data-role', piece.role);
-  pieceEl.setAttribute('data-color', piece.color);
-  pieceEl.setAttribute('data-nb', num.toString());
+  pieceEl.dataset.role = piece.role;
+  pieceEl.dataset.color = piece.color;
+  pieceEl.dataset.nb = num.toString();
 
   return pieceEl;
+}
+
+function updateHand(s: State, color: sg.Color, handEl: HTMLElement): void {
+  if (handEl.children.length !== handRoles(s.variant).length) {
+    handEl.innerHTML = '';
+    for (const r of handRoles(s.variant)) {
+      handEl.appendChild(makeHandPiece({ role: r, color: color }, s.hands));
+    }
+  } else {
+    let piece = handEl.firstChild as HTMLElement | undefined;
+    while (piece) {
+      const color = piece.dataset.color as sg.Color;
+      const role = piece.dataset.role as sg.Role;
+      const num = s.hands.get(color)?.get(role) || 0;
+      piece.dataset.nb = num.toString();
+      piece = piece.nextSibling as HTMLHtmlElement | undefined;
+    }
+  }
 }
 
 function appendValue<K, V>(map: Map<K, V[]>, key: K, value: V): void {

@@ -34,16 +34,14 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   element.appendChild(container);
 
   const board = createEl('sg-board');
+  container.appendChild(board);
 
   let handTop, handBot;
   if (s.renderHands) {
     handTop = createEl('sg-hand', 'hand-top');
     handBot = createEl('sg-hand', 'hand-bot');
-    container.appendChild(handTop);
-    container.appendChild(board);
-    container.appendChild(handBot);
-  } else {
-    container.appendChild(board);
+    container.insertBefore(handTop, board);
+    container.insertBefore(handBot, board.nextSibling);
   }
 
   if (s.grid) {
