@@ -46,9 +46,8 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     container.appendChild(board);
   }
 
-  let grid;
   if (s.grid) {
-    grid = setAttributes(createSVG('svg'), { class: 'sg-grid' });
+    const grid = createEl('sg-grid');
     grid.innerHTML = gridSvg('shogi');
     container.insertBefore(grid, board.nextSibling);
   }
@@ -97,7 +96,6 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     handTop,
     handBot,
     container,
-    grid,
     ghost,
     svg,
     customSvg,
@@ -118,8 +116,8 @@ function renderCoords(elems: readonly string[], className: string, trim: number)
 function gridSvg(variant: Variant): string {
   switch (variant) {
     case 'minishogi':
-      `<svg viewBox="0 0 250 250"><path d="M0 0h250M0 50h250M0 100h250M0 150h250M0 200h250M0 250h250M0 0v250M50 0v250M100 0v250M150 0v250M200 0v250M250 0v250"/><circle cx="50" cy="50" r="4"/><circle cx="50" cy="200" r="4"/><circle cx="200" cy="50" r="4"/><circle cx="200" cy="200" r="4"/></svg>`;
+      `<svg viewBox="0 0 250 250" preserveAspectRatio="none"><path d="M0 0h250M0 50h250M0 100h250M0 150h250M0 200h250M0 250h250M0 0v250M50 0v250M100 0v250M150 0v250M200 0v250M250 0v250"/><circle cx="50" cy="50" r="4"/><circle cx="50" cy="200" r="4"/><circle cx="200" cy="50" r="4"/><circle cx="200" cy="200" r="4"/></svg>`;
     default:
-      return `<svg viewBox="0 0 810 810"><path d="M0 0h810M0 90h810M0 180h810M0 270h810M0 360h810M0 450h810M0 540h810M0 630h810M0 720h810M0 810h810M0 0v810M90 0v810M180 0v810M270 0v810M360 0v810M450 0v810M540 0v810M630 0v810M720 0v810M810 0v810"/><circle cx="270" cy="270" r="8"/><circle cx="540" cy="270" r="8"/><circle cx="270" cy="540" r="8"/><circle cx="540" cy="540" r="8"/></svg>`;
+      return `<svg viewBox="0 0 810 810" preserveAspectRatio="none"><path d="M0 0h810M0 90h810M0 180h810M0 270h810M0 360h810M0 450h810M0 540h810M0 630h810M0 720h810M0 810h810M0 0v810M90 0v810M180 0v810M270 0v810M360 0v810M450 0v810M540 0v810M630 0v810M720 0v810M810 0v810"/><circle cx="270" cy="270" r="8"/><circle cx="540" cy="270" r="8"/><circle cx="270" cy="540" r="8"/><circle cx="540" cy="540" r="8"/></svg>`;
   }
 }

@@ -55,7 +55,6 @@ export interface Elements {
   handBot?: HTMLElement;
   container: HTMLElement;
   ghost?: HTMLElement;
-  grid?: SVGElement;
   svg?: SVGElement;
   customSvg?: SVGElement;
 }
