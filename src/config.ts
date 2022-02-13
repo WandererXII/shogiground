@@ -13,7 +13,8 @@ export interface Config {
   lastMove?: sg.Key[]; // squares part of the last move ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
   coordinates?: boolean; // include coords attributes
-  renderHands?: boolean;
+  grid?: boolean; // include grid svg element
+  renderHands?: boolean; // include hands elements
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu?: boolean; // because who needs a context menu on a board
   blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training

@@ -1,3 +1,4 @@
+export type Variant = 'shogi' | 'minishogi';
 export type Color = typeof colors[number];
 export type Role =
   | 'king'
@@ -54,6 +55,7 @@ export interface Elements {
   handBot?: HTMLElement;
   container: HTMLElement;
   ghost?: HTMLElement;
+  grid?: SVGElement;
   svg?: SVGElement;
   customSvg?: SVGElement;
 }
