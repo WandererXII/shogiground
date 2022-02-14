@@ -1,6 +1,6 @@
 import { HeadlessState } from './state';
 import { setVisible, createEl, dimensions } from './util';
-import { colors, Notation, Elements, Variant } from './types';
+import { colors, Notation, Elements, Dimensions } from './types';
 import { createElement as createSVG, setAttributes } from './svg';
 
 export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boolean): Elements {
@@ -46,7 +46,8 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
 
   if (s.grid) {
     const grid = createEl('sg-grid');
-    grid.innerHTML = gridSvg('shogi');
+    grid.innerHTML = createGridSvg(dimensions(s.variant));
+
     container.insertBefore(grid, board.nextSibling);
   }
 
@@ -112,11 +113,35 @@ function renderCoords(elems: readonly string[], className: string, trim: number)
   return el;
 }
 
-function gridSvg(variant: Variant): string {
-  switch (variant) {
-    case 'minishogi':
-      return `<svg viewBox="0 0 250 250" preserveAspectRatio="none"><path d="M0 0h250M0 50h250M0 100h250M0 150h250M0 200h250M0 250h250M0 0v250M50 0v250M100 0v250M150 0v250M200 0v250M250 0v250"/><circle cx="50" cy="50" r="4"/><circle cx="50" cy="200" r="4"/><circle cx="200" cy="50" r="4"/><circle cx="200" cy="200" r="4"/></svg>`;
-    default:
-      return `<svg viewBox="0 0 810 810" preserveAspectRatio="none"><path d="M0 0h810M0 90h810M0 180h810M0 270h810M0 360h810M0 450h810M0 540h810M0 630h810M0 720h810M0 810h810M0 0v810M90 0v810M180 0v810M270 0v810M360 0v810M450 0v810M540 0v810M630 0v810M720 0v810M810 0v810"/><circle cx="270" cy="270" r="8"/><circle cx="540" cy="270" r="8"/><circle cx="270" cy="540" r="8"/><circle cx="540" cy="540" r="8"/></svg>`;
-  }
+function createGridSvg(dims: Dimensions): string {
+  const multiplier = 90;
+  const width = dims.files * multiplier;
+  const height = dims.ranks * multiplier;
+  const openingTag = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">`;
+  const closingTag = '</svg>';
+
+  const hLines: string[] = [];
+  for (let i = 0; i <= dims.ranks; i++)
+    hLines.push(`<line x1="0" y1="${multiplier * i}" x2="${width}" y2="${multiplier * i}" />`);
+
+  const vLines: string[] = [];
+  for (let i = 0; i <= dims.files; i++)
+    vLines.push(`<line x1="${multiplier * i}" y1="0" x2="${multiplier * i}" y2="${height}" />`);
+
+  const circles: string[] = [];
+  const radius = Math.floor((width + height) / 2 / multiplier);
+  const offsetX = Math.floor(dims.files / 3);
+  const offsetY = Math.floor(dims.ranks / 3);
+  circles.push(`<circle cx="${offsetX * multiplier}" cy="${offsetY * multiplier}" r="${radius}" stroke="none" />`);
+  circles.push(
+    `<circle cx="${offsetX * multiplier}" cy="${height - offsetY * multiplier}" r="${radius}" stroke="none" />`
+  );
+  circles.push(
+    `<circle cx="${width - offsetX * multiplier}" cy="${offsetY * multiplier}" r="${radius}" stroke="none" />`
+  );
+  circles.push(
+    `<circle cx="${width - offsetX * multiplier}" cy="${height - offsetY * multiplier}" r="${radius}" stroke="none" />`
+  );
+
+  return openingTag + hLines.join('') + vLines.join('') + circles.join('') + closingTag;
 }
