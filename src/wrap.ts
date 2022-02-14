@@ -66,19 +66,8 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   if (s.coordinates) {
     const orientClass = s.orientation === 'gote' ? ' gote' : '';
     const dims = dimensions(s.variant);
-    if (s.notation === Notation.WESTERN || s.notation === Notation.KAWASAKI) {
-      container.appendChild(
-        renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'ranks' + orientClass, dims.ranks)
-      );
-    } else if (s.notation === Notation.WESTERN2) {
-      container.appendChild(
-        renderCoords(['i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'], 'ranks' + orientClass, dims.ranks)
-      );
-    } else {
-      container.appendChild(
-        renderCoords(['九', '八', '七', '六', '五', '四', '三', '二', '一'], 'ranks' + orientClass, dims.ranks)
-      );
-    }
+    const ranks = ranksByNotation(s.notation);
+    container.appendChild(renderCoords(ranks, 'ranks' + orientClass, dims.ranks));
     container.appendChild(
       renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, dims.files)
     );
@@ -100,6 +89,17 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     svg,
     customSvg,
   };
+}
+
+function ranksByNotation(notation: Notation): string[] {
+  switch (notation) {
+    case Notation.JAPANESE:
+      return ['九', '八', '七', '六', '五', '四', '三', '二', '一'];
+    case Notation.WESTERN2:
+      return ['i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+    default:
+      return ['9', '8', '7', '6', '5', '4', '3', '2', '1'];
+  }
 }
 
 function renderCoords(elems: readonly string[], className: string, trim: number): HTMLElement {
