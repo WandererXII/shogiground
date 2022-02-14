@@ -13,7 +13,7 @@ export interface DragCurrent {
   pos: sg.NumberPair; // latest event position
   started: boolean; // whether the drag has started; as per the distance setting
   element: sg.PieceNode | (() => sg.PieceNode | undefined);
-  newPiece?: boolean; // it it a new piece from outside the board
+  newPiece?: boolean; // is it a new piece from outside the board
   force?: boolean; // can the new piece replace an existing one (editor)
   previouslySelected?: sg.Key;
   originTarget: EventTarget | null;

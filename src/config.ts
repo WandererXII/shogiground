@@ -69,8 +69,6 @@ export interface Config {
   };
   events?: {
     change?: () => void; // called after the situation changes on the board
-    // called after a piece has been moved.
-    // capturedPiece is undefined or like {color: 'sente'; 'role': 'bishop'}
     move?: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => void;
     dropNewPiece?: (piece: sg.Piece, key: sg.Key) => void;
     select?: (key: sg.Key) => void; // called when a square is selected

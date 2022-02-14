@@ -87,6 +87,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     state,
 
+    // todo - getBoardSfen, getHandsSfen
     getSfen: () => sfenWrite(state.pieces),
 
     toggleOrientation,
