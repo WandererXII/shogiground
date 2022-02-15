@@ -23,7 +23,7 @@ sg-container {
   width: 100%;
   height: 100%;
   display: block;
-  top: 0;
+  top: 20%;
 }
 
 sg-board {

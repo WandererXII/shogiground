@@ -12,25 +12,19 @@
       <nav>
         <ul>
           <li>
-            <a href="#">HOME</a>
-            <a href="tall.html">TALL</a>
+            <a href="index.html">HOME</a>
           </li>
         </ul>
       </nav>
       <div class="main-board">
-        <div id="dirty" class="sg-wrap"></div>
+        <div id="dirty" class="sg-wrap tall"></div>
       </div>
     </div>
     <script src="../dist/shogiground.js"></script>
     <script>
-      function s(e) {
-        console.log(e.target);
-      }
       const config = {
         resizable: true,
         orientation: 'sente',
-        renderHands: true,
-        hands: '12P',
         grid: true,
       };
       const ground = Shogiground(document.getElementById('dirty'), config);
