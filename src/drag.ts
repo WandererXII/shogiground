@@ -14,6 +14,7 @@ export interface DragCurrent {
   started: boolean; // whether the drag has started; as per the distance setting
   element: sg.PieceNode | (() => sg.PieceNode | undefined);
   newPiece?: boolean; // is it a new piece from outside the board
+  fromHand?: boolean; // is it a piece from shogiground hand
   force?: boolean; // can the new piece replace an existing one (editor)
   previouslySelected?: sg.Key;
   originTarget: EventTarget | null;
@@ -61,7 +62,6 @@ export function start(s: State, e: sg.MouchEvent): void {
     };
     element.sgDragging = true;
     element.classList.add('dragging');
-    element.classList.remove('fix-blur');
     // place ghost
     const ghost = s.dom.elements.ghost;
     if (ghost) {
@@ -89,7 +89,7 @@ function pieceCloseTo(s: State, pos: sg.NumberPair): boolean {
   return false;
 }
 
-export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, force?: boolean): void {
+export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: boolean, force: boolean): void {
   const key: sg.Key = '00';
   s.pieces.set(key, piece);
   board.unselect(s);
@@ -106,7 +106,8 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, force?
     element: () => pieceElementByKey(s, key),
     originTarget: e.target,
     newPiece: true,
-    force: !!force,
+    fromHand: hand,
+    force: force,
   };
   if (board.isPredroppable(s)) {
     s.predroppable.dropDests = predrop(s.pieces, piece, util.dimensions(s.variant));
@@ -133,7 +134,6 @@ function processDrag(s: State): void {
           if (!found) return;
           found.sgDragging = true;
           found.classList.add('dragging');
-          found.classList.remove('fix-blur');
           cur.element = found;
         }
 

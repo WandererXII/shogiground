@@ -132,11 +132,22 @@ export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): bool
   return false;
 }
 
+export function addToHand(state: HeadlessState, piece: sg.Piece, cnt = 1): void {
+  const hand = state.hands.get(piece.color);
+  if (hand) hand.set(piece.role, (hand.get(piece.role) || 0) + cnt);
+}
+
+export function removeFromHand(state: HeadlessState, piece: sg.Piece, cnt = 1): void {
+  const hand = state.hands.get(piece.color);
+  const num = hand?.get(piece.role);
+  if (hand && num) hand.set(piece.role, Math.max(num - cnt, 0));
+}
+
 export function dropNewPiece(state: HeadlessState, dest: sg.Key, force?: boolean): void {
   const piece = state.pieces.get('00');
   if (piece && (canDrop(state, dest) || force)) {
     state.pieces.delete('00');
-    baseNewPiece(state, piece, dest, force);
+    if (baseNewPiece(state, piece, dest, force)) removeFromHand(state, piece);
     callUserFunction(state.movable.events.afterNewPiece, piece.role, dest, {
       premove: false,
       predrop: false,

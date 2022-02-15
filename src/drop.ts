@@ -5,9 +5,10 @@ import * as util from './util';
 import { cancel as dragCancel } from './drag';
 import { predrop } from './premove';
 
-export function setDropMode(s: State, piece?: sg.Piece): void {
+export function setDropMode(s: State, piece: sg.Piece, fromHand: boolean): void {
   s.dropmode.active = true;
   s.dropmode.piece = piece;
+  s.dropmode.fromHand = fromHand;
   dragCancel(s);
   board.unselect(s);
   if (piece && board.isPredroppable(s)) {
@@ -33,7 +34,10 @@ export function drop(s: State, e: sg.MouchEvent): void {
     const position = util.eventPosition(e);
     const dest =
       position && board.getKeyAtDomPos(position, board.sentePov(s), util.dimensions(s.variant), s.dom.bounds());
-    if (dest) board.dropNewPiece(s, dest);
+    if (dest) {
+      board.dropNewPiece(s, dest);
+      if (s.dropmode.fromHand) s.dropmode.active = false;
+    }
   }
   s.dom.redraw();
 }

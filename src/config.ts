@@ -79,6 +79,7 @@ export interface Config {
     piece?: sg.Piece;
     showDropDests?: boolean; // whether to add the move-dest class on squares for drops
     dropDests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
+    fromHand?: boolean; // deactivates dropmode after the drop and removes piece from hand if allowed
   };
   drawable?: {
     enabled?: boolean; // can draw

@@ -283,6 +283,7 @@ function renderArrow(
 function renderPiece(pos: sg.Pos, piece: DrawShapePiece, dims: sg.Dimensions, bounds: ClientRect): SVGElement {
   const o = pos2px(pos, bounds, dims),
     size = (bounds.width / dims.files) * (piece.scale || 0.8);
+  // todo - remove foreignObject - seems like it's buggy on chromium and safari?
   const el = setAttributes(createElement('foreignObject'), {
     className: `${piece.role} ${piece.color}`,
     x: o[0] - size / 2,

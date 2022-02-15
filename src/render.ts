@@ -61,9 +61,6 @@ export function render(s: State): void {
       fading = fadings.get(k);
       elPieceName = el.sgPiece;
 
-      //      el.classList.remove('fix-blur');
-      //    if (k === '00') el.classList.add('fix-blur');
-
       // if piece not being dragged anymore, remove dragging style
       if (el.sgDragging && (!curDrag || curDrag.orig !== k)) {
         el.classList.remove('dragging');
@@ -288,6 +285,10 @@ function updateHand(s: State, color: sg.Color, handEl: HTMLElement): void {
       const color = piece.dataset.color as sg.Color;
       const role = piece.dataset.role as sg.Role;
       const num = s.hands.get(color)?.get(role) || 0;
+      piece.classList.toggle(
+        'selected',
+        s.dropmode.active && s.dropmode.piece?.color === color && s.dropmode.piece.role === role
+      );
       piece.dataset.nb = num.toString();
       piece = piece.nextSibling as HTMLHtmlElement | undefined;
     }

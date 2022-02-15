@@ -76,6 +76,7 @@ export interface HeadlessState {
   dropmode: {
     active: boolean;
     showDropDests: boolean;
+    fromHand: boolean;
     piece?: sg.Piece;
     dropDests?: sg.DropDests;
   };
@@ -154,6 +155,7 @@ export function defaults(): HeadlessState {
     dropmode: {
       active: false,
       showDropDests: true,
+      fromHand: true,
     },
     selectable: {
       enabled: true,

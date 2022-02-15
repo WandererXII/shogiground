@@ -65,7 +65,7 @@ export interface Api {
   redrawAll: sg.Redraw;
 
   // for piece dropping and board editors
-  dragNewPiece(piece: sg.Piece, event: sg.MouchEvent, force?: boolean): void;
+  dragNewPiece(piece: sg.Piece, event: sg.MouchEvent, hand: boolean, force: boolean): void;
 
   // unbinds all events
   // (important for document-wide events like scroll and mousemove)
@@ -166,8 +166,8 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     redrawAll,
 
-    dragNewPiece(piece, event, force): void {
-      dragNewPiece(state, piece, event, force);
+    dragNewPiece(piece, event, hand, force): void {
+      dragNewPiece(state, piece, event, hand, force);
     },
 
     destroy(): void {
