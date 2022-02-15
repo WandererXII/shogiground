@@ -43,7 +43,10 @@ function bindHand(s: State, handEl: HTMLElement): void {
     passive: false,
   });
 
-  if (s.selectable) handEl.addEventListener('click', selectToDropFromHand(s) as EventListener, { passive: false });
+  if (s.selectable) {
+    handEl.addEventListener('mouseup', selectToDropFromHand(s) as EventListener, { passive: false });
+    handEl.addEventListener('touchend', selectToDropFromHand(s) as EventListener, { passive: false });
+  }
 
   if (s.disableContextMenu || s.drawable.enabled) handEl.addEventListener('contextmenu', e => e.preventDefault());
 }
@@ -141,7 +144,11 @@ function selectToDropFromHand(s: State): MouchBind {
     if (
       piece &&
       (s.movable.color === 'both' || s.movable.color === piece.color) &&
-      s.hands.handMap.get(piece.color)?.get(piece.role)
+      s.hands.handMap.get(piece.color)?.get(piece.role) &&
+      (e.type !== 'touchend' ||
+        !s.draggable.current ||
+        (Math.abs(s.draggable.current.pos[0] - s.draggable.current.origPos[0]) < 20 &&
+          Math.abs(s.draggable.current.pos[1] - s.draggable.current.origPos[1]) < 20))
     ) {
       if (s.dropmode.active) cancelDropMode(s);
       else setDropMode(s, piece, true);
