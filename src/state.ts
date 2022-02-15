@@ -6,21 +6,26 @@ import { timer } from './util';
 import * as sg from './types';
 
 export interface HeadlessState {
-  variant: sg.Variant;
   pieces: sg.Pieces;
   orientation: sg.Color; // board orientation. sente | gote
+  dimensions: sg.Dimensions; // board dimensions. at least 1x1 and at most 9x9
   turnColor: sg.Color; // turn to play. sente | gote
-  hands: sg.Hands;
   check?: sg.Key; // square currently in check "5a"
   lastMove?: sg.Key[]; // squares part of the last move ["2b"; "8h"]
   selected?: sg.Key; // square currently selected "1a"
   coordinates: boolean; // include coords attributes
+  notation: sg.Notation; // only relevant for coords
   grid: boolean; // include grid svg element
-  renderHands: boolean; // include hands elements
   viewOnly: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu: boolean; // because who needs a context menu on a shogi board
   resizable: boolean; // listens to shogiground.resize on document.body to clear bounds cache
   blockTouchScroll: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
+  hands: {
+    handMap: sg.Hands;
+    enabled: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
+    handRoles: sg.Role[]; // roles to render in sg-hand
+    captureProcessing: (role: sg.Role) => sg.Role | undefined; // what to do with captured piece, before storing it in hand
+  };
   highlight: {
     lastMove: boolean; // add last-move class to squares
     check: boolean; // add check class to squares
@@ -34,7 +39,9 @@ export interface HeadlessState {
     free: boolean; // all moves are valid - board editor
     color?: sg.Color | 'both'; // color that can move. sente | gote | both
     dests?: sg.Dests; // valid moves. {"7g" ["7f"] "5i" ["4h" "5h" "6h"]}
+    dropDests?: sg.DropDests;
     showDests: boolean; // whether to add the move-dest class on squares
+    showDropDests: boolean;
     events: {
       after?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
       afterNewPiece?: (role: sg.Role, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after a new piece is dropped on the board
@@ -75,10 +82,8 @@ export interface HeadlessState {
   };
   dropmode: {
     active: boolean;
-    showDropDests: boolean;
     fromHand: boolean;
     piece?: sg.Piece;
-    dropDests?: sg.DropDests;
   };
   selectable: {
     // disable to enforce dragging over click-click move
@@ -92,8 +97,6 @@ export interface HeadlessState {
   };
   events: {
     change?: () => void; // called after the situation changes on the board
-    // called after a piece has been moved.
-    // capturedPiece is undefined or like {color: 'sente'; 'role': 'lance'}
     move?: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => void;
     dropNewPiece?: (piece: sg.Piece, key: sg.Key) => void;
     select?: (key: sg.Key) => void; // called when a square is selected
@@ -101,7 +104,6 @@ export interface HeadlessState {
   };
   drawable: Drawable;
   hold: sg.Timer;
-  notation: sg.Notation;
 }
 export interface State extends HeadlessState {
   dom: sg.Dom;
@@ -109,18 +111,42 @@ export interface State extends HeadlessState {
 
 export function defaults(): HeadlessState {
   return {
-    variant: 'shogi',
-    pieces: sfen.readBoard(sfen.initial, 'shogi'),
+    pieces: sfen.readBoard('lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL', { files: 9, ranks: 9 }),
+    dimensions: { files: 9, ranks: 9 },
     orientation: 'sente',
     turnColor: 'sente',
-    hands: new Map(),
     coordinates: true,
+    notation: sg.Notation.WESTERN,
     grid: false,
-    renderHands: false,
     viewOnly: false,
     disableContextMenu: false,
     resizable: true,
     blockTouchScroll: false,
+    hands: {
+      handMap: new Map(),
+      enabled: true,
+      handRoles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
+      captureProcessing: (role: sg.Role) => {
+        switch (role) {
+          case 'tokin':
+            return 'pawn';
+          case 'promotedlance':
+            return 'lance';
+          case 'promotedknight':
+            return 'knight';
+          case 'promotedsilver':
+            return 'silver';
+          case 'dragon':
+            return 'rook';
+          case 'horse':
+            return 'bishop';
+          case 'king':
+            return undefined;
+          default:
+            return role;
+        }
+      },
+    },
     highlight: {
       lastMove: true,
       check: true,
@@ -133,6 +159,7 @@ export function defaults(): HeadlessState {
       free: true,
       color: 'both',
       showDests: true,
+      showDropDests: true,
       events: {},
     },
     premovable: {
@@ -154,7 +181,6 @@ export function defaults(): HeadlessState {
     },
     dropmode: {
       active: false,
-      showDropDests: true,
       fromHand: true,
     },
     selectable: {
@@ -190,6 +216,5 @@ export function defaults(): HeadlessState {
       prevSvgHash: '',
     },
     hold: timer(),
-    notation: sg.Notation.WESTERN,
   };
 }

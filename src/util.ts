@@ -120,21 +120,3 @@ export function computeSquareCenter(
     bounds.top + (bounds.height * (dims.ranks - 1 - pos[1])) / dims.ranks + bounds.height / (dims.ranks * 2),
   ];
 }
-
-export function handRoles(variant: sg.Variant): sg.Role[] {
-  switch (variant) {
-    case 'minishogi':
-      return ['rook', 'bishop', 'gold', 'silver', 'pawn'];
-    default:
-      return ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'];
-  }
-}
-
-export function dimensions(variant: sg.Variant): sg.Dimensions {
-  switch (variant) {
-    case 'minishogi':
-      return { files: 5, ranks: 5 };
-    default:
-      return { files: 9, ranks: 9 };
-  }
-}

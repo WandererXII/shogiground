@@ -1,15 +1,5 @@
 import { State } from './state';
-import {
-  key2pos,
-  createEl,
-  posToTranslateRel,
-  posToTranslateAbs,
-  translateRel,
-  translateAbs,
-  dimensions,
-  handRoles,
-  opposite,
-} from './util';
+import { key2pos, createEl, posToTranslateRel, posToTranslateAbs, translateRel, translateAbs, opposite } from './util';
 import { sentePov } from './board';
 import { AnimCurrent, AnimVectors, AnimVector, AnimFadings } from './anim';
 import { DragCurrent } from './drag';
@@ -23,9 +13,7 @@ type SquareClasses = Map<sg.Key, string>;
 // in case of bugs, blame @veloce
 export function render(s: State): void {
   const asSente: boolean = sentePov(s),
-    posToTranslate = s.dom.relative
-      ? posToTranslateRel(dimensions(s.variant))
-      : posToTranslateAbs(dimensions(s.variant), s.dom.bounds()),
+    posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()),
     translate = s.dom.relative ? translateRel : translateAbs,
     boardEl: HTMLElement = s.dom.elements.board,
     handTopEl: HTMLElement | undefined = s.dom.elements.handTop,
@@ -177,7 +165,7 @@ export function render(s: State): void {
     }
   }
 
-  if (s.renderHands && handTopEl && handBotEl) {
+  if (s.hands.enabled && handTopEl && handBotEl) {
     updateHand(s, opposite(s.orientation), handTopEl);
     updateHand(s, s.orientation, handBotEl);
   }
@@ -190,7 +178,7 @@ export function render(s: State): void {
 export function updateBounds(s: State): void {
   if (s.dom.relative) return;
   const asSente: boolean = sentePov(s),
-    posToTranslate = posToTranslateAbs(dimensions(s.variant), s.dom.bounds());
+    posToTranslate = posToTranslateAbs(s.dimensions, s.dom.bounds());
   let el = s.dom.elements.board.firstChild as sg.PieceNode | sg.SquareNode | undefined;
   while (el) {
     if (isPieceNode(el) && !el.sgAnimating) translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente));
@@ -237,8 +225,8 @@ function computeSquareClasses(s: State): SquareClasses {
     }
   } else if (s.dropmode.active || s.draggable.current?.orig === '00') {
     const piece = s.dropmode.active ? s.dropmode.piece : s.draggable.current?.piece;
-    if (piece && s.dropmode.showDropDests) {
-      const dests = s.dropmode.dropDests?.get(piece.role);
+    if (piece && s.movable.showDropDests) {
+      const dests = s.movable.dropDests?.get(piece.role);
       if (dests)
         for (const k of dests) {
           addSquare(squares, k, 'move-dest');
@@ -274,17 +262,17 @@ function makeHandPiece(piece: sg.Piece, hands: sg.Hands): HTMLElement {
 }
 
 function updateHand(s: State, color: sg.Color, handEl: HTMLElement): void {
-  if (handEl.children.length !== handRoles(s.variant).length) {
+  if (handEl.children.length !== s.hands.handRoles.length) {
     handEl.innerHTML = '';
-    for (const r of handRoles(s.variant)) {
-      handEl.appendChild(makeHandPiece({ role: r, color: color }, s.hands));
+    for (const role of s.hands.handRoles) {
+      handEl.appendChild(makeHandPiece({ role: role, color: color }, s.hands.handMap));
     }
   } else {
     let piece = handEl.firstChild as HTMLElement | undefined;
     while (piece) {
       const color = piece.dataset.color as sg.Color;
       const role = piece.dataset.role as sg.Role;
-      const num = s.hands.get(color)?.get(role) || 0;
+      const num = s.hands.handMap.get(color)?.get(role) || 0;
       piece.classList.toggle(
         'selected',
         s.dropmode.active && s.dropmode.piece?.color === color && s.dropmode.piece.role === role

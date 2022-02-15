@@ -1,11 +1,10 @@
 import { HeadlessState } from './state';
 import { setCheck, setSelected } from './board';
-import { readBoard as sfenRead, readHands } from './sfen';
+import { inferDimensions, readBoard as sfenRead, readHands } from './sfen';
 import { DrawShape, DrawBrushes } from './draw';
 import * as sg from './types';
 
 export interface Config {
-  variant?: sg.Variant; // rules used for roles in hand, premoves or board dimensions
   sfen?: {
     board?: sg.BoardSfen; // pieces on the board in Forsyth notation
     hands?: sg.HandsSfen; // pieces in hand in Forsyth notation
@@ -16,12 +15,18 @@ export interface Config {
   lastMove?: sg.Key[]; // squares part of the last move ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
   coordinates?: boolean; // include coords attributes
+  notation?: sg.Notation;
   grid?: boolean; // include grid svg element
   renderHands?: boolean; // include hands elements
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu?: boolean; // because who needs a context menu on a board
   blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
   resizable?: boolean; // listens to shogiground.resize on document.body to clear bounds cache
+  hands?: {
+    enabled?: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
+    handRoles?: sg.Role[]; // roles to render in sg-hand
+    captureProcessing?: (role: sg.Role) => sg.Role | undefined; // what to do with captured role, before storing it in hand, e.g. unpromoting
+  };
   highlight?: {
     lastMove?: boolean; // add last-move class to squares
     check?: boolean; // add check class to squares
@@ -30,11 +35,14 @@ export interface Config {
     enabled?: boolean;
     duration?: number;
   };
+  // relevant for both moves and drops - todo rename, but to what?
   movable?: {
-    free?: boolean; // all moves are valid - board editor
-    color?: sg.Color | 'both'; // color that can move. sente | gote | both | undefined
+    free?: boolean; // all moves and drops are valid - board editor
+    color?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
     dests?: sg.Dests; // valid moves. {"2a" ["3a" "4a"] "1b" ["3a" "3c"]}
     showDests?: boolean; // whether to add the move-dest class on squares
+    dropDests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
+    showDropDests?: boolean; // whether to add the move-dest class on squares for drops
     events?: {
       after?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
       afterNewPiece?: (role: sg.Role, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after a new piece is dropped on the board
@@ -79,8 +87,6 @@ export interface Config {
   dropmode?: {
     active?: boolean;
     piece?: sg.Piece;
-    showDropDests?: boolean; // whether to add the move-dest class on squares for drops
-    dropDests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
     fromHand?: boolean; // deactivates dropmode after the drop and removes piece from hand if allowed
   };
   drawable?: {
@@ -95,27 +101,27 @@ export interface Config {
     };
     onChange?: (shapes: DrawShape[]) => void; // called after drawable shapes change
   };
-  notation?: sg.Notation;
 }
 
 export function configure(state: HeadlessState, config: Config): void {
   // don't merge destinations and autoShapes. Just override.
   if (config.movable?.dests) state.movable.dests = undefined;
-  if (config.dropmode?.dropDests) state.dropmode.dropDests = undefined;
+  if (config.movable?.dropDests) state.movable.dropDests = undefined;
   if (config.drawable?.autoShapes) state.drawable.autoShapes = [];
 
   merge(state, config);
 
   // if a sfen was provided, replace the pieces
   if (config.sfen?.board) {
+    state.dimensions = inferDimensions(config.sfen.board);
     const pieceToDrop = state.pieces.get('00');
-    state.pieces = sfenRead(config.sfen.board, state.variant);
+    state.pieces = sfenRead(config.sfen.board, state.dimensions);
     if (pieceToDrop) state.pieces.set('00', pieceToDrop);
     state.drawable.shapes = [];
   }
 
   if (config.sfen?.hands) {
-    state.hands = readHands(config.sfen.hands);
+    state.hands.handMap = readHands(config.sfen.hands);
   }
 
   // apply config values that could be undefined yet meaningful

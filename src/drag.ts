@@ -25,8 +25,7 @@ export function start(s: State, e: sg.MouchEvent): void {
   if (e.touches && e.touches.length > 1) return; // support one finger touch only
   const bounds = s.dom.bounds(),
     position = util.eventPosition(e)!,
-    dims = util.dimensions(s.variant),
-    orig = board.getKeyAtDomPos(position, board.sentePov(s), dims, bounds);
+    orig = board.getKeyAtDomPos(position, board.sentePov(s), s.dimensions, bounds);
   if (!orig) return;
   const piece = s.pieces.get(orig);
   const previouslySelected = s.selected;
@@ -66,7 +65,7 @@ export function start(s: State, e: sg.MouchEvent): void {
     const ghost = s.dom.elements.ghost;
     if (ghost) {
       ghost.className = `ghost ${piece.color} ${piece.role}`;
-      util.translateAbs(ghost, util.posToTranslateAbs(dims, bounds)(util.key2pos(orig), board.sentePov(s)));
+      util.translateAbs(ghost, util.posToTranslateAbs(s.dimensions, bounds)(util.key2pos(orig), board.sentePov(s)));
       util.setVisible(ghost, true);
     }
     processDrag(s);
@@ -80,10 +79,9 @@ export function start(s: State, e: sg.MouchEvent): void {
 function pieceCloseTo(s: State, pos: sg.NumberPair): boolean {
   const asSente = board.sentePov(s),
     bounds = s.dom.bounds(),
-    dims = util.dimensions(s.variant),
-    radiusSq = Math.pow(bounds.width / dims.files, 2);
+    radiusSq = Math.pow(bounds.width / s.dimensions.files, 2);
   for (const key of s.pieces.keys()) {
-    const center = util.computeSquareCenter(key, asSente, dims, bounds);
+    const center = util.computeSquareCenter(key, asSente, s.dimensions, bounds);
     if (util.distanceSq(center, pos) <= radiusSq) return true;
   }
   return false;
@@ -110,7 +108,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: 
     force: force,
   };
   if (board.isPredroppable(s)) {
-    s.predroppable.dropDests = predrop(s.pieces, piece, util.dimensions(s.variant));
+    s.predroppable.dropDests = predrop(s.pieces, piece, s.dimensions);
   }
   processDrag(s);
 }
@@ -137,11 +135,10 @@ function processDrag(s: State): void {
           cur.element = found;
         }
 
-        const bounds = s.dom.bounds(),
-          dims = util.dimensions(s.variant);
+        const bounds = s.dom.bounds();
         util.translateAbs(cur.element, [
-          cur.pos[0] - bounds.left - bounds.width / (dims.files * 2),
-          cur.pos[1] - bounds.top - bounds.height / (dims.ranks * 2),
+          cur.pos[0] - bounds.left - bounds.width / (s.dimensions.files * 2),
+          cur.pos[1] - bounds.top - bounds.height / (s.dimensions.ranks * 2),
         ]);
       }
     }
@@ -171,7 +168,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   board.unsetPredrop(s);
   // touchend has no position; so use the last touchmove position instead
   const eventPos = util.eventPosition(e) || cur.pos;
-  const dest = board.getKeyAtDomPos(eventPos, board.sentePov(s), util.dimensions(s.variant), s.dom.bounds());
+  const dest = board.getKeyAtDomPos(eventPos, board.sentePov(s), s.dimensions, s.dom.bounds());
   if (dest && cur.started && cur.orig !== dest) {
     if (cur.newPiece) board.dropNewPiece(s, dest, cur.force);
     else {

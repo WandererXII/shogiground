@@ -2,7 +2,7 @@ import { State } from './state';
 import * as drag from './drag';
 import * as draw from './draw';
 import { cancelDropMode, drop, setDropMode } from './drop';
-import { dimensions, eventPosition, isRightButton } from './util';
+import { eventPosition, isRightButton } from './util';
 import * as sg from './types';
 import { getKeyAtDomPos, sentePov } from './board';
 
@@ -32,16 +32,16 @@ export function bindBoard(s: State, boundsUpdated: () => void): void {
 }
 
 export function bindHands(s: State): void {
-  if (!s.renderHands || s.viewOnly || !s.dom.elements.handTop || !s.dom.elements.handBot) return;
+  if (!s.hands.enabled || s.viewOnly || !s.dom.elements.handTop || !s.dom.elements.handBot) return;
   bindHand(s, s.dom.elements.handBot);
   bindHand(s, s.dom.elements.handTop);
 }
 
 function bindHand(s: State, handEl: HTMLElement): void {
+  handEl.addEventListener('mousedown', startDragFromHand(s) as EventListener, { passive: false });
   handEl.addEventListener('touchstart', startDragFromHand(s) as EventListener, {
     passive: false,
   });
-  handEl.addEventListener('mousedown', startDragFromHand(s) as EventListener, { passive: false });
 
   if (s.selectable) handEl.addEventListener('click', selectToDropFromHand(s) as EventListener, { passive: false });
 
@@ -109,7 +109,7 @@ function dragOrDraw(s: State, withDrag: StateMouchBind, withDraw: StateMouchBind
 
 function squareOccupied(s: State, e: sg.MouchEvent): boolean {
   const position = eventPosition(e);
-  const dest = position && getKeyAtDomPos(position, sentePov(s), dimensions(s.variant), s.dom.bounds());
+  const dest = position && getKeyAtDomPos(position, sentePov(s), s.dimensions, s.dom.bounds());
   if (dest && s.pieces.has(dest)) return true;
   return false;
 }
@@ -128,7 +128,7 @@ function startDragFromHand(s: State): MouchBind {
     if (
       piece &&
       (s.movable.color === 'both' || s.movable.color === piece.color) &&
-      s.hands.get(piece.color)?.get(piece.role)
+      s.hands.handMap.get(piece.color)?.get(piece.role)
     ) {
       cancelDropMode(s);
       drag.dragNewPiece(s, piece, e, true, false);
@@ -141,7 +141,7 @@ function selectToDropFromHand(s: State): MouchBind {
     if (
       piece &&
       (s.movable.color === 'both' || s.movable.color === piece.color) &&
-      s.hands.get(piece.color)?.get(piece.role)
+      s.hands.handMap.get(piece.color)?.get(piece.role)
     ) {
       if (s.dropmode.active) cancelDropMode(s);
       else setDropMode(s, piece, true);

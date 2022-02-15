@@ -1,4 +1,3 @@
-export type Variant = 'shogi' | 'minishogi';
 export type Color = typeof colors[number];
 export type Role =
   | 'king'

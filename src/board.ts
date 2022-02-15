@@ -1,5 +1,5 @@
 import { HeadlessState } from './state';
-import { pos2key, opposite, dimensions } from './util';
+import { pos2key, opposite } from './util';
 import { premove } from './premove';
 import * as sg from './types';
 
@@ -90,7 +90,7 @@ export function baseNewPiece(state: HeadlessState, piece: sg.Piece, key: sg.Key,
   state.check = undefined;
   callUserFunction(state.events.change);
   state.movable.dests = undefined;
-  state.dropmode.dropDests = undefined;
+  state.movable.dropDests = undefined;
   state.turnColor = opposite(state.turnColor);
   return true;
 }
@@ -99,7 +99,7 @@ function baseUserMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.Piec
   const result = baseMove(state, orig, dest);
   if (result) {
     state.movable.dests = undefined;
-    state.dropmode.dropDests = undefined;
+    state.movable.dropDests = undefined;
     state.turnColor = opposite(state.turnColor);
     state.animation.current = undefined;
   }
@@ -133,12 +133,12 @@ export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): bool
 }
 
 export function addToHand(state: HeadlessState, piece: sg.Piece, cnt = 1): void {
-  const hand = state.hands.get(piece.color);
+  const hand = state.hands.handMap.get(piece.color);
   if (hand) hand.set(piece.role, (hand.get(piece.role) || 0) + cnt);
 }
 
 export function removeFromHand(state: HeadlessState, piece: sg.Piece, cnt = 1): void {
-  const hand = state.hands.get(piece.color);
+  const hand = state.hands.handMap.get(piece.color);
   const num = hand?.get(piece.role);
   if (hand && num) hand.set(piece.role, Math.max(num - cnt, 0));
 }
@@ -185,7 +185,7 @@ export function selectSquare(state: HeadlessState, key: sg.Key, force?: boolean)
 export function setSelected(state: HeadlessState, key: sg.Key): void {
   state.selected = key;
   if (isPremovable(state, key)) {
-    state.premovable.dests = premove(state.pieces, key, dimensions(state.variant));
+    state.premovable.dests = premove(state.pieces, key, state.dimensions);
   } else {
     state.premovable.dests = undefined;
     state.predroppable.dropDests = undefined;
@@ -239,9 +239,7 @@ export function isPredroppable(state: HeadlessState): boolean {
 }
 
 function canPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
-  return (
-    orig !== dest && isPremovable(state, orig) && premove(state.pieces, orig, dimensions(state.variant)).includes(dest)
-  );
+  return orig !== dest && isPremovable(state, orig) && premove(state.pieces, orig, state.dimensions).includes(dest);
 }
 
 function canPredrop(state: HeadlessState, dest: sg.Key): boolean {
@@ -313,7 +311,7 @@ export function cancelMove(state: HeadlessState): void {
 }
 
 export function stop(state: HeadlessState): void {
-  state.movable.color = state.movable.dests = state.dropmode.dropDests = state.animation.current = undefined;
+  state.movable.color = state.movable.dests = state.movable.dropDests = state.animation.current = undefined;
   cancelMove(state);
 }
 

@@ -1,7 +1,5 @@
-import { pos2key, invFiles, dimensions } from './util';
+import { pos2key, invFiles } from './util';
 import * as sg from './types';
-
-export const initial: sg.BoardSfen = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL';
 
 export function stringToRole(ch: string): sg.Role | undefined {
   switch (ch) {
@@ -54,9 +52,25 @@ const letters = {
   dragon: '+r',
 };
 
-export function readBoard(sfen: sg.BoardSfen, variant: sg.Variant): sg.Pieces {
+export function inferDimensions(boardSfen: sg.BoardSfen): sg.Dimensions {
+  const ranks = boardSfen.split('/');
+  const firstFile = ranks[0].split('');
+  let filesCnt = 0;
+  let cnt = 0;
+  for (const c of firstFile) {
+    const nb = c.charCodeAt(0);
+    if (nb < 58 && nb > 47) cnt = cnt * 10 + nb - 48;
+    else {
+      filesCnt += cnt + 1;
+      cnt = 0;
+    }
+  }
+  filesCnt += cnt;
+  return { files: filesCnt, ranks: ranks.length };
+}
+
+export function readBoard(sfen: sg.BoardSfen, dims: sg.Dimensions): sg.Pieces {
   const pieces: sg.Pieces = new Map();
-  const dims = dimensions(variant);
   let x = dims.files - 1,
     y = 0;
   for (let i = 0; i < sfen.length; i++) {

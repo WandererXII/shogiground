@@ -1,5 +1,5 @@
 import { State } from './state';
-import { key2pos, createEl, dimensions } from './util';
+import { key2pos, createEl } from './util';
 import { Drawable, DrawShape, DrawShapePiece, DrawBrush, DrawBrushes, DrawModifiers } from './draw';
 import * as sg from './types';
 
@@ -183,7 +183,7 @@ function renderShape(
   arrowDests: ArrowDests,
   bounds: ClientRect
 ): SVGElement {
-  const dims = dimensions(state.variant);
+  const dims = state.dimensions;
   let el: SVGElement;
   if (shape.customSvg) {
     const orig = orient(key2pos(shape.orig), state.orientation, dims);

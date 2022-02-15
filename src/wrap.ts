@@ -1,5 +1,5 @@
 import { HeadlessState } from './state';
-import { setVisible, createEl, dimensions } from './util';
+import { setVisible, createEl } from './util';
 import { colors, Notation, Elements, Dimensions } from './types';
 import { createElement as createSVG, setAttributes } from './svg';
 
@@ -25,7 +25,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   // so bounds calculation can use the CSS width/height values
   // add that class yourself to the element before calling shogiground
   // for a slight performance improvement! (avoids recomputing style)
-  element.classList.add('sg-wrap', `v-${s.variant}`);
+  element.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
 
   for (const c of colors) element.classList.toggle('orientation-' + c, s.orientation === c);
   element.classList.toggle('manipulable', !s.viewOnly);
@@ -37,14 +37,14 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   container.appendChild(board);
 
   let handTop, handBot;
-  if (s.renderHands) {
+  if (s.hands.enabled) {
     handTop = createEl('sg-hand', 'hand-top');
     handBot = createEl('sg-hand', 'hand-bot');
     container.insertBefore(handTop, board);
     container.insertBefore(handBot, board.nextSibling);
   }
 
-  if (s.grid) container.insertBefore(makeGridSVG(dimensions(s.variant)), board.nextSibling);
+  if (s.grid) container.insertBefore(makeGridSVG(s.dimensions), board.nextSibling);
 
   let svg: SVGElement | undefined;
   let customSvg: SVGElement | undefined;
@@ -60,11 +60,10 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
 
   if (s.coordinates) {
     const orientClass = s.orientation === 'gote' ? ' gote' : '';
-    const dims = dimensions(s.variant);
     const ranks = ranksByNotation(s.notation);
-    container.appendChild(renderCoords(ranks, 'ranks' + orientClass, dims.ranks));
+    container.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
     container.appendChild(
-      renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, dims.files)
+      renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, s.dimensions.files)
     );
   }
 
