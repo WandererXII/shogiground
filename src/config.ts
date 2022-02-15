@@ -6,10 +6,12 @@ import * as sg from './types';
 
 export interface Config {
   variant?: sg.Variant; // rules used for roles in hand, premoves or board dimensions
-  sfen?: sg.BoardSfen; // shogi position in Forsyth notation
+  sfen?: {
+    board?: sg.BoardSfen; // pieces on the board in Forsyth notation
+    hands?: sg.HandsSfen; // pieces in hand in Forsyth notation
+  };
   orientation?: sg.Color; // board orientation. sente | gote
   turnColor?: sg.Color; // turn to play. sente | gote
-  hands?: sg.HandsSfen; // pieces in hand in Forsyth notation
   check?: sg.Color | boolean; // true for current color, false to unset
   lastMove?: sg.Key[]; // squares part of the last move ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
@@ -105,15 +107,15 @@ export function configure(state: HeadlessState, config: Config): void {
   merge(state, config);
 
   // if a sfen was provided, replace the pieces
-  if (config.sfen) {
+  if (config.sfen?.board) {
     const pieceToDrop = state.pieces.get('00');
-    state.pieces = sfenRead(config.sfen, state.variant);
+    state.pieces = sfenRead(config.sfen.board, state.variant);
     if (pieceToDrop) state.pieces.set('00', pieceToDrop);
     state.drawable.shapes = [];
   }
 
-  if (config.hands) {
-    state.hands = readHands(config.hands);
+  if (config.sfen?.hands) {
+    state.hands = readHands(config.sfen.hands);
   }
 
   // apply config values that could be undefined yet meaningful

@@ -32,8 +32,6 @@ export function bindBoard(s: State, boundsUpdated: () => void): void {
 }
 
 export function bindHands(s: State): void {
-  console.log('BHs');
-
   if (!s.renderHands || s.viewOnly || !s.dom.elements.handTop || !s.dom.elements.handBot) return;
   bindHand(s, s.dom.elements.handBot);
   bindHand(s, s.dom.elements.handTop);
