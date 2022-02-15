@@ -8,7 +8,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   //     sg-container
   //       sg-hand
   //       sg-board
-  //       sg-grid
+  //       svg.sg-grid
   //       sg-hand
   //       svg.sg-shapes
   //         defs
@@ -44,12 +44,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     container.insertBefore(handBot, board.nextSibling);
   }
 
-  if (s.grid) {
-    const grid = createEl('sg-grid');
-    grid.innerHTML = createGridSvg(dimensions(s.variant));
-
-    container.insertBefore(grid, board.nextSibling);
-  }
+  if (s.grid) container.insertBefore(makeGridSVG(dimensions(s.variant)), board.nextSibling);
 
   let svg: SVGElement | undefined;
   let customSvg: SVGElement | undefined;
@@ -113,35 +108,52 @@ function renderCoords(elems: readonly string[], className: string, trim: number)
   return el;
 }
 
-function createGridSvg(dims: Dimensions): string {
+function makeGridSVG(dims: Dimensions): SVGElement {
   const multiplier = 90;
   const width = dims.files * multiplier;
   const height = dims.ranks * multiplier;
-  const openingTag = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">`;
-  const closingTag = '</svg>';
+  const svg = setAttributes(createSVG('svg'), {
+    class: 'sg-grid',
+    viewBox: `0 0 ${width} ${height}`,
+    preserveAspectRatio: 'none',
+  });
+  for (let i = 0; i <= dims.ranks; i++) {
+    svg.appendChild(
+      setAttributes(createSVG('line'), {
+        x1: 0,
+        x2: width,
+        y1: multiplier * i,
+        y2: multiplier * i,
+      })
+    );
+  }
+  for (let i = 0; i <= dims.files; i++) {
+    svg.appendChild(
+      setAttributes(createSVG('line'), {
+        x1: multiplier * i,
+        x2: multiplier * i,
+        y1: 0,
+        y2: height,
+      })
+    );
+  }
 
-  const hLines: string[] = [];
-  for (let i = 0; i <= dims.ranks; i++)
-    hLines.push(`<line x1="0" y1="${multiplier * i}" x2="${width}" y2="${multiplier * i}" />`);
+  // we use line instead of circle, so the radius stays the same on non square boards
+  const radius = Math.floor((width + height) / multiplier / 2);
+  const offsetX = Math.floor(dims.files / 3) * multiplier;
+  const offsetY = Math.floor(dims.ranks / 3) * multiplier;
+  for (const x of [false, true])
+    for (const y of [false, true])
+      svg.appendChild(
+        setAttributes(createSVG('line'), {
+          x1: x ? width - offsetX : offsetX,
+          x2: x ? width - offsetX : offsetX,
+          y1: y ? height - offsetY : offsetY,
+          y2: y ? height - offsetY : offsetY,
+          'stroke-linecap': 'round',
+          'stroke-width': radius,
+        })
+      );
 
-  const vLines: string[] = [];
-  for (let i = 0; i <= dims.files; i++)
-    vLines.push(`<line x1="${multiplier * i}" y1="0" x2="${multiplier * i}" y2="${height}" />`);
-
-  const circles: string[] = [];
-  const radius = Math.floor((width + height) / 2 / multiplier);
-  const offsetX = Math.floor(dims.files / 3);
-  const offsetY = Math.floor(dims.ranks / 3);
-  circles.push(`<circle cx="${offsetX * multiplier}" cy="${offsetY * multiplier}" r="${radius}" stroke="none" />`);
-  circles.push(
-    `<circle cx="${offsetX * multiplier}" cy="${height - offsetY * multiplier}" r="${radius}" stroke="none" />`
-  );
-  circles.push(
-    `<circle cx="${width - offsetX * multiplier}" cy="${offsetY * multiplier}" r="${radius}" stroke="none" />`
-  );
-  circles.push(
-    `<circle cx="${width - offsetX * multiplier}" cy="${height - offsetY * multiplier}" r="${radius}" stroke="none" />`
-  );
-
-  return openingTag + hLines.join('') + vLines.join('') + circles.join('') + closingTag;
+  return svg;
 }
