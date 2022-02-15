@@ -73,8 +73,7 @@ export function readBoard(sfen: sg.BoardSfen, variant: sg.Variant): sg.Pieces {
         const nb = sfen[i].charCodeAt(0);
         if (nb < 58 && nb > 47) x -= nb - 48;
         else {
-          const roleStr =
-            sfen[i] === '+' && sfen.length > i + 1 ? '+' + sfen[++i].toLowerCase() : sfen[i].toLowerCase();
+          const roleStr = (sfen[i] === '+' && sfen.length > i + 1 ? '+' + sfen[++i] : sfen[i]).toLowerCase();
           const role = stringToRole(roleStr);
           if (x >= 0 && role) {
             const color = sfen[i] === roleStr || '+' + sfen[i] === roleStr ? 'gote' : 'sente';
@@ -120,10 +119,10 @@ export function readHands(str: sg.HandsSfen): sg.Hands {
       tmpNum = tmpNum * 10 + nb - 48;
       num = tmpNum;
     } else {
-      const roleStr = str[i] === '+' && str.length > i + 1 ? '+' + str[++i].toLowerCase() : str[i].toLowerCase();
+      const roleStr = (str[i] === '+' && str.length > i + 1 ? '+' + str[++i] : str[i]).toLowerCase();
       const role = stringToRole(roleStr);
       if (role) {
-        const color = str[i] === role || '+' + str[i] === role ? 'gote' : 'sente';
+        const color = str[i] === roleStr || '+' + str[i] === roleStr ? 'gote' : 'sente';
         if (color === 'sente') sente.set(role, (sente.get(role) || 0) + num);
         else gote.set(role, (gote.get(role) || 0) + num);
       }
