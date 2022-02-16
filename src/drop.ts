@@ -24,6 +24,8 @@ export function cancelDropMode(s: State): void {
 export function drop(s: State, e: sg.MouchEvent): void {
   if (!s.dropmode.active) return;
 
+  if (e.cancelable) e.preventDefault();
+
   board.unsetPremove(s);
   board.unsetPredrop(s);
 
