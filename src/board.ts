@@ -143,11 +143,15 @@ export function removeFromHand(state: HeadlessState, piece: sg.Piece, cnt = 1): 
   if (hand && num) hand.set(piece.role, Math.max(num - cnt, 0));
 }
 
-export function dropNewPiece(state: HeadlessState, dest: sg.Key, force?: boolean): void {
+export function dropNewPiece(state: HeadlessState, dest: sg.Key, force?: boolean, fromHand?: boolean): void {
   const piece = state.pieces.get('00');
   if (piece && (canDrop(state, dest) || force)) {
     state.pieces.delete('00');
-    if (baseNewPiece(state, piece, dest, force)) removeFromHand(state, piece);
+    if (baseNewPiece(state, piece, dest, force) && fromHand) {
+      removeFromHand(state, piece);
+      state.dropmode.active = false;
+      state.dropmode.piece = undefined;
+    }
     callUserFunction(state.movable.events.afterNewPiece, piece.role, dest, {
       premove: false,
       predrop: false,

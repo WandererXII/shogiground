@@ -1,4 +1,4 @@
-import { State } from './state';
+import { HeadlessState, State } from './state';
 import * as sg from './types';
 import * as board from './board';
 import * as util from './util';
@@ -16,7 +16,7 @@ export function setDropMode(s: State, piece: sg.Piece, fromHand: boolean): void 
   }
 }
 
-export function cancelDropMode(s: State): void {
+export function cancelDropMode(s: HeadlessState): void {
   s.dropmode.active = false;
   s.dropmode.piece = undefined;
 }
@@ -36,7 +36,7 @@ export function drop(s: State, e: sg.MouchEvent): void {
     const position = util.eventPosition(e);
     const dest = position && board.getKeyAtDomPos(position, board.sentePov(s), s.dimensions, s.dom.bounds());
     if (dest) {
-      board.dropNewPiece(s, dest);
+      board.dropNewPiece(s, dest, false, true);
       if (s.dropmode.fromHand) s.dropmode.active = false;
     }
   }

@@ -16,8 +16,7 @@ export function bindBoard(s: State, boundsUpdated: () => void): void {
 
   if (s.viewOnly) return;
 
-  // Cannot be passive, because we prevent touch scrolling and dragging of
-  // selected elements.
+  // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
   const onStart = startDragOrDraw(s);
   boardEl.addEventListener('touchstart', onStart as EventListener, {
     passive: false,
@@ -133,7 +132,6 @@ function startDragFromHand(s: State): MouchBind {
       (s.movable.color === 'both' || s.movable.color === piece.color) &&
       s.hands.handMap.get(piece.color)?.get(piece.role)
     ) {
-      cancelDropMode(s);
       drag.dragNewPiece(s, piece, e, true, false);
     }
   };
@@ -145,8 +143,7 @@ function selectToDropFromHand(s: State): MouchBind {
       piece &&
       (s.movable.color === 'both' || s.movable.color === piece.color) &&
       s.hands.handMap.get(piece.color)?.get(piece.role) &&
-      (e.type !== 'touchend' ||
-        !s.draggable.current ||
+      (!s.draggable.current ||
         (Math.abs(s.draggable.current.pos[0] - s.draggable.current.origPos[0]) < 20 &&
           Math.abs(s.draggable.current.pos[1] - s.draggable.current.origPos[1]) < 20))
     ) {
