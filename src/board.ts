@@ -218,7 +218,8 @@ function canDrop(state: HeadlessState, dest: sg.Key): boolean {
   return (
     !!piece &&
     ('00' === dest || !state.pieces.has(dest)) &&
-    (state.movable.color === 'both' || (state.movable.color === piece.color && state.turnColor === piece.color))
+    (state.movable.color === 'both' || (state.movable.color === piece.color && state.turnColor === piece.color)) &&
+    (state.movable.free || !!state.movable.dropDests?.get(piece.role)?.includes(dest))
   );
 }
 
