@@ -225,8 +225,8 @@ function computeSquareClasses(s: State): SquareClasses {
     }
   } else if (s.dropmode.active || s.draggable.current?.orig === '00') {
     const piece = s.dropmode.active ? s.dropmode.piece : s.draggable.current?.piece;
-    if (piece && s.movable.showDropDests) {
-      const dests = s.movable.dropDests?.get(piece.role);
+    if (piece && s.droppable.showDests) {
+      const dests = s.droppable.dests?.get(piece.role);
       if (dests)
         for (const k of dests) {
           addSquare(squares, k, 'move-dest');

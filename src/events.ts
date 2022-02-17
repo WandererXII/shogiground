@@ -129,7 +129,7 @@ function startDragFromHand(s: State): MouchBind {
     const piece = getPiece(e.target as HTMLElement);
     if (
       piece &&
-      (s.movable.color === 'both' || s.movable.color === piece.color) &&
+      (s.activeColor === 'both' || s.activeColor === piece.color) &&
       s.hands.handMap.get(piece.color)?.get(piece.role)
     ) {
       drag.dragNewPiece(s, piece, e, true, false);
@@ -141,7 +141,7 @@ function selectToDropFromHand(s: State): MouchBind {
     const piece = getPiece(e.target as HTMLElement);
     if (
       piece &&
-      (s.movable.color === 'both' || s.movable.color === piece.color) &&
+      (s.activeColor === 'both' || s.activeColor === piece.color) &&
       s.hands.handMap.get(piece.color)?.get(piece.role) &&
       (!s.draggable.current ||
         (Math.abs(s.draggable.current.pos[0] - s.draggable.current.origPos[0]) < 20 &&

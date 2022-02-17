@@ -11,11 +11,12 @@ export interface Config {
   };
   orientation?: sg.Color; // board orientation. sente | gote
   turnColor?: sg.Color; // turn to play. sente | gote
+  activeColor?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
   check?: sg.Color | boolean; // true for current color, false to unset
   lastMove?: sg.Key[]; // squares part of the last move ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
   coordinates?: boolean; // include coords attributes
-  notation?: sg.Notation;
+  notation?: sg.Notation; // only relevant for coords
   grid?: boolean; // include grid svg element
   renderHands?: boolean; // include hands elements
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
@@ -35,17 +36,20 @@ export interface Config {
     enabled?: boolean;
     duration?: number;
   };
-  // relevant for both moves and drops - todo rename, but to what?
   movable?: {
-    free?: boolean; // all moves and drops are valid - board editor
-    color?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
+    free?: boolean; // all moves are valid - board editor
     dests?: sg.Dests; // valid moves. {"2a" ["3a" "4a"] "1b" ["3a" "3c"]}
     showDests?: boolean; // whether to add the move-dest class on squares
-    dropDests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
-    showDropDests?: boolean; // whether to add the move-dest class on squares for drops
     events?: {
-      afterMove?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
-      afterDrop?: (role: sg.Piece, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after a new piece is dropped on the board
+      after?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
+    };
+  };
+  droppable?: {
+    free?: boolean; // all drops are valid - board editor
+    dests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
+    showDests?: boolean; // whether to add the move-dest class on squares
+    events?: {
+      after?: (role: sg.Piece, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after the drop has been played
     };
   };
   premovable?: {
@@ -106,7 +110,7 @@ export interface Config {
 export function configure(state: HeadlessState, config: Config): void {
   // don't merge destinations and autoShapes. Just override.
   if (config.movable?.dests) state.movable.dests = undefined;
-  if (config.movable?.dropDests) state.movable.dropDests = undefined;
+  if (config.droppable?.dests) state.droppable.dests = undefined;
   if (config.drawable?.autoShapes) state.drawable.autoShapes = [];
 
   merge(state, config);

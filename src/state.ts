@@ -10,6 +10,7 @@ export interface HeadlessState {
   orientation: sg.Color; // board orientation. sente | gote
   dimensions: sg.Dimensions; // board dimensions. at least 1x1 and at most 9x9
   turnColor: sg.Color; // turn to play. sente | gote
+  activeColor?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
   check?: sg.Key; // square currently in check "5a"
   lastMove?: sg.Key[]; // squares part of the last move ["2b"; "8h"]
   selected?: sg.Key; // square currently selected "1a"
@@ -37,14 +38,18 @@ export interface HeadlessState {
   };
   movable: {
     free: boolean; // all moves are valid - board editor
-    color?: sg.Color | 'both'; // color that can move. sente | gote | both
     dests?: sg.Dests; // valid moves. {"7g" ["7f"] "5i" ["4h" "5h" "6h"]}
-    dropDests?: sg.DropDests;
     showDests: boolean; // whether to add the move-dest class on squares
-    showDropDests: boolean;
     events: {
-      afterMove?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
-      afterDrop?: (role: sg.Piece, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after a new piece is dropped on the board
+      after?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
+    };
+  };
+  droppable: {
+    free: boolean; // all drops are valid - board editor
+    dests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
+    showDests: boolean; // whether to add the move-dest class on squares
+    events: {
+      after?: (role: sg.Piece, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after the drop has been played
     };
   };
   premovable: {
@@ -115,6 +120,7 @@ export function defaults(): HeadlessState {
     dimensions: { files: 9, ranks: 9 },
     orientation: 'sente',
     turnColor: 'sente',
+    activeColor: 'both',
     coordinates: true,
     notation: sg.Notation.WESTERN,
     grid: false,
@@ -157,9 +163,12 @@ export function defaults(): HeadlessState {
     },
     movable: {
       free: true,
-      color: 'both',
       showDests: true,
-      showDropDests: true,
+      events: {},
+    },
+    droppable: {
+      free: true,
+      showDests: true,
       events: {},
     },
     premovable: {
