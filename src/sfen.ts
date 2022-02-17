@@ -1,5 +1,5 @@
-import { pos2key } from './util';
-import * as sg from './types';
+import { pos2key } from './util.js';
+import * as sg from './types.js';
 
 export function stringToRole(ch: string): sg.Role | undefined {
   switch (ch) {

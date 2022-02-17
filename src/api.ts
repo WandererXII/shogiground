@@ -1,12 +1,12 @@
-import { State } from './state';
-import * as board from './board';
-import { writeBoard, writeHands } from './sfen';
-import { Config, configure } from './config';
-import { anim, render } from './anim';
-import { cancel as dragCancel, dragNewPiece } from './drag';
-import { cancelDropMode as dropCancel } from './drop';
-import { DrawShape } from './draw';
-import * as sg from './types';
+import { State } from './state.js';
+import * as board from './board.js';
+import { writeBoard, writeHands } from './sfen.js';
+import { Config, configure } from './config.js';
+import { anim, render } from './anim.js';
+import { cancel as dragCancel, dragNewPiece } from './drag.js';
+import { cancelDropMode as dropCancel } from './drop.js';
+import { DrawShape } from './draw.js';
+import * as sg from './types.js';
 
 export interface Api {
   // reconfigure the instance. Accepts all config options, except for viewOnly & drawable.visible.

@@ -1,9 +1,17 @@
-import { State } from './state';
-import { key2pos, createEl, posToTranslateRel, posToTranslateAbs, translateRel, translateAbs, opposite } from './util';
-import { sentePov } from './board';
-import { AnimCurrent, AnimVectors, AnimVector, AnimFadings } from './anim';
-import { DragCurrent } from './drag';
-import * as sg from './types';
+import { State } from './state.js';
+import {
+  key2pos,
+  createEl,
+  posToTranslateRel,
+  posToTranslateAbs,
+  translateRel,
+  translateAbs,
+  opposite,
+} from './util.js';
+import { sentePov } from './board.js';
+import { AnimCurrent, AnimVectors, AnimVector, AnimFadings } from './anim.js';
+import { DragCurrent } from './drag.js';
+import * as sg from './types.js';
 
 type PieceName = string; // `$color $role`
 

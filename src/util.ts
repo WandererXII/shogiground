@@ -1,4 +1,4 @@
-import * as sg from './types';
+import * as sg from './types.js';
 
 // 1a, 1b, 1c ...
 export const allKeys: readonly sg.Key[] = Array.prototype.concat(...sg.files.map(c => sg.ranks.map(r => c + r)));

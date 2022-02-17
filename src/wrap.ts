@@ -1,7 +1,7 @@
-import { HeadlessState } from './state';
-import { setVisible, createEl } from './util';
-import { colors, Notation, Elements, Dimensions } from './types';
-import { createElement as createSVG, setAttributes } from './svg';
+import { HeadlessState } from './state.js';
+import { setVisible, createEl } from './util.js';
+import { colors, Notation, Elements, Dimensions } from './types.js';
+import { createElement as createSVG, setAttributes } from './svg.js';
 
 export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boolean): Elements {
   // .sg-wrap (element passed to Shogiground)

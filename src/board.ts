@@ -1,7 +1,7 @@
-import { HeadlessState } from './state';
-import { pos2key, opposite } from './util';
-import { premove } from './premove';
-import * as sg from './types';
+import { HeadlessState } from './state.js';
+import { pos2key, opposite } from './util.js';
+import { premove } from './premove.js';
+import * as sg from './types.js';
 
 export function callUserFunction<T extends (...args: any[]) => void>(f: T | undefined, ...args: Parameters<T>): void {
   if (f) setTimeout(() => f(...args), 1);

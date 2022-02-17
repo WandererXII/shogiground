@@ -1,9 +1,9 @@
-import { HeadlessState, State } from './state';
-import * as sg from './types';
-import * as board from './board';
-import * as util from './util';
-import { cancel as dragCancel } from './drag';
-import { predrop } from './premove';
+import { HeadlessState, State } from './state.js';
+import * as sg from './types.js';
+import * as board from './board.js';
+import * as util from './util.js';
+import { cancel as dragCancel } from './drag.js';
+import { predrop } from './premove.js';
 
 export function setDropMode(s: State, piece: sg.Piece, fromHand: boolean): void {
   s.dropmode.active = true;

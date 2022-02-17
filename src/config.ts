@@ -1,8 +1,8 @@
-import { HeadlessState } from './state';
-import { setCheck, setSelected } from './board';
-import { inferDimensions, readBoard as sfenRead, readHands } from './sfen';
-import { DrawShape, DrawBrushes } from './draw';
-import * as sg from './types';
+import { HeadlessState } from './state.js';
+import { setCheck, setSelected } from './board.js';
+import { inferDimensions, readBoard as sfenRead, readHands } from './sfen.js';
+import { DrawShape, DrawBrushes } from './draw.js';
+import * as sg from './types.js';
 
 export interface Config {
   sfen?: {
