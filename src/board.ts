@@ -79,12 +79,12 @@ export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.P
   return captured || true;
 }
 
-export function baseNewPiece(state: HeadlessState, piece: sg.Piece, key: sg.Key, force?: boolean): boolean {
+export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, force?: boolean): boolean {
   if (state.pieces.has(key)) {
     if (force) state.pieces.delete(key);
     else return false;
   }
-  callUserFunction(state.events.dropNewPiece, piece, key);
+  callUserFunction(state.events.drop, piece, key);
   state.pieces.set(key, piece);
   state.lastMove = [key];
   state.check = undefined;
@@ -106,6 +106,29 @@ function baseUserMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.Piec
   return result;
 }
 
+export function userDrop(state: HeadlessState, dest: sg.Key, force?: boolean, fromHand?: boolean): void {
+  const piece = state.pieces.get('00');
+  if (piece && (canDrop(state, dest) || force)) {
+    state.pieces.delete('00');
+    if (baseDrop(state, piece, dest, force) && fromHand) {
+      removeFromHand(state, piece);
+      state.dropmode.active = false;
+      state.dropmode.piece = undefined;
+    }
+    callUserFunction(state.movable.events.afterDrop, piece, dest, {
+      premove: false,
+      predrop: false,
+    });
+  } else if (piece && canPredrop(state, dest)) {
+    setPredrop(state, piece.role, dest);
+  } else {
+    unsetPremove(state);
+    unsetPredrop(state);
+  }
+  state.pieces.delete('00');
+  unselect(state);
+}
+
 export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
   if (canMove(state, orig, dest)) {
     const result = baseUserMove(state, orig, dest);
@@ -118,7 +141,7 @@ export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): bool
         holdTime,
       };
       if (result !== true) metadata.captured = result;
-      callUserFunction(state.movable.events.after, orig, dest, metadata);
+      callUserFunction(state.movable.events.afterMove, orig, dest, metadata);
       return true;
     }
   } else if (canPremove(state, orig, dest)) {
@@ -141,29 +164,6 @@ export function removeFromHand(state: HeadlessState, piece: sg.Piece, cnt = 1): 
   const hand = state.hands.handMap.get(piece.color);
   const num = hand?.get(piece.role);
   if (hand && num) hand.set(piece.role, Math.max(num - cnt, 0));
-}
-
-export function dropNewPiece(state: HeadlessState, dest: sg.Key, force?: boolean, fromHand?: boolean): void {
-  const piece = state.pieces.get('00');
-  if (piece && (canDrop(state, dest) || force)) {
-    state.pieces.delete('00');
-    if (baseNewPiece(state, piece, dest, force) && fromHand) {
-      removeFromHand(state, piece);
-      state.dropmode.active = false;
-      state.dropmode.piece = undefined;
-    }
-    callUserFunction(state.movable.events.afterNewPiece, piece.role, dest, {
-      premove: false,
-      predrop: false,
-    });
-  } else if (piece && canPredrop(state, dest)) {
-    setPredrop(state, piece.role, dest);
-  } else {
-    unsetPremove(state);
-    unsetPredrop(state);
-  }
-  state.pieces.delete('00');
-  unselect(state);
 }
 
 export function selectSquare(state: HeadlessState, key: sg.Key, force?: boolean): void {
@@ -280,7 +280,7 @@ export function playPremove(state: HeadlessState): boolean {
     if (result) {
       const metadata: sg.MoveMetadata = { premove: true };
       if (result !== true) metadata.captured = result;
-      callUserFunction(state.movable.events.after, orig, dest, metadata);
+      callUserFunction(state.movable.events.afterMove, orig, dest, metadata);
       success = true;
     }
   }
@@ -297,8 +297,8 @@ export function playPredrop(state: HeadlessState): boolean {
       role: drop.role,
       color: state.movable.color,
     } as sg.Piece;
-    if (baseNewPiece(state, piece, drop.key)) {
-      callUserFunction(state.movable.events.afterNewPiece, drop.role, drop.key, {
+    if (baseDrop(state, piece, drop.key)) {
+      callUserFunction(state.movable.events.afterDrop, piece, drop.key, {
         premove: false,
         predrop: true,
       });

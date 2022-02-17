@@ -1,9 +1,10 @@
 import { State } from './state';
 import * as board from './board';
-import { writeBoard as sfenWrite } from './sfen';
+import { writeBoard, writeHands } from './sfen';
 import { Config, configure } from './config';
 import { anim, render } from './anim';
 import { cancel as dragCancel, dragNewPiece } from './drag';
+import { cancelDropMode as dropCancel } from './drop';
 import { DrawShape } from './draw';
 import * as sg from './types';
 
@@ -15,8 +16,11 @@ export interface Api {
   // read shogiground state; write at your own risks.
   state: State;
 
-  // get the position as a Sfen string of board
-  getSfen(): sg.BoardSfen;
+  // get the position on the board in Forsyth notation
+  getBoardSfen(): sg.BoardSfen;
+
+  // get the pieces in hand in Forsyth notation
+  getHandsSfen(): sg.HandsSfen;
 
   // change the view angle
   toggleOrientation(): void;
@@ -24,14 +28,14 @@ export interface Api {
   // perform a move programmatically
   move(orig: sg.Key, dest: sg.Key): void;
 
+  // drops new piece on the board programmatically
+  drop(piece: sg.Piece, key: sg.Key): void;
+
   // add and/or remove arbitrary pieces on the board
   setPieces(pieces: sg.PiecesDiff): void;
 
   // click a square programmatically
   selectSquare(key: sg.Key | null, force?: boolean): void;
-
-  // put a new piece on the board
-  newPiece(piece: sg.Piece, key: sg.Key): void;
 
   // play the current premove, if any; returns true if premove was played
   playPremove(): boolean;
@@ -45,7 +49,7 @@ export interface Api {
   // cancel the current predrop, if any
   cancelPredrop(): void;
 
-  // cancel the current move being made
+  // cancel the current move being made, premoves and predrops
   cancelMove(): void;
 
   // cancel current move and prevent further ones
@@ -86,10 +90,19 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     state,
 
-    // todo - getBoardSfen, getHandsSfen
-    getSfen: () => sfenWrite(state.pieces),
+    getBoardSfen: () => writeBoard(state.pieces, state.dimensions),
+
+    getHandsSfen: () => writeHands(state.hands.handMap, state.hands.handRoles),
 
     toggleOrientation,
+
+    move(orig, dest): void {
+      anim(state => board.baseMove(state, orig, dest), state);
+    },
+
+    drop(piece, key): void {
+      anim(state => board.baseDrop(state, piece, key), state);
+    },
 
     setPieces(pieces): void {
       anim(state => board.setPieces(state, pieces), state);
@@ -101,14 +114,6 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
         board.unselect(state);
         state.dom.redraw();
       }
-    },
-
-    move(orig, dest): void {
-      anim(state => board.baseMove(state, orig, dest), state);
-    },
-
-    newPiece(piece, key): void {
-      anim(state => board.baseNewPiece(state, piece, key), state);
     },
 
     playPremove(): boolean {
@@ -141,6 +146,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       render(state => {
         board.cancelMove(state);
         dragCancel(state);
+        dropCancel(state);
       }, state);
     },
 
@@ -148,6 +154,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       render(state => {
         board.stop(state);
         dragCancel(state);
+        dropCancel(state);
       }, state);
     },
 

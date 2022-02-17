@@ -36,7 +36,7 @@ export function drop(s: State, e: sg.MouchEvent): void {
     const position = util.eventPosition(e);
     const dest = position && board.getKeyAtDomPos(position, board.sentePov(s), s.dimensions, s.dom.bounds());
     if (dest) {
-      board.dropNewPiece(s, dest, false, true);
+      board.userDrop(s, dest, false, true);
       if (s.dropmode.fromHand) s.dropmode.active = false;
     }
   }

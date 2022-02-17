@@ -44,8 +44,8 @@ export interface Config {
     dropDests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
     showDropDests?: boolean; // whether to add the move-dest class on squares for drops
     events?: {
-      after?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
-      afterNewPiece?: (role: sg.Role, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after a new piece is dropped on the board
+      afterMove?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
+      afterDrop?: (role: sg.Piece, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after a new piece is dropped on the board
     };
   };
   premovable?: {
@@ -80,7 +80,7 @@ export interface Config {
   events?: {
     change?: () => void; // called after the situation changes on the board
     move?: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => void;
-    dropNewPiece?: (piece: sg.Piece, key: sg.Key) => void;
+    drop?: (piece: sg.Piece, key: sg.Key) => void;
     select?: (key: sg.Key) => void; // called when a square is selected
     insert?: (elements: sg.Elements) => void; // when the board DOM has been (re)inserted
   };

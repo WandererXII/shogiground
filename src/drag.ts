@@ -170,7 +170,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   const eventPos = util.eventPosition(e) || cur.pos;
   const dest = board.getKeyAtDomPos(eventPos, board.sentePov(s), s.dimensions, s.dom.bounds());
   if (dest && cur.started && cur.orig !== dest) {
-    if (cur.newPiece) board.dropNewPiece(s, dest, cur.force, cur.fromHand);
+    if (cur.newPiece) board.userDrop(s, dest, cur.force, cur.fromHand);
     else {
       s.stats.ctrlKey = e.ctrlKey;
       if (board.userMove(s, cur.orig, dest)) s.stats.dragged = true;

@@ -1,4 +1,4 @@
-import { pos2key, invFiles } from './util';
+import { pos2key } from './util';
 import * as sg from './types';
 
 export function stringToRole(ch: string): sg.Role | undefined {
@@ -104,10 +104,12 @@ export function readBoard(sfen: sg.BoardSfen, dims: sg.Dimensions): sg.Pieces {
   return pieces;
 }
 
-export function writeBoard(pieces: sg.Pieces): sg.BoardSfen {
+export function writeBoard(pieces: sg.Pieces, dims: sg.Dimensions): sg.BoardSfen {
+  const reversedFiles = sg.files.slice(dims.files).reverse();
   return sg.ranks
+    .slice(dims.ranks)
     .map(y =>
-      invFiles
+      reversedFiles
         .map(x => {
           const piece = pieces.get((x + y) as sg.Key);
           if (piece) {
@@ -151,5 +153,15 @@ export function readHands(str: sg.HandsSfen): sg.Hands {
   ]);
 }
 
-// todo
-// export function writeHands()
+export function writeHands(hands: sg.Hands, handRoles: sg.Role[]): sg.HandsSfen {
+  let senteHandStr = '';
+  let goteHandStr = '';
+  for (const role of handRoles) {
+    const senteCnt = hands.get('sente')?.get(role);
+    const goteCnt = hands.get('gote')?.get(role);
+    if (senteCnt) senteHandStr += senteCnt > 1 ? senteCnt.toString() + letters[role] : letters[role];
+    if (goteCnt) goteHandStr += goteCnt > 1 ? goteCnt.toString() + letters[role] : letters[role];
+  }
+  if (senteHandStr || goteHandStr) return senteHandStr.toUpperCase() + goteHandStr;
+  return '-';
+}
