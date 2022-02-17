@@ -58,9 +58,9 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     container.appendChild(customSvg);
   }
 
-  if (s.coordinates) {
+  if (s.coordinates.enabled) {
     const orientClass = s.orientation === 'gote' ? ' gote' : '';
-    const ranks = ranksByNotation(s.notation);
+    const ranks = ranksByNotation(s.coordinates.notation);
     container.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
     container.appendChild(
       renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, s.dimensions.files)

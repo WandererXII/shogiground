@@ -14,18 +14,14 @@ export interface HeadlessState {
   check?: sg.Key; // square currently in check "5a"
   lastMove?: sg.Key[]; // squares part of the last move ["2b"; "8h"]
   selected?: sg.Key; // square currently selected "1a"
-  coordinates: boolean; // include coords attributes
-  notation: sg.Notation; // only relevant for coords
   grid: boolean; // include grid svg element
   viewOnly: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu: boolean; // because who needs a context menu on a shogi board
   resizable: boolean; // listens to shogiground.resize on document.body to clear bounds cache
   blockTouchScroll: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
-  hands: {
-    handMap: sg.Hands;
-    enabled: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
-    handRoles: sg.Role[]; // roles to render in sg-hand
-    captureProcessing: (role: sg.Role) => sg.Role | undefined; // what to do with captured piece, before storing it in hand
+  coordinates: {
+    enabled: boolean; // include coords attributes
+    notation: sg.Notation;
   };
   highlight: {
     lastMove: boolean; // add last-move class to squares
@@ -35,6 +31,12 @@ export interface HeadlessState {
     enabled: boolean;
     duration: number;
     current?: AnimCurrent;
+  };
+  hands: {
+    handMap: sg.Hands;
+    enabled: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
+    handRoles: sg.Role[]; // roles to render in sg-hand
+    captureProcessing: (role: sg.Role) => sg.Role | undefined; // what to do with captured piece, before storing it in hand
   };
   movable: {
     free: boolean; // all moves are valid - board editor
@@ -121,13 +123,23 @@ export function defaults(): HeadlessState {
     orientation: 'sente',
     turnColor: 'sente',
     activeColor: 'both',
-    coordinates: true,
-    notation: sg.Notation.WESTERN,
     grid: false,
     viewOnly: false,
     disableContextMenu: false,
     resizable: true,
     blockTouchScroll: false,
+    coordinates: {
+      enabled: true,
+      notation: sg.Notation.WESTERN,
+    },
+    highlight: {
+      lastMove: true,
+      check: true,
+    },
+    animation: {
+      enabled: true,
+      duration: 200,
+    },
     hands: {
       handMap: new Map(),
       enabled: true,
@@ -152,14 +164,6 @@ export function defaults(): HeadlessState {
             return role;
         }
       },
-    },
-    highlight: {
-      lastMove: true,
-      check: true,
-    },
-    animation: {
-      enabled: true,
-      duration: 200,
     },
     movable: {
       free: true,

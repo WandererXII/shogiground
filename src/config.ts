@@ -15,18 +15,15 @@ export interface Config {
   check?: sg.Color | boolean; // true for current color, false to unset
   lastMove?: sg.Key[]; // squares part of the last move ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
-  coordinates?: boolean; // include coords attributes
-  notation?: sg.Notation; // only relevant for coords
   grid?: boolean; // include grid svg element
   renderHands?: boolean; // include hands elements
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu?: boolean; // because who needs a context menu on a board
   blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
   resizable?: boolean; // listens to shogiground.resize on document.body to clear bounds cache
-  hands?: {
-    enabled?: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
-    handRoles?: sg.Role[]; // roles to render in sg-hand
-    captureProcessing?: (role: sg.Role) => sg.Role | undefined; // what to do with captured role, before storing it in hand, e.g. unpromoting
+  coordinates?: {
+    enabled?: boolean; // include coords attributes
+    notation?: sg.Notation;
   };
   highlight?: {
     lastMove?: boolean; // add last-move class to squares
@@ -35,6 +32,11 @@ export interface Config {
   animation?: {
     enabled?: boolean;
     duration?: number;
+  };
+  hands?: {
+    enabled?: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
+    handRoles?: sg.Role[]; // roles to render in sg-hand
+    captureProcessing?: (role: sg.Role) => sg.Role | undefined; // what to do with captured role, before storing it in hand, e.g. unpromoting
   };
   movable?: {
     free?: boolean; // all moves are valid - board editor
