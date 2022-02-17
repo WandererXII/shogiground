@@ -91,11 +91,11 @@ export function premove(pieces: sg.Pieces, key: sg.Key, dims: sg.Dimensions): sg
 }
 
 function lastRow(dims: sg.Dimensions, pos: sg.Pos, color: sg.Color): boolean {
-  return color === 'sente' ? pos[1] === dims.ranks - 1 : pos[1] === 1;
+  return color === 'sente' ? pos[1] === 0 : pos[1] === dims.ranks - 1;
 }
 
 function lastTwoRows(dims: sg.Dimensions, pos: sg.Pos, color: sg.Color): boolean {
-  return lastRow(dims, pos, color) || (color === 'sente' ? pos[1] === dims.ranks - 2 : pos[1] === 2);
+  return lastRow(dims, pos, color) || (color === 'sente' ? pos[1] === 1 : pos[1] === dims.ranks - 2);
 }
 
 export function predrop(pieces: sg.Pieces, dropPiece: sg.Piece, dims: sg.Dimensions): sg.Key[] {
