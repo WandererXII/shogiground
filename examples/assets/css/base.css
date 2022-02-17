@@ -21,6 +21,10 @@ nav {
   height: calc(100% / 11 * 12);
 }
 
+.tall.sg-wrap piece {
+  background-position: center;
+}
+
 .sg-wrap .sg-grid {
   opacity: 1;
   stroke-width: 2;
@@ -54,6 +58,7 @@ sg-hand {
   margin: unset;
   cursor: pointer;
   pointer-events: auto;
+  border: 2px solid transparent;
 }
 
 .sg-wrap sg-hand piece::after {

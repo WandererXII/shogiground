@@ -23,17 +23,13 @@
     </div>
     <script src="../dist/shogiground.js"></script>
     <script>
-      function s(e) {
-        console.log(e.target);
-      }
       const config = {
         sfen: {
           board: 'lnsgkgsnl/1r5b1/+ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGS+NL',
-          hands: '12P3r',
+          hands: 'R12P3r',
         },
         resizable: true,
         orientation: 'sente',
-        renderHands: true,
         grid: true,
       };
       const ground = Shogiground(document.getElementById('dirty'), config);
