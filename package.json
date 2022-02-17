@@ -42,9 +42,10 @@
     "ui",
     "typescript"
   ],
-  "author": "Thibault Duplessis (https://github.com/ornicar) - shogiground; WandererXII - modified for shogi",
+  "author": "Thibault Duplessis (https://github.com/ornicar); WandererXII - modified for shogi",
   "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/WandererXII/shogiground/issues"
-  }
+  },
+  "funding": "https://lishogi.org/patron"
 }
