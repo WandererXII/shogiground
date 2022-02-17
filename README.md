@@ -1,19 +1,19 @@
-# Chessground
+# Shogiground
 
-[![Continuous Integration](https://github.com/ornicar/chessground/workflows/Continuous%20Integration/badge.svg)](https://github.com/ornicar/chessground/actions?query=workflow%3A%22Continuous+Integration%22)
-[![npm](https://img.shields.io/npm/v/chessground)](https://www.npmjs.com/package/chessground)
+[![Continuous Integration](https://github.com/WandererXII/shogiground/workflows/Continuous%20Integration/badge.svg)](https://github.com/WandererXII/shogiground/actions?query=workflow%3A%22Continuous+Integration%22)
+[![npm](https://img.shields.io/npm/v/shogiground)](https://www.npmjs.com/package/shogiground)
 
-![Chessground in 2D and 3D](/screenshot/twin.jpg)
+![Shogiground](/screenshot/board1.jpg)
 
-_Chessground_ is a free/libre open source chess UI developed for
-[lichess.org](https://lichess.org).
+_Shogiground_ is a free/libre open source shogi UI developed for
+[lishogi.org](https://lishogi.org). Forked from [Chessground](https://github.com/ornicar/chessground)
 It targets modern browsers, as well as mobile development using Cordova.
 
 ## License
 
-Chessground is distributed under the **GPL-3.0 license** (or any later version,
+Shogiground is distributed under the **GPL-3.0 license** (or any later version,
 at your option).
-When you use Chessground for your website, your combined work may be
+When you use Shogiground for your website, your combined work may be
 distributed only under the GPL. **You must release your source code** to the
 users of your website.
 
@@ -21,24 +21,24 @@ Please read more about GPL for JavaScript on [greendrake.info/#nfy0](http://gree
 
 ## Demos
 
-- [Chess TV](https://lichess.org/tv)
-- [Board editor](https://lichess.org/editor)
-- [Puzzles](https://lichess.org/training)
-- [Analysis board](https://lichess.org/ofWXRFGy)
-- [Game preview](https://lichess.org/games)
+- [Shogi TV](https://lishogi.org/tv)
+- [Board editor](https://lishogi.org/editor)
+- [Puzzles](https://lishogi.org/training)
+- [Analysis board](https://lishogi.org/analysis)
+- [Game preview](https://lishogi.org/games)
 
 ## Features
 
-Chessground is designed to fulfill all lichess.org web and mobile apps needs, so it is pretty featureful.
+Shogiground is designed to fulfill all lishogi.org web and mobile apps needs, so it is pretty featureful.
 
 - Well typed with TypeScript
 - Fast. Uses a custom DOM diff algorithm to reduce DOM writes to the absolute minimum.
-- Small footprint: 10K gzipped (30K unzipped). No dependencies.
+- Small footprint: 32K unzipped. No dependencies.
 - SVG drawing of circles and arrows on the board
+- SVG grid
 - Entirely configurable and reconfigurable at any time
 - Styling with CSS only: board and pieces can be changed by simply switching a class
 - Fluid layout: board can be resized at any time
-- Support for 3D pieces and boards
 - Full mobile support (touchstart, touchmove, touchend)
 - Move pieces by click
 - Move pieces by drag & drop
@@ -46,43 +46,38 @@ Chessground is designed to fulfill all lichess.org web and mobile apps needs, so
   - Centralisation of the piece under the cursor
   - Piece ghost element
   - Drop off revert or trash
-- Premove by click or drag
-- Drag new pieces onto the board (editor, Crazyhouse)
+- Drop pieces by click
+- Drop pieces by drag
+- Premove or predrop by click or drag
+- Hand managment
 - Animation of pieces: moving and fading away
 - Display last move, check, move destinations, and premove destinations (hover effects possible)
-- Import and export positions in FEN notation
+- Import and export positions in SFEN notation
 - User callbacks
-- No chess logic inside: can be used for [chess variants](https://lichess.org/variant)
+- No shogi logic inside: can be used for [shogi variants](https://lishogi.org/variant)
 
 ## Installation
 
 ```sh
-npm install --save chessground
+npm install --save shogiground
 ```
 
 ### Usage
 
 ```js
-const Chessground = require('chessground').Chessground;
+const Shogiground = require('shogiground').Shogiground;
 
 const config = {};
-const ground = Chessground(document.body, config);
+const ground = Shogiground(document.body, config);
 ```
-
-### Wrappers
-
-- React: [ruilisi/react-chessground](https://github.com/ruilisi/react-chessground)
-- Vue.js: [vitogit/vue-chessboard](https://github.com/vitogit/vue-chessboard)
-
-More? Please make a pull request to include it here.
 
 ## Documentation
 
-- [Config types](https://github.com/ornicar/chessground/tree/master/src/config.ts)
-- [Default config values](https://github.com/ornicar/chessground/tree/master/src/state.ts)
-- [API type signatures](https://github.com/ornicar/chessground/tree/master/src/api.ts)
-- [Examples repo](https://github.com/ornicar/chessground-examples/tree/master/src/units)
-- [Base CSS](https://github.com/ornicar/chessground-examples/blob/master/assets/chessground.css)
+- [Config types](https://github.com/WandererXII/shogiground/tree/master/src/config.ts)
+- [Default config values](https://github.com/WandererXII/shogiground/tree/master/src/state.ts)
+- [API type signatures](https://github.com/WandererXII/shogiground/tree/master/src/api.ts)
+- [Examples repo](https://github.com/WandererXII/shogiground/tree/master/examples/index.html)
+- [Base CSS](https://github.com/WandererXII/shogiground/tree/master/assets/css/shogiground.css)
 
 ## Development
 
