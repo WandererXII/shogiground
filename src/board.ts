@@ -2,6 +2,7 @@ import { HeadlessState } from './state.js';
 import { pos2key, opposite } from './util.js';
 import { premove } from './premove.js';
 import * as sg from './types.js';
+import { predrop } from './predrop.js';
 
 export function callUserFunction<T extends (...args: any[]) => void>(f: T | undefined, ...args: Parameters<T>): void {
   if (f) setTimeout(() => f(...args), 1);
@@ -252,7 +253,11 @@ function canPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
 
 function canPredrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   const destPiece = state.pieces.get(dest);
-  return isPredroppable(state, piece) && (!destPiece || destPiece.color !== state.activeColor);
+  return (
+    isPredroppable(state, piece) &&
+    (!destPiece || destPiece.color !== state.activeColor) &&
+    predrop(state.pieces, piece, state.dimensions).includes(dest)
+  );
 }
 
 export function isDraggable(state: HeadlessState, orig: sg.Key): boolean {
