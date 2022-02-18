@@ -231,7 +231,7 @@ function computeSquareClasses(s: State): SquareClasses {
           addSquare(squares, k, 'premove-dest' + (s.pieces.has(k) ? ' oc' : ''));
         }
     }
-  } else if (s.dropmode.active || s.draggable.current?.orig === '00') {
+  } else if (s.dropmode.active || s.draggable.current?.newPiece) {
     const piece = s.dropmode.active ? s.dropmode.piece : s.draggable.current?.piece;
     if (piece && s.droppable.showDests) {
       const dests = s.droppable.dests?.get(piece.role);

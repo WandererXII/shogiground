@@ -125,7 +125,7 @@ export function configure(state: HeadlessState, config: Config): void {
 
   deepMerge(state, config);
 
-  // if a sfen was provided, replace the pieces
+  // if a sfen was provided, replace the pieces, except the currently dragged one
   if (config.sfen?.board) {
     state.dimensions = inferDimensions(config.sfen.board);
     const pieceToDrop = state.pieces.get('00');

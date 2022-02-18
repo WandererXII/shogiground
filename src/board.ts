@@ -110,10 +110,14 @@ function baseUserMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.Piec
   return result;
 }
 
-export function userDrop(state: HeadlessState, dest: sg.Key, force?: boolean, fromHand?: boolean): void {
-  const piece = state.pieces.get('00');
-  if (piece && (canDrop(state, dest) || force)) {
-    state.pieces.delete('00');
+export function userDrop(
+  state: HeadlessState,
+  piece: sg.Piece,
+  dest: sg.Key,
+  force?: boolean,
+  fromHand?: boolean
+): void {
+  if (piece && (canDrop(state, piece, dest) || force)) {
     if (baseDrop(state, piece, dest, force) && fromHand) {
       removeFromHand(state, piece);
       state.dropmode.active = false;
@@ -123,13 +127,12 @@ export function userDrop(state: HeadlessState, dest: sg.Key, force?: boolean, fr
       premove: false,
       predrop: false,
     });
-  } else if (piece && canPredrop(state, dest)) {
+  } else if (piece && canPredrop(state, piece, dest)) {
     setPredrop(state, piece, dest);
   } else {
     unsetPremove(state);
     unsetPredrop(state);
   }
-  state.pieces.delete('00');
   unselect(state);
 }
 
@@ -220,11 +223,10 @@ export function canMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boole
   );
 }
 
-function canDrop(state: HeadlessState, dest: sg.Key): boolean {
-  const piece = state.pieces.get('00');
+function canDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   return (
     !!piece &&
-    ('00' === dest || !state.pieces.has(dest)) &&
+    !state.pieces.has(dest) &&
     (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color)) &&
     (state.droppable.free || !!state.droppable.dests?.get(piece.role)?.includes(dest))
   );
@@ -235,11 +237,9 @@ function isPremovable(state: HeadlessState, orig: sg.Key): boolean {
   return !!piece && state.premovable.enabled && state.activeColor === piece.color && state.turnColor !== piece.color;
 }
 
-export function isPredroppable(state: HeadlessState): boolean {
-  const piece = state.dropmode.active ? state.dropmode.piece : state.draggable.current?.piece;
+export function isPredroppable(state: HeadlessState, piece: sg.Piece): boolean {
   return (
-    !!piece &&
-    (state.dropmode.active || state.draggable.current?.orig === '00') &&
+    (state.dropmode.active || !!state.draggable.current?.newPiece) &&
     state.predroppable.enabled &&
     state.activeColor === piece.color &&
     state.turnColor !== piece.color
@@ -250,16 +250,9 @@ function canPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
   return orig !== dest && isPremovable(state, orig) && premove(state.pieces, orig, state.dimensions).includes(dest);
 }
 
-function canPredrop(state: HeadlessState, dest: sg.Key): boolean {
-  const piece = state.pieces.get('00');
+function canPredrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   const destPiece = state.pieces.get(dest);
-  return (
-    !!piece &&
-    (!destPiece || destPiece.color !== state.activeColor) &&
-    state.predroppable.enabled &&
-    state.activeColor === piece.color &&
-    state.turnColor !== piece.color
-  );
+  return isPredroppable(state, piece) && (!destPiece || destPiece.color !== state.activeColor);
 }
 
 export function isDraggable(state: HeadlessState, orig: sg.Key): boolean {
@@ -295,7 +288,7 @@ export function playPredrop(state: HeadlessState): boolean {
   const drop = state.predroppable.current;
   let success = false;
   if (!drop) return false;
-  if (canDrop(state, drop.key)) {
+  if (canDrop(state, drop.piece, drop.key)) {
     if (baseDrop(state, drop.piece, drop.key)) {
       callUserFunction(state.droppable.events.after, drop.piece, drop.key, {
         premove: false,

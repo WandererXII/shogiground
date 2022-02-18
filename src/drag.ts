@@ -90,7 +90,7 @@ function pieceCloseTo(s: State, pos: sg.NumberPair): boolean {
 }
 
 export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: boolean, force: boolean): void {
-  const key: sg.Key = '00';
+  const key = '00';
   s.pieces.set(key, piece);
   board.unselect(s);
   s.dom.redraw();
@@ -110,7 +110,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: 
     force: force,
     keyHasChanged: false,
   };
-  if (board.isPredroppable(s)) {
+  if (board.isPredroppable(s, piece)) {
     s.predroppable.dropDests = predrop(s.pieces, piece, s.dimensions);
   }
   processDrag(s);
@@ -174,8 +174,10 @@ export function end(s: State, e: sg.MouchEvent): void {
   const eventPos = util.eventPosition(e) || cur.pos;
   const dest = board.getKeyAtDomPos(eventPos, board.sentePov(s), s.dimensions, s.dom.bounds());
   if (dest && cur.started && cur.orig !== dest) {
-    if (cur.newPiece) board.userDrop(s, dest, cur.force, cur.fromHand);
-    else {
+    if (cur.newPiece) {
+      board.userDrop(s, cur.piece, dest, cur.force, cur.fromHand);
+      s.pieces.delete('00');
+    } else {
       s.stats.ctrlKey = e.ctrlKey;
       if (board.userMove(s, cur.orig, dest)) s.stats.dragged = true;
     }
