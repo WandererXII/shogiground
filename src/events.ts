@@ -42,7 +42,7 @@ function bindHand(s: State, handEl: HTMLElement): void {
     passive: false,
   });
 
-  if (s.selectable) {
+  if (s.selectable.enabled) {
     handEl.addEventListener('mouseup', selectToDropFromHand(s) as EventListener, { passive: false });
     handEl.addEventListener('touchend', selectToDropFromHand(s) as EventListener, { passive: false });
   }
@@ -117,9 +117,9 @@ function squareOccupied(s: State, e: sg.MouchEvent): boolean {
 }
 
 function getPiece(pieceEl: HTMLElement): sg.Piece | undefined {
-  const role = pieceEl.dataset.role as sg.Role;
-  const color = pieceEl.dataset.color as sg.Color;
-  if (role && color) return { role: role, color: color };
+  const role = pieceEl.dataset.role;
+  const color = pieceEl.dataset.color;
+  if (sg.isRole(role) && sg.isColor(color)) return { role: role, color: color };
   return;
 }
 
