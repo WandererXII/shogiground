@@ -34,6 +34,12 @@ export interface Api {
   // add and/or remove arbitrary pieces on the board
   setPieces(pieces: sg.PiecesDiff): void;
 
+  // add piece.role to hand of piece.color
+  addToHand(piece: sg.Piece, count?: number): void;
+
+  // remove piece.role from hand of piece.color
+  removeFromHand(piece: sg.Piece, count?: number): void;
+
   // click a square programmatically
   selectSquare(key: sg.Key | null, force?: boolean): void;
 
@@ -106,6 +112,14 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     setPieces(pieces): void {
       anim(state => board.setPieces(state, pieces), state);
+    },
+
+    addToHand(piece: sg.Piece, count: number): void {
+      render(state => board.addToHand(state, piece, count), state);
+    },
+
+    removeFromHand(piece: sg.Piece, count: number): void {
+      render(state => board.removeFromHand(state, piece, count), state);
     },
 
     selectSquare(key, force): void {
