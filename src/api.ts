@@ -1,7 +1,7 @@
 import { State } from './state.js';
 import * as board from './board.js';
 import { writeBoard, writeHands } from './sfen.js';
-import { Config, configure } from './config.js';
+import { applyAnimation, Config, configure } from './config.js';
 import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
 import { cancelDropMode as dropCancel } from './drop.js';
@@ -91,6 +91,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
   return {
     set(config): void {
       if (config.orientation && config.orientation !== state.orientation) toggleOrientation();
+      applyAnimation(state, config);
       (config.sfen ? anim : render)(state => configure(state, config), state);
     },
 
