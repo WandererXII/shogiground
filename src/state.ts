@@ -69,12 +69,11 @@ export interface HeadlessState {
     showDropDests: boolean; // whether to add the premove-dest class on squares
     dropDests?: sg.Key[]; // premove destinations for the drop selection
     current?: {
-      // current saved predrop {role: 'knight'; key: '5e'}
-      role: sg.Role;
+      piece: sg.Piece;
       key: sg.Key;
     };
     events: {
-      set?: (role: sg.Role, key: sg.Key) => void; // called after the predrop has been set
+      set?: (role: sg.Piece, key: sg.Key) => void; // called after the predrop has been set
       unset?: () => void; // called after the predrop has been unset
     };
   };

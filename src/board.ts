@@ -50,10 +50,10 @@ export function unsetPremove(state: HeadlessState): void {
   }
 }
 
-function setPredrop(state: HeadlessState, role: sg.Role, key: sg.Key): void {
+function setPredrop(state: HeadlessState, piece: sg.Piece, key: sg.Key): void {
   unsetPremove(state);
-  state.predroppable.current = { role, key };
-  callUserFunction(state.predroppable.events.set, role, key);
+  state.predroppable.current = { piece, key };
+  callUserFunction(state.predroppable.events.set, piece, key);
 }
 
 export function unsetPredrop(state: HeadlessState): void {
@@ -124,7 +124,7 @@ export function userDrop(state: HeadlessState, dest: sg.Key, force?: boolean, fr
       predrop: false,
     });
   } else if (piece && canPredrop(state, dest)) {
-    setPredrop(state, piece.role, dest);
+    setPredrop(state, piece, dest);
   } else {
     unsetPremove(state);
     unsetPredrop(state);
@@ -296,12 +296,8 @@ export function playPredrop(state: HeadlessState): boolean {
   let success = false;
   if (!drop) return false;
   if (canDrop(state, drop.key)) {
-    const piece = {
-      role: drop.role,
-      color: state.activeColor,
-    } as sg.Piece;
-    if (baseDrop(state, piece, drop.key)) {
-      callUserFunction(state.droppable.events.after, piece, drop.key, {
+    if (baseDrop(state, drop.piece, drop.key)) {
+      callUserFunction(state.droppable.events.after, drop.piece, drop.key, {
         premove: false,
         predrop: true,
       });
