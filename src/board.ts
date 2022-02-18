@@ -200,14 +200,14 @@ export function setSelected(state: HeadlessState, key: sg.Key): void {
     state.premovable.dests = premove(state.pieces, key, state.dimensions);
   } else {
     state.premovable.dests = undefined;
-    state.predroppable.dropDests = undefined;
+    state.predroppable.dests = undefined;
   }
 }
 
 export function unselect(state: HeadlessState): void {
   state.selected = undefined;
   state.premovable.dests = undefined;
-  state.predroppable.dropDests = undefined;
+  state.predroppable.dests = undefined;
   state.hold.cancel();
 }
 

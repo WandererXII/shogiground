@@ -40,7 +40,7 @@ export function start(s: State, e: sg.MouchEvent): void {
   )
     e.preventDefault();
   const hadPremove = !!s.premovable.current;
-  const hadPredrop = !!s.predroppable.current || !!s.predroppable.dropDests;
+  const hadPredrop = !!s.predroppable.current || !!s.predroppable.dests;
   s.stats.ctrlKey = e.ctrlKey;
   if (s.selected && board.canMove(s, s.selected, orig)) {
     anim(state => board.selectSquare(state, orig), s);
@@ -111,7 +111,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: 
     keyHasChanged: false,
   };
   if (board.isPredroppable(s, piece)) {
-    s.predroppable.dropDests = predrop(s.pieces, piece, s.dimensions);
+    s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
   }
   processDrag(s);
 }

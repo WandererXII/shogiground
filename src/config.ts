@@ -65,8 +65,8 @@ export interface Config {
   };
   predroppable?: {
     enabled?: boolean; // allow predrops for color that can not move
-    showDropDests?: boolean; // whether to add the premove-dest class on squares for drops
-    dropDests?: sg.Key[]; // premove destinations for the drop selection
+    showDests?: boolean; // whether to add the premove-dest class on squares for drops
+    dests?: sg.Key[]; // premove destinations for the drop selection
     events?: {
       set?: (piece: sg.Piece, key: sg.Key) => void; // called after the predrop has been set
       unset?: () => void; // called after the predrop has been unset

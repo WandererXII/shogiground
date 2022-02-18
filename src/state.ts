@@ -66,8 +66,8 @@ export interface HeadlessState {
   };
   predroppable: {
     enabled: boolean; // allow predrops for color that can not move
-    showDropDests: boolean; // whether to add the premove-dest class on squares
-    dropDests?: sg.Key[]; // premove destinations for the drop selection
+    showDests: boolean; // whether to add the premove-dest class on squares
+    dests?: sg.Key[]; // premove destinations for the drop selection
     current?: {
       piece: sg.Piece;
       key: sg.Key;
@@ -181,7 +181,7 @@ export function defaults(): HeadlessState {
     },
     predroppable: {
       enabled: true,
-      showDropDests: true,
+      showDests: true,
       events: {},
     },
     draggable: {

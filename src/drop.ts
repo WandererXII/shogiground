@@ -12,7 +12,7 @@ export function setDropMode(s: State, piece: sg.Piece, fromHand: boolean): void 
   dragCancel(s);
   board.unselect(s);
   if (board.isPredroppable(s, piece)) {
-    s.predroppable.dropDests = predrop(s.pieces, piece, s.dimensions);
+    s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
   }
 }
 
