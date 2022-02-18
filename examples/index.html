@@ -17,10 +17,15 @@
           </li>
         </ul>
       </nav>
-      <div class="main-board">
+      <div style="width: 500px; height: 500px" id="main-wrap" class="main-board">
         <div id="dirty" class="sg-wrap"></div>
       </div>
     </div>
+    <div class="slidecontainer">
+      <input type="range" min="1" max="100" value="50" class="slider" id="myRange" />
+    </div>
+    <button onclick="flip()">FLIP</button>
+    <button onclick="pieceSVG()">PIECE</button>
     <script src="../dist/shogiground.js"></script>
     <script>
       const config = {
@@ -34,6 +39,30 @@
         grid: true,
       };
       const ground = Shogiground(document.getElementById('dirty'), config);
+      function flip() {
+        ground.toggleOrientation();
+      }
+      function pieceSVG() {
+        const shape = {
+          orig: '5e',
+          brush: 'green',
+          piece: {
+            role: 'horse',
+            color: 'sente',
+          },
+        };
+        ground.setShapes([shape]);
+      }
+    </script>
+    <script>
+      const slider = document.getElementById('myRange');
+      const board = document.getElementById('main-wrap');
+      // Update the current slider value (each time you drag the slider handle)
+      slider.oninput = function () {
+        board.style.width = (450 + parseInt(this.value)).toString() + 'px';
+        board.style.height = (450 + parseInt(this.value)).toString() + 'px';
+        document.dispatchEvent(new Event('shogiground.resize'));
+      };
     </script>
   </body>
 </html>

@@ -295,6 +295,7 @@ function renderPiece(pos: sg.Pos, piece: DrawShapePiece, dims: sg.Dimensions, bo
   pieceEl.style.width = '200%';
   pieceEl.style.height = '200%';
   pieceEl.style.margin = '-50%';
+  pieceEl.style.transform = 'scale(0.5)';
   el.append(pieceEl);
   return el;
 }
