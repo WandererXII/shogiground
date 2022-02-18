@@ -69,6 +69,10 @@ export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.P
     destPiece = state.pieces.get(dest);
   if (orig === dest || !origPiece) return false;
   const captured = destPiece && destPiece.color !== origPiece.color ? destPiece : undefined;
+  if (state.hands.enabled && captured) {
+    const afterRole = state.hands.captureProcessing(captured.role);
+    if (afterRole) addToHand(state, { color: opposite(captured.color), role: afterRole });
+  }
   if (dest === state.selected) unselect(state);
   callUserFunction(state.events.move, orig, dest, captured);
   state.pieces.set(dest, origPiece);
