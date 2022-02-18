@@ -1,10 +1,10 @@
 export type Color = typeof colors[number];
-export function isColor(s: string | undefined): s is Color {
-  return !!s && s in colors;
+export function isColor(x: any): x is Color {
+  return colors.includes(x);
 }
 export type Role = typeof roles[number];
-export function isRole(s: string | undefined): s is Role {
-  return !!s && s in roles;
+export function isRole(x: any): x is Role {
+  return roles.includes(x);
 }
 export type Key = '00' | `${File}${Rank}`;
 export type File = typeof files[number];
