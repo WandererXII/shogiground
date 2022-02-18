@@ -1,19 +1,11 @@
 export type Color = typeof colors[number];
-export type Role =
-  | 'king'
-  | 'rook'
-  | 'bishop'
-  | 'gold'
-  | 'silver'
-  | 'knight'
-  | 'lance'
-  | 'pawn'
-  | 'dragon'
-  | 'horse'
-  | 'promotedsilver'
-  | 'promotedknight'
-  | 'promotedlance'
-  | 'tokin';
+export function isColor(s: string | undefined): s is Color {
+  return !!s && s in colors;
+}
+export type Role = typeof roles[number];
+export function isRole(s: string | undefined): s is Role {
+  return !!s && s in roles;
+}
 export type Key = '00' | `${File}${Rank}`;
 export type File = typeof files[number];
 export type Rank = typeof ranks[number];
@@ -111,6 +103,22 @@ export type Milliseconds = number;
 export type KHz = number;
 
 export const colors = ['sente', 'gote'] as const;
+export const roles = [
+  'king',
+  'rook',
+  'bishop',
+  'gold',
+  'silver',
+  'knight',
+  'lance',
+  'pawn',
+  'dragon',
+  'horse',
+  'promotedsilver',
+  'promotedknight',
+  'promotedlance',
+  'tokin',
+] as const;
 export const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9'] as const;
 export const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] as const;
 
