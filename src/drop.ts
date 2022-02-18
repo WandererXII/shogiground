@@ -3,7 +3,7 @@ import * as sg from './types.js';
 import * as board from './board.js';
 import * as util from './util.js';
 import { cancel as dragCancel } from './drag.js';
-import { predrop } from './premove.js';
+import { predrop } from './predrop.js';
 
 export function setDropMode(s: State, piece: sg.Piece, fromHand: boolean): void {
   s.dropmode.active = true;

@@ -4,7 +4,7 @@ import * as util from './util.js';
 import { clear as drawClear } from './draw.js';
 import * as sg from './types.js';
 import { anim } from './anim.js';
-import { predrop } from './premove.js';
+import { predrop } from './predrop.js';
 
 export interface DragCurrent {
   orig: sg.Key; // orig key of dragging piece
