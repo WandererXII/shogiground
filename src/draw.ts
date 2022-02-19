@@ -1,5 +1,5 @@
 import { State } from './state.js';
-import { unselect, cancelMove, getKeyAtDomPos, sentePov } from './board.js';
+import { unselect, cancelMoveOrDrop, getKeyAtDomPos, sentePov } from './board.js';
 import { eventPosition, isRightButton } from './util.js';
 import * as sg from './types.js';
 
@@ -62,7 +62,7 @@ export function start(state: State, e: sg.MouchEvent): void {
   if (e.touches && e.touches.length > 1) return;
   e.stopPropagation();
   e.preventDefault();
-  e.ctrlKey ? unselect(state) : cancelMove(state);
+  e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
   const pos = eventPosition(e)!,
     orig = getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.bounds()),
     piece = state.drawable.piece;

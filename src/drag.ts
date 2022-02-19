@@ -108,8 +108,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: 
     newPiece: true,
     fromHand: hand,
     force: force,
-    keyHasChanged:
-      s.dropmode.active && s.dropmode.piece?.role === piece.role && s.dropmode.piece?.color === piece.color,
+    keyHasChanged: s.dropmode.active && s.dropmode.piece?.role === piece.role && s.dropmode.piece.color === piece.color,
   };
   if (board.isPredroppable(s, piece)) s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
   if (hand) {
@@ -190,8 +189,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   } else if (cur.newPiece) {
     s.pieces.delete(cur.orig);
     if (cur.fromHand && cur.keyHasChanged) {
-      s.dropmode.active = false;
-      s.dropmode.piece = undefined;
+      board.cancelDropMode(s);
     }
   } else if (s.draggable.deleteOnDropOff && !dest) {
     s.draggable.lastDropOff = cur;

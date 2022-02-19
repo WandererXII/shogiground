@@ -4,7 +4,6 @@ import { writeBoard, writeHands } from './sfen.js';
 import { applyAnimation, Config, configure } from './config.js';
 import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
-import { cancelDropMode as dropCancel } from './drop.js';
 import { DrawShape } from './draw.js';
 import * as sg from './types.js';
 
@@ -159,9 +158,8 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     cancelMove(): void {
       render(state => {
-        board.cancelMove(state);
+        board.cancelMoveOrDrop(state);
         dragCancel(state);
-        dropCancel(state);
       }, state);
     },
 
@@ -169,7 +167,6 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       render(state => {
         board.stop(state);
         dragCancel(state);
-        dropCancel(state);
       }, state);
     },
 

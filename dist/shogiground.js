@@ -314,8 +314,7 @@ var Shogiground = (function () {
         if (canDrop(state, piece, dest) || force) {
             if (baseUserDrop(state, piece, dest, force) && fromHand) {
                 removeFromHand(state, piece);
-                state.dropmode.active = false;
-                state.dropmode.piece = undefined;
+                cancelDropMode(state);
             }
             callUserFunction(state.droppable.events.after, piece, dest, {
                 premove: false,
@@ -405,6 +404,10 @@ var Shogiground = (function () {
         state.predroppable.dests = undefined;
         state.hold.cancel();
     }
+    function cancelDropMode(state) {
+        state.dropmode.active = false;
+        state.dropmode.piece = undefined;
+    }
     function isMovable(state, orig) {
         const piece = state.pieces.get(orig);
         return (!!piece && (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color)));
@@ -482,14 +485,15 @@ var Shogiground = (function () {
         unsetPredrop(state);
         return success;
     }
-    function cancelMove(state) {
+    function cancelMoveOrDrop(state) {
         unsetPremove(state);
         unsetPredrop(state);
         unselect(state);
+        cancelDropMode(state);
     }
     function stop(state) {
         state.activeColor = state.movable.dests = state.droppable.dests = state.animation.current = undefined;
-        cancelMove(state);
+        cancelMoveOrDrop(state);
     }
     function getKeyAtDomPos(pos, asSente, dims, bounds) {
         let file = Math.floor((dims.files * (pos[0] - bounds.left)) / bounds.width);
@@ -843,7 +847,7 @@ var Shogiground = (function () {
             return;
         e.stopPropagation();
         e.preventDefault();
-        e.ctrlKey ? unselect(state) : cancelMove(state);
+        e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
         const pos = eventPosition(e), orig = getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.bounds()), piece = state.drawable.piece;
         if (!orig)
             return;
@@ -995,7 +999,7 @@ var Shogiground = (function () {
         return false;
     }
     function dragNewPiece(s, piece, e, hand, force) {
-        var _a, _b;
+        var _a;
         const key = '00';
         s.pieces.set(key, piece);
         unselect(s);
@@ -1012,7 +1016,7 @@ var Shogiground = (function () {
             newPiece: true,
             fromHand: hand,
             force: force,
-            keyHasChanged: s.dropmode.active && ((_a = s.dropmode.piece) === null || _a === void 0 ? void 0 : _a.role) === piece.role && ((_b = s.dropmode.piece) === null || _b === void 0 ? void 0 : _b.color) === piece.color,
+            keyHasChanged: s.dropmode.active && ((_a = s.dropmode.piece) === null || _a === void 0 ? void 0 : _a.role) === piece.role && s.dropmode.piece.color === piece.color,
         };
         if (isPredroppable(s, piece))
             s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
@@ -1100,8 +1104,7 @@ var Shogiground = (function () {
         else if (cur.newPiece) {
             s.pieces.delete(cur.orig);
             if (cur.fromHand && cur.keyHasChanged) {
-                s.dropmode.active = false;
-                s.dropmode.piece = undefined;
+                cancelDropMode(s);
             }
         }
         else if (s.draggable.deleteOnDropOff && !dest) {
@@ -1141,30 +1144,6 @@ var Shogiground = (function () {
             el = el.nextSibling;
         }
         return;
-    }
-
-    function cancelDropMode(s) {
-        s.dropmode.active = false;
-        s.dropmode.piece = undefined;
-    }
-    function drop(s, e) {
-        if (!s.dropmode.active)
-            return;
-        if (e.cancelable)
-            e.preventDefault();
-        unsetPremove(s);
-        unsetPredrop(s);
-        const piece = s.dropmode.piece;
-        if (piece) {
-            const position = eventPosition(e);
-            const dest = position && getKeyAtDomPos(position, sentePov(s), s.dimensions, s.dom.bounds());
-            if (dest) {
-                userDrop(s, piece, dest, false, true);
-                if (s.dropmode.fromHand)
-                    s.dropmode.active = false;
-            }
-        }
-        s.dom.redraw();
     }
 
     // see API types and documentations in dts/api.d.ts
@@ -1232,16 +1211,14 @@ var Shogiground = (function () {
             },
             cancelMove() {
                 render$1(state => {
-                    cancelMove(state);
+                    cancelMoveOrDrop(state);
                     cancel(state);
-                    cancelDropMode(state);
                 }, state);
             },
             stop() {
                 render$1(state => {
                     stop(state);
                     cancel(state);
-                    cancelDropMode(state);
                 }, state);
             },
             setAutoShapes(shapes) {
@@ -1769,6 +1746,27 @@ var Shogiground = (function () {
                     'stroke-width': radius,
                 }));
         return svg;
+    }
+
+    function drop(s, e) {
+        if (!s.dropmode.active)
+            return;
+        if (e.cancelable)
+            e.preventDefault();
+        unsetPremove(s);
+        unsetPredrop(s);
+        const piece = s.dropmode.piece;
+        if (piece) {
+            const position = eventPosition(e);
+            const dest = position && getKeyAtDomPos(position, sentePov(s), s.dimensions, s.dom.bounds());
+            if (dest) {
+                userDrop(s, piece, dest, false, true);
+                if (s.dropmode.fromHand) {
+                    cancelDropMode(s);
+                }
+            }
+        }
+        s.dom.redraw();
     }
 
     function bindBoard(s, boundsUpdated) {

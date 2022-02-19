@@ -129,8 +129,7 @@ export function userDrop(
   if (canDrop(state, piece, dest) || force) {
     if (baseUserDrop(state, piece, dest, force) && fromHand) {
       removeFromHand(state, piece);
-      state.dropmode.active = false;
-      state.dropmode.piece = undefined;
+      cancelDropMode(state);
     }
     callUserFunction(state.droppable.events.after, piece, dest, {
       premove: false,
@@ -217,6 +216,11 @@ export function unselect(state: HeadlessState): void {
   state.premovable.dests = undefined;
   state.predroppable.dests = undefined;
   state.hold.cancel();
+}
+
+export function cancelDropMode(state: HeadlessState): void {
+  state.dropmode.active = false;
+  state.dropmode.piece = undefined;
 }
 
 function isMovable(state: HeadlessState, orig: sg.Key): boolean {
@@ -313,15 +317,16 @@ export function playPredrop(state: HeadlessState): boolean {
   return success;
 }
 
-export function cancelMove(state: HeadlessState): void {
+export function cancelMoveOrDrop(state: HeadlessState): void {
   unsetPremove(state);
   unsetPredrop(state);
   unselect(state);
+  cancelDropMode(state);
 }
 
 export function stop(state: HeadlessState): void {
   state.activeColor = state.movable.dests = state.droppable.dests = state.animation.current = undefined;
-  cancelMove(state);
+  cancelMoveOrDrop(state);
 }
 
 export function getKeyAtDomPos(

@@ -1,10 +1,10 @@
 import { State } from './state.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
-import { cancelDropMode, drop } from './drop.js';
+import { drop } from './drop.js';
 import { eventPosition, isRightButton } from './util.js';
 import * as sg from './types.js';
-import { getKeyAtDomPos, sentePov } from './board.js';
+import { cancelDropMode, getKeyAtDomPos, sentePov } from './board.js';
 
 type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
