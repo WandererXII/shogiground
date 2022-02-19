@@ -311,7 +311,7 @@ var Shogiground = (function () {
         return result;
     }
     function userDrop(state, piece, dest, force, fromHand) {
-        if (piece && (canDrop(state, piece, dest) || force)) {
+        if (canDrop(state, piece, dest) || force) {
             if (baseUserDrop(state, piece, dest, force) && fromHand) {
                 removeFromHand(state, piece);
                 state.dropmode.active = false;
@@ -322,7 +322,7 @@ var Shogiground = (function () {
                 predrop: false,
             });
         }
-        else if (piece && canPredrop(state, piece, dest)) {
+        else if (canPredrop(state, piece, dest)) {
             setPredrop(state, piece, dest);
         }
         else {
@@ -415,8 +415,7 @@ var Shogiground = (function () {
     }
     function canDrop(state, piece, dest) {
         var _a, _b;
-        return (!!piece &&
-            !state.pieces.has(dest) &&
+        return (!state.pieces.has(dest) &&
             (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color)) &&
             (state.droppable.free || !!((_b = (_a = state.droppable.dests) === null || _a === void 0 ? void 0 : _a.get(piece.role)) === null || _b === void 0 ? void 0 : _b.includes(dest))));
     }
@@ -996,6 +995,7 @@ var Shogiground = (function () {
         return false;
     }
     function dragNewPiece(s, piece, e, hand, force) {
+        var _a, _b;
         const key = '00';
         s.pieces.set(key, piece);
         unselect(s);
@@ -1012,10 +1012,13 @@ var Shogiground = (function () {
             newPiece: true,
             fromHand: hand,
             force: force,
-            keyHasChanged: false,
+            keyHasChanged: s.dropmode.active && ((_a = s.dropmode.piece) === null || _a === void 0 ? void 0 : _a.role) === piece.role && ((_b = s.dropmode.piece) === null || _b === void 0 ? void 0 : _b.color) === piece.color,
         };
-        if (isPredroppable(s, piece)) {
+        if (isPredroppable(s, piece))
             s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
+        if (hand) {
+            s.dropmode.active = true;
+            s.dropmode.piece = piece;
         }
         processDrag(s);
     }
@@ -1050,7 +1053,10 @@ var Shogiground = (function () {
                         cur.pos[0] - bounds.left - bounds.width / (s.dimensions.files * 2),
                         cur.pos[1] - bounds.top - bounds.height / (s.dimensions.ranks * 2),
                     ]);
-                    cur.keyHasChanged || (cur.keyHasChanged = cur.orig !== getKeyAtDomPos(cur.pos, sentePov(s), s.dimensions, bounds));
+                    cur.keyHasChanged =
+                        cur.keyHasChanged ||
+                            (!cur.newPiece && cur.orig !== getKeyAtDomPos(cur.pos, sentePov(s), s.dimensions, bounds)) ||
+                            (!!cur.fromHand && distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 4));
                 }
             }
             processDrag(s);
@@ -1093,6 +1099,10 @@ var Shogiground = (function () {
         }
         else if (cur.newPiece) {
             s.pieces.delete(cur.orig);
+            if (cur.fromHand && cur.keyHasChanged) {
+                s.dropmode.active = false;
+                s.dropmode.piece = undefined;
+            }
         }
         else if (s.draggable.deleteOnDropOff && !dest) {
             s.draggable.lastDropOff = cur;
@@ -1133,16 +1143,6 @@ var Shogiground = (function () {
         return;
     }
 
-    function setDropMode(s, piece, fromHand) {
-        s.dropmode.active = true;
-        s.dropmode.piece = piece;
-        s.dropmode.fromHand = fromHand;
-        cancel(s);
-        unselect(s);
-        if (isPredroppable(s, piece)) {
-            s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
-        }
-    }
     function cancelDropMode(s) {
         s.dropmode.active = false;
         s.dropmode.piece = undefined;
@@ -1800,10 +1800,6 @@ var Shogiground = (function () {
         handEl.addEventListener('touchstart', startDragFromHand(s), {
             passive: false,
         });
-        if (s.selectable.enabled) {
-            handEl.addEventListener('mouseup', selectToDropFromHand(s), { passive: false });
-            handEl.addEventListener('touchend', selectToDropFromHand(s), { passive: false });
-        }
         if (s.disableContextMenu || s.drawable.enabled)
             handEl.addEventListener('contextmenu', e => e.preventDefault());
     }
@@ -1885,23 +1881,6 @@ var Shogiground = (function () {
                 (s.activeColor === 'both' || s.activeColor === piece.color) &&
                 ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role))) {
                 dragNewPiece(s, piece, e, true, false);
-            }
-        };
-    }
-    function selectToDropFromHand(s) {
-        return e => {
-            var _a;
-            const piece = getPiece(e.target);
-            if (piece &&
-                (s.activeColor === 'both' || s.activeColor === piece.color) &&
-                ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role)) &&
-                (!s.draggable.current ||
-                    (Math.abs(s.draggable.current.pos[0] - s.draggable.current.origPos[0]) < 20 &&
-                        Math.abs(s.draggable.current.pos[1] - s.draggable.current.origPos[1]) < 20))) {
-                if (s.dropmode.active)
-                    cancelDropMode(s);
-                else
-                    setDropMode(s, piece, true);
             }
         };
     }
@@ -2126,30 +2105,30 @@ var Shogiground = (function () {
         else
             squares.set(key, klass);
     }
-    function makeHandPiece(piece, hands) {
+    function makeHandPiece(piece, hands, selected) {
         var _a;
         const pieceEl = createEl('piece', pieceNameOf(piece));
         const num = ((_a = hands.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role)) || 0;
         pieceEl.dataset.role = piece.role;
         pieceEl.dataset.color = piece.color;
         pieceEl.dataset.nb = num.toString();
+        pieceEl.classList.toggle('selected', selected);
         return pieceEl;
     }
     function updateHand(s, color, handEl) {
-        var _a, _b;
+        var _a, _b, _c;
         if (handEl.children.length !== s.hands.handRoles.length) {
             handEl.innerHTML = '';
             for (const role of s.hands.handRoles) {
-                handEl.appendChild(makeHandPiece({ role: role, color: color }, s.hands.handMap));
+                handEl.appendChild(makeHandPiece({ role: role, color: color }, s.hands.handMap, s.dropmode.active && ((_a = s.dropmode.piece) === null || _a === void 0 ? void 0 : _a.color) === color && s.dropmode.piece.role === role));
             }
         }
         else {
             let piece = handEl.firstChild;
             while (piece) {
-                const color = piece.dataset.color;
                 const role = piece.dataset.role;
-                const num = ((_a = s.hands.handMap.get(color)) === null || _a === void 0 ? void 0 : _a.get(role)) || 0;
-                piece.classList.toggle('selected', s.dropmode.active && ((_b = s.dropmode.piece) === null || _b === void 0 ? void 0 : _b.color) === color && s.dropmode.piece.role === role);
+                const num = ((_b = s.hands.handMap.get(color)) === null || _b === void 0 ? void 0 : _b.get(role)) || 0;
+                piece.classList.toggle('selected', s.dropmode.active && ((_c = s.dropmode.piece) === null || _c === void 0 ? void 0 : _c.color) === color && s.dropmode.piece.role === role);
                 piece.dataset.nb = num.toString();
                 piece = piece.nextSibling;
             }

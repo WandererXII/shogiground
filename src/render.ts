@@ -259,12 +259,13 @@ function addSquare(squares: SquareClasses, key: sg.Key, klass: string): void {
   else squares.set(key, klass);
 }
 
-function makeHandPiece(piece: sg.Piece, hands: sg.Hands): HTMLElement {
+function makeHandPiece(piece: sg.Piece, hands: sg.Hands, selected: boolean): HTMLElement {
   const pieceEl = createEl('piece', pieceNameOf(piece));
   const num = hands.get(piece.color)?.get(piece.role) || 0;
   pieceEl.dataset.role = piece.role;
   pieceEl.dataset.color = piece.color;
   pieceEl.dataset.nb = num.toString();
+  pieceEl.classList.toggle('selected', selected);
 
   return pieceEl;
 }
@@ -273,12 +274,17 @@ function updateHand(s: State, color: sg.Color, handEl: HTMLElement): void {
   if (handEl.children.length !== s.hands.handRoles.length) {
     handEl.innerHTML = '';
     for (const role of s.hands.handRoles) {
-      handEl.appendChild(makeHandPiece({ role: role, color: color }, s.hands.handMap));
+      handEl.appendChild(
+        makeHandPiece(
+          { role: role, color: color },
+          s.hands.handMap,
+          s.dropmode.active && s.dropmode.piece?.color === color && s.dropmode.piece.role === role
+        )
+      );
     }
   } else {
     let piece = handEl.firstChild as HTMLElement | undefined;
     while (piece) {
-      const color = piece.dataset.color as sg.Color;
       const role = piece.dataset.role as sg.Role;
       const num = s.hands.handMap.get(color)?.get(role) || 0;
       piece.classList.toggle(

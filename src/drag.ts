@@ -108,10 +108,13 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: 
     newPiece: true,
     fromHand: hand,
     force: force,
-    keyHasChanged: false,
+    keyHasChanged:
+      s.dropmode.active && s.dropmode.piece?.role === piece.role && s.dropmode.piece?.color === piece.color,
   };
-  if (board.isPredroppable(s, piece)) {
-    s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
+  if (board.isPredroppable(s, piece)) s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
+  if (hand) {
+    s.dropmode.active = true;
+    s.dropmode.piece = piece;
   }
   processDrag(s);
 }
@@ -143,7 +146,10 @@ function processDrag(s: State): void {
           cur.pos[0] - bounds.left - bounds.width / (s.dimensions.files * 2),
           cur.pos[1] - bounds.top - bounds.height / (s.dimensions.ranks * 2),
         ]);
-        cur.keyHasChanged ||= cur.orig !== board.getKeyAtDomPos(cur.pos, board.sentePov(s), s.dimensions, bounds);
+        cur.keyHasChanged =
+          cur.keyHasChanged ||
+          (!cur.newPiece && cur.orig !== board.getKeyAtDomPos(cur.pos, board.sentePov(s), s.dimensions, bounds)) ||
+          (!!cur.fromHand && util.distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 4));
       }
     }
     processDrag(s);
@@ -183,6 +189,10 @@ export function end(s: State, e: sg.MouchEvent): void {
     }
   } else if (cur.newPiece) {
     s.pieces.delete(cur.orig);
+    if (cur.fromHand && cur.keyHasChanged) {
+      s.dropmode.active = false;
+      s.dropmode.piece = undefined;
+    }
   } else if (s.draggable.deleteOnDropOff && !dest) {
     s.draggable.lastDropOff = cur;
     s.pieces.delete(cur.orig);

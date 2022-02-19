@@ -1,7 +1,7 @@
 import { State } from './state.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
-import { cancelDropMode, drop, setDropMode } from './drop.js';
+import { cancelDropMode, drop } from './drop.js';
 import { eventPosition, isRightButton } from './util.js';
 import * as sg from './types.js';
 import { getKeyAtDomPos, sentePov } from './board.js';
@@ -41,11 +41,6 @@ function bindHand(s: State, handEl: HTMLElement): void {
   handEl.addEventListener('touchstart', startDragFromHand(s) as EventListener, {
     passive: false,
   });
-
-  if (s.selectable.enabled) {
-    handEl.addEventListener('mouseup', selectToDropFromHand(s) as EventListener, { passive: false });
-    handEl.addEventListener('touchend', selectToDropFromHand(s) as EventListener, { passive: false });
-  }
 
   if (s.disableContextMenu || s.drawable.enabled) handEl.addEventListener('contextmenu', e => e.preventDefault());
 }
@@ -133,22 +128,6 @@ function startDragFromHand(s: State): MouchBind {
       s.hands.handMap.get(piece.color)?.get(piece.role)
     ) {
       drag.dragNewPiece(s, piece, e, true, false);
-    }
-  };
-}
-function selectToDropFromHand(s: State): MouchBind {
-  return e => {
-    const piece = getPiece(e.target as HTMLElement);
-    if (
-      piece &&
-      (s.activeColor === 'both' || s.activeColor === piece.color) &&
-      s.hands.handMap.get(piece.color)?.get(piece.role) &&
-      (!s.draggable.current ||
-        (Math.abs(s.draggable.current.pos[0] - s.draggable.current.origPos[0]) < 20 &&
-          Math.abs(s.draggable.current.pos[1] - s.draggable.current.origPos[1]) < 20))
-    ) {
-      if (s.dropmode.active) cancelDropMode(s);
-      else setDropMode(s, piece, true);
     }
   };
 }
