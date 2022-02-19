@@ -94,14 +94,22 @@ export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, for
   state.lastMove = [key];
   state.check = undefined;
   callUserFunction(state.events.change);
-  state.movable.dests = undefined;
-  state.droppable.dests = undefined;
-  state.turnColor = opposite(state.turnColor);
   return true;
 }
 
 function baseUserMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.Piece | boolean {
   const result = baseMove(state, orig, dest);
+  if (result) {
+    state.movable.dests = undefined;
+    state.droppable.dests = undefined;
+    state.turnColor = opposite(state.turnColor);
+    state.animation.current = undefined;
+  }
+  return result;
+}
+
+function baseUserDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, force?: boolean): boolean {
+  const result = baseDrop(state, piece, key, force);
   if (result) {
     state.movable.dests = undefined;
     state.droppable.dests = undefined;
@@ -118,8 +126,8 @@ export function userDrop(
   force?: boolean,
   fromHand?: boolean
 ): void {
-  if (piece && (canDrop(state, piece, dest) || force)) {
-    if (baseDrop(state, piece, dest, force) && fromHand) {
+  if (canDrop(state, piece, dest) || force) {
+    if (baseUserDrop(state, piece, dest, force) && fromHand) {
       removeFromHand(state, piece);
       state.dropmode.active = false;
       state.dropmode.piece = undefined;
@@ -128,7 +136,7 @@ export function userDrop(
       premove: false,
       predrop: false,
     });
-  } else if (piece && canPredrop(state, piece, dest)) {
+  } else if (canPredrop(state, piece, dest)) {
     setPredrop(state, piece, dest);
   } else {
     unsetPremove(state);
@@ -226,7 +234,6 @@ export function canMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boole
 
 function canDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   return (
-    !!piece &&
     !state.pieces.has(dest) &&
     (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color)) &&
     (state.droppable.free || !!state.droppable.dests?.get(piece.role)?.includes(dest))
@@ -294,7 +301,7 @@ export function playPredrop(state: HeadlessState): boolean {
   let success = false;
   if (!drop) return false;
   if (canDrop(state, drop.piece, drop.key)) {
-    if (baseDrop(state, drop.piece, drop.key)) {
+    if (baseUserDrop(state, drop.piece, drop.key)) {
       callUserFunction(state.droppable.events.after, drop.piece, drop.key, {
         premove: false,
         predrop: true,

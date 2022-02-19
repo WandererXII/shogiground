@@ -28,7 +28,7 @@ export interface Api {
   // perform a move programmatically
   move(orig: sg.Key, dest: sg.Key): void;
 
-  // drops new piece on the board programmatically
+  // perform a drop programmatically
   drop(piece: sg.Piece, key: sg.Key): void;
 
   // add and/or remove arbitrary pieces on the board

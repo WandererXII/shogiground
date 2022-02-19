@@ -182,6 +182,7 @@ var Shogiground = (function () {
             pos2[1] < dims.ranks)
             .map(pos2key);
     }
+
     function lastRow(dims, pos, color) {
         return color === 'sente' ? pos[1] === 0 : pos[1] === dims.ranks - 1;
     }
@@ -287,9 +288,6 @@ var Shogiground = (function () {
         state.lastMove = [key];
         state.check = undefined;
         callUserFunction(state.events.change);
-        state.movable.dests = undefined;
-        state.droppable.dests = undefined;
-        state.turnColor = opposite(state.turnColor);
         return true;
     }
     function baseUserMove(state, orig, dest) {
@@ -302,9 +300,19 @@ var Shogiground = (function () {
         }
         return result;
     }
+    function baseUserDrop(state, piece, key, force) {
+        const result = baseDrop(state, piece, key, force);
+        if (result) {
+            state.movable.dests = undefined;
+            state.droppable.dests = undefined;
+            state.turnColor = opposite(state.turnColor);
+            state.animation.current = undefined;
+        }
+        return result;
+    }
     function userDrop(state, piece, dest, force, fromHand) {
         if (piece && (canDrop(state, piece, dest) || force)) {
-            if (baseDrop(state, piece, dest, force) && fromHand) {
+            if (baseUserDrop(state, piece, dest, force) && fromHand) {
                 removeFromHand(state, piece);
                 state.dropmode.active = false;
                 state.dropmode.piece = undefined;
@@ -388,13 +396,13 @@ var Shogiground = (function () {
         }
         else {
             state.premovable.dests = undefined;
-            state.predroppable.dropDests = undefined;
+            state.predroppable.dests = undefined;
         }
     }
     function unselect(state) {
         state.selected = undefined;
         state.premovable.dests = undefined;
-        state.predroppable.dropDests = undefined;
+        state.predroppable.dests = undefined;
         state.hold.cancel();
     }
     function isMovable(state, orig) {
@@ -428,7 +436,9 @@ var Shogiground = (function () {
     }
     function canPredrop(state, piece, dest) {
         const destPiece = state.pieces.get(dest);
-        return isPredroppable(state, piece) && (!destPiece || destPiece.color !== state.activeColor);
+        return (isPredroppable(state, piece) &&
+            (!destPiece || destPiece.color !== state.activeColor) &&
+            predrop(state.pieces, piece, state.dimensions).includes(dest));
     }
     function isDraggable(state, orig) {
         const piece = state.pieces.get(orig);
@@ -462,7 +472,7 @@ var Shogiground = (function () {
         if (!drop)
             return false;
         if (canDrop(state, drop.piece, drop.key)) {
-            if (baseDrop(state, drop.piece, drop.key)) {
+            if (baseUserDrop(state, drop.piece, drop.key)) {
                 callUserFunction(state.droppable.events.after, drop.piece, drop.key, {
                     premove: false,
                     predrop: true,
@@ -935,7 +945,7 @@ var Shogiground = (function () {
             (!e.touches || s.blockTouchScroll || piece || previouslySelected || pieceCloseTo(s, position)))
             e.preventDefault();
         const hadPremove = !!s.premovable.current;
-        const hadPredrop = !!s.predroppable.current || !!s.predroppable.dropDests;
+        const hadPredrop = !!s.predroppable.current || !!s.predroppable.dests;
         s.stats.ctrlKey = e.ctrlKey;
         if (s.selected && canMove(s, s.selected, orig)) {
             anim(state => selectSquare(state, orig), s);
@@ -1005,7 +1015,7 @@ var Shogiground = (function () {
             keyHasChanged: false,
         };
         if (isPredroppable(s, piece)) {
-            s.predroppable.dropDests = predrop(s.pieces, piece, s.dimensions);
+            s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
         }
         processDrag(s);
     }
@@ -1130,7 +1140,7 @@ var Shogiground = (function () {
         cancel(s);
         unselect(s);
         if (isPredroppable(s, piece)) {
-            s.predroppable.dropDests = predrop(s.pieces, piece, s.dimensions);
+            s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
         }
     }
     function cancelDropMode(s) {
@@ -1321,7 +1331,7 @@ var Shogiground = (function () {
             },
             predroppable: {
                 enabled: true,
-                showDropDests: true,
+                showDests: true,
                 events: {},
             },
             draggable: {
@@ -2094,7 +2104,7 @@ var Shogiground = (function () {
                     for (const k of dests) {
                         addSquare(squares, k, 'move-dest');
                     }
-                const pDests = s.predroppable.dropDests;
+                const pDests = s.predroppable.dests;
                 if (pDests && s.turnColor !== piece.color)
                     for (const k of pDests) {
                         addSquare(squares, k, 'premove-dest' + (s.pieces.has(k) ? ' oc' : ''));
