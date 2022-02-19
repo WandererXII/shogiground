@@ -3,7 +3,7 @@
 [![Continuous Integration](https://github.com/WandererXII/shogiground/workflows/Continuous%20Integration/badge.svg)](https://github.com/WandererXII/shogiground/actions?query=workflow%3A%22Continuous+Integration%22)
 [![npm](https://img.shields.io/npm/v/shogiground)](https://www.npmjs.com/package/shogiground)
 
-![Shogiground](/screenshot/board1.jpg)
+![Shogiground](/screenshot/board1.png)
 
 _Shogiground_ is a free/libre open source shogi UI developed for
 [lishogi.org](https://lishogi.org). Forked from [Chessground](https://github.com/ornicar/chessground)

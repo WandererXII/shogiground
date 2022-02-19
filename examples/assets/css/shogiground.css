@@ -39,7 +39,6 @@ sg-board {
   line-height: 0;
   background-size: cover;
   cursor: pointer;
-  background-size: cover;
 }
 sg-board square {
   position: absolute;
@@ -93,7 +92,8 @@ sg-board square.current-premove {
   width: calc(200% / 9);
   height: calc(200% / 9);
   margin: calc(-50% / 9);
-  background-size: cover;
+  background-size: contain;
+  background-repeat: no-repeat;
   z-index: 2;
   pointer-events: none;
 }
