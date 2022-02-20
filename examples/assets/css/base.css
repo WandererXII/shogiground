@@ -26,6 +26,7 @@ nav {
 .sg-wrap .sg-grid {
   opacity: 1;
   stroke-width: 2;
+  overflow: visible;
 }
 
 .sg-grid line {
