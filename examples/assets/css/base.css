@@ -14,24 +14,27 @@ nav {
   position: relative;
 }
 
-.tall {
+.sg-wrap {
   width: 100%;
   height: calc(100% / 11 * 12);
 }
 
-.tall.sg-wrap piece {
-  background-position: center;
-}
-
 .sg-wrap .sg-grid {
   opacity: 1;
-  stroke-width: 2;
   overflow: visible;
 }
 
 .sg-grid line {
-  vector-effect: non-scaling-stroke;
   stroke: black;
+  vector-effect: non-scaling-stroke;
+}
+
+.sg-grid .lines line {
+  stroke-width: 1;
+  /* shape-rendering: crispEdges; */
+}
+.sg-grid .circles line {
+  stroke-width: 6;
 }
 
 sg-hand {

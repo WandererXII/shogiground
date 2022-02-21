@@ -108,51 +108,56 @@ function renderCoords(elems: readonly string[], className: string, trim: number)
 }
 
 function makeGridSVG(dims: Dimensions): SVGElement {
-  const multiplier = 90;
-  const width = dims.files * multiplier;
-  const height = dims.ranks * multiplier;
   const svg = setAttributes(createSVG('svg'), {
     class: 'sg-grid',
-    viewBox: `0 0 ${width} ${height}`,
+    viewBox: `0 0 ${dims.files} ${dims.ranks}`,
     preserveAspectRatio: 'none',
   });
+
+  const lines = setAttributes(createSVG('g'), {
+    class: 'lines',
+    'stroke-linecap': 'square',
+  });
   for (let i = 0; i <= dims.ranks; i++) {
-    svg.appendChild(
+    lines.appendChild(
       setAttributes(createSVG('line'), {
         x1: 0,
-        x2: width,
-        y1: multiplier * i,
-        y2: multiplier * i,
+        x2: dims.files,
+        y1: i,
+        y2: i,
       })
     );
   }
   for (let i = 0; i <= dims.files; i++) {
-    svg.appendChild(
+    lines.appendChild(
       setAttributes(createSVG('line'), {
-        x1: multiplier * i,
-        x2: multiplier * i,
+        x1: i,
+        x2: i,
         y1: 0,
-        y2: height,
+        y2: dims.ranks,
       })
     );
   }
+  const circles = setAttributes(createSVG('g'), {
+    class: 'circles',
+    'stroke-linecap': 'round',
+  });
 
   // we use line instead of circle, so the radius stays the same on non square boards
-  const radius = Math.floor((width + height) / multiplier / 2);
-  const offsetX = Math.floor(dims.files / 3) * multiplier;
-  const offsetY = Math.floor(dims.ranks / 3) * multiplier;
+  const offsetX = Math.floor(dims.files / 3);
+  const offsetY = Math.floor(dims.ranks / 3);
   for (const x of [false, true])
     for (const y of [false, true])
-      svg.appendChild(
+      circles.appendChild(
         setAttributes(createSVG('line'), {
-          x1: x ? width - offsetX : offsetX,
-          x2: x ? width - offsetX : offsetX,
-          y1: y ? height - offsetY : offsetY,
-          y2: y ? height - offsetY : offsetY,
-          'stroke-linecap': 'round',
-          'stroke-width': radius,
+          x1: x ? dims.files - offsetX : offsetX,
+          x2: x ? dims.files - offsetX : offsetX,
+          y1: y ? dims.ranks - offsetY : offsetY,
+          y2: y ? dims.ranks - offsetY : offsetY,
         })
       );
 
+  svg.appendChild(lines);
+  svg.appendChild(circles);
   return svg;
 }

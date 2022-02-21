@@ -93,6 +93,7 @@ sg-board square.current-premove {
   height: calc(200% / 9);
   margin: calc(-50% / 9);
   background-size: contain;
+  background-position: center;
   background-repeat: no-repeat;
   z-index: 2;
   pointer-events: none;
