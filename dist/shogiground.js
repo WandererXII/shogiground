@@ -1707,9 +1707,10 @@ var Shogiground = (function () {
         return el;
     }
     function makeGridSVG(dims) {
+        const multiplier = 100;
         const svg = setAttributes(createElement('svg'), {
             class: 'sg-grid',
-            viewBox: `0 0 ${dims.files} ${dims.ranks}`,
+            viewBox: `0 0 ${dims.files * multiplier} ${dims.ranks * multiplier}`,
             preserveAspectRatio: 'none',
         });
         const lines = setAttributes(createElement('g'), {
@@ -1719,17 +1720,17 @@ var Shogiground = (function () {
         for (let i = 0; i <= dims.ranks; i++) {
             lines.appendChild(setAttributes(createElement('line'), {
                 x1: 0,
-                x2: dims.files,
-                y1: i,
-                y2: i,
+                x2: dims.files * multiplier,
+                y1: i * multiplier,
+                y2: i * multiplier,
             }));
         }
         for (let i = 0; i <= dims.files; i++) {
             lines.appendChild(setAttributes(createElement('line'), {
-                x1: i,
-                x2: i,
+                x1: i * multiplier,
+                x2: i * multiplier,
                 y1: 0,
-                y2: dims.ranks,
+                y2: dims.ranks * multiplier,
             }));
         }
         const circles = setAttributes(createElement('g'), {
@@ -1742,10 +1743,10 @@ var Shogiground = (function () {
         for (const x of [false, true])
             for (const y of [false, true])
                 circles.appendChild(setAttributes(createElement('line'), {
-                    x1: x ? dims.files - offsetX : offsetX,
-                    x2: x ? dims.files - offsetX : offsetX,
-                    y1: y ? dims.ranks - offsetY : offsetY,
-                    y2: y ? dims.ranks - offsetY : offsetY,
+                    x1: (x ? dims.files - offsetX : offsetX) * multiplier,
+                    x2: (x ? dims.files - offsetX : offsetX) * multiplier,
+                    y1: (y ? dims.ranks - offsetY : offsetY) * multiplier,
+                    y2: (y ? dims.ranks - offsetY : offsetY) * multiplier,
                 }));
         svg.appendChild(lines);
         svg.appendChild(circles);
