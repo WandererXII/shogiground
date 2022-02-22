@@ -14,7 +14,7 @@ export interface HeadlessState {
   check?: sg.Key; // square currently in check "5a"
   lastMove?: sg.Key[]; // squares part of the last move ["2b"; "8h"]
   selected?: sg.Key; // square currently selected "1a"
-  grid: boolean; // include grid svg element
+  squares: boolean; // include sg-squares
   viewOnly: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu: boolean; // because who needs a context menu on a shogi board
   resizable: boolean; // listens to shogiground.resize on document.body to clear bounds cache
@@ -122,7 +122,7 @@ export function defaults(): HeadlessState {
     orientation: 'sente',
     turnColor: 'sente',
     activeColor: 'both',
-    grid: false,
+    squares: true,
     viewOnly: false,
     disableContextMenu: false,
     resizable: true,

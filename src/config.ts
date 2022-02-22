@@ -15,7 +15,7 @@ export interface Config {
   check?: sg.Color | boolean; // true for current color, false to unset
   lastMove?: sg.Key[]; // squares part of the last move ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
-  grid?: boolean; // include grid svg element
+  squares?: boolean; // include sg-squares
   renderHands?: boolean; // include hands elements
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu?: boolean; // because who needs a context menu on a board

@@ -44,7 +44,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     container.insertBefore(handBot, board.nextSibling);
   }
 
-  if (s.grid) container.insertBefore(makeGridSVG(s.dimensions), board.nextSibling);
+  if (s.squares) container.insertBefore(makeSquares(s.dimensions), board.nextSibling);
 
   let svg: SVGElement | undefined;
   let customSvg: SVGElement | undefined;
@@ -107,58 +107,10 @@ function renderCoords(elems: readonly string[], className: string, trim: number)
   return el;
 }
 
-function makeGridSVG(dims: Dimensions): SVGElement {
-  const multiplier = 100;
-  const svg = setAttributes(createSVG('svg'), {
-    class: 'sg-grid',
-    viewBox: `0 0 ${dims.files * multiplier} ${dims.ranks * multiplier}`,
-    preserveAspectRatio: 'none',
-  });
+function makeSquares(dims: Dimensions): HTMLElement {
+  const squares = createEl('sg-squares');
 
-  const lines = setAttributes(createSVG('g'), {
-    class: 'lines',
-    'stroke-linecap': 'square',
-  });
-  for (let i = 0; i <= dims.ranks; i++) {
-    lines.appendChild(
-      setAttributes(createSVG('line'), {
-        x1: 0,
-        x2: dims.files * multiplier,
-        y1: i * multiplier,
-        y2: i * multiplier,
-      })
-    );
-  }
-  for (let i = 0; i <= dims.files; i++) {
-    lines.appendChild(
-      setAttributes(createSVG('line'), {
-        x1: i * multiplier,
-        x2: i * multiplier,
-        y1: 0,
-        y2: dims.ranks * multiplier,
-      })
-    );
-  }
-  const circles = setAttributes(createSVG('g'), {
-    class: 'circles',
-    'stroke-linecap': 'round',
-  });
+  for (let i = 0; i < dims.ranks * dims.files; i++) squares.appendChild(createEl('sq'));
 
-  // we use line instead of circle, so the radius stays the same on non square boards
-  const offsetX = Math.floor(dims.files / 3);
-  const offsetY = Math.floor(dims.ranks / 3);
-  for (const x of [false, true])
-    for (const y of [false, true])
-      circles.appendChild(
-        setAttributes(createSVG('line'), {
-          x1: (x ? dims.files - offsetX : offsetX) * multiplier,
-          x2: (x ? dims.files - offsetX : offsetX) * multiplier,
-          y1: (y ? dims.ranks - offsetY : offsetY) * multiplier,
-          y2: (y ? dims.ranks - offsetY : offsetY) * multiplier,
-        })
-      );
-
-  svg.appendChild(lines);
-  svg.appendChild(circles);
-  return svg;
+  return squares;
 }

@@ -1249,7 +1249,7 @@ var Shogiground = (function () {
             orientation: 'sente',
             turnColor: 'sente',
             activeColor: 'both',
-            grid: false,
+            squares: true,
             viewOnly: false,
             disableContextMenu: false,
             resizable: true,
@@ -1651,8 +1651,8 @@ var Shogiground = (function () {
             container.insertBefore(handTop, board);
             container.insertBefore(handBot, board.nextSibling);
         }
-        if (s.grid)
-            container.insertBefore(makeGridSVG(s.dimensions), board.nextSibling);
+        if (s.squares)
+            container.insertBefore(makeSquares(s.dimensions), board.nextSibling);
         let svg;
         let customSvg;
         if (s.drawable.visible && !relative) {
@@ -1706,51 +1706,11 @@ var Shogiground = (function () {
         }
         return el;
     }
-    function makeGridSVG(dims) {
-        const multiplier = 100;
-        const svg = setAttributes(createElement('svg'), {
-            class: 'sg-grid',
-            viewBox: `0 0 ${dims.files * multiplier} ${dims.ranks * multiplier}`,
-            preserveAspectRatio: 'none',
-        });
-        const lines = setAttributes(createElement('g'), {
-            class: 'lines',
-            'stroke-linecap': 'square',
-        });
-        for (let i = 0; i <= dims.ranks; i++) {
-            lines.appendChild(setAttributes(createElement('line'), {
-                x1: 0,
-                x2: dims.files * multiplier,
-                y1: i * multiplier,
-                y2: i * multiplier,
-            }));
-        }
-        for (let i = 0; i <= dims.files; i++) {
-            lines.appendChild(setAttributes(createElement('line'), {
-                x1: i * multiplier,
-                x2: i * multiplier,
-                y1: 0,
-                y2: dims.ranks * multiplier,
-            }));
-        }
-        const circles = setAttributes(createElement('g'), {
-            class: 'circles',
-            'stroke-linecap': 'round',
-        });
-        // we use line instead of circle, so the radius stays the same on non square boards
-        const offsetX = Math.floor(dims.files / 3);
-        const offsetY = Math.floor(dims.ranks / 3);
-        for (const x of [false, true])
-            for (const y of [false, true])
-                circles.appendChild(setAttributes(createElement('line'), {
-                    x1: (x ? dims.files - offsetX : offsetX) * multiplier,
-                    x2: (x ? dims.files - offsetX : offsetX) * multiplier,
-                    y1: (y ? dims.ranks - offsetY : offsetY) * multiplier,
-                    y2: (y ? dims.ranks - offsetY : offsetY) * multiplier,
-                }));
-        svg.appendChild(lines);
-        svg.appendChild(circles);
-        return svg;
+    function makeSquares(dims) {
+        const squares = createEl('sg-squares');
+        for (let i = 0; i < dims.ranks * dims.files; i++)
+            squares.appendChild(createEl('sq'));
+        return squares;
     }
 
     function drop(s, e) {
