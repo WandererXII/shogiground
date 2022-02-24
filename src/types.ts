@@ -11,6 +11,7 @@ export type File = typeof files[number];
 export type Rank = typeof ranks[number];
 export type BoardSfen = string;
 export type HandsSfen = string;
+// coordinate system starts at top right
 export type Pos = [number, number];
 export interface Piece {
   role: Role;
@@ -41,13 +42,14 @@ export type Dests = Map<Key, Key[]>;
 export type DropDests = Map<Role, Key[]>;
 
 export interface Elements {
+  squares: HTMLElement;
+  pieces: HTMLElement;
   board: HTMLElement;
-  handTop?: HTMLElement;
-  handBot?: HTMLElement;
-  container: HTMLElement;
   ghost?: HTMLElement;
   svg?: SVGElement;
   customSvg?: SVGElement;
+  handTop?: HTMLElement;
+  handBot?: HTMLElement;
 }
 export interface Dom {
   elements: Elements;
@@ -83,7 +85,14 @@ export interface PieceNode extends KeyedNode {
   sgDragging?: boolean;
 }
 export interface SquareNode extends KeyedNode {
-  tagName: 'SQUARE';
+  tagName: 'SQ';
+}
+
+export function isPieceNode(el: HTMLElement): el is PieceNode {
+  return el.tagName === 'PIECE';
+}
+export function isSquareNode(el: HTMLElement): el is SquareNode {
+  return el.tagName === 'SQ';
 }
 
 export interface Memo<A> {

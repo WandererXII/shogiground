@@ -18,7 +18,7 @@ export function Shogiground(element: HTMLElement, config?: Config): Api {
     // this allows non-square boards from CSS to be handled (for ratio)
     const relative = maybeState.viewOnly && !maybeState.drawable.visible,
       elements = renderWrap(element, maybeState, relative),
-      bounds = util.memo(() => elements.board.getBoundingClientRect()),
+      bounds = util.memo(() => elements.pieces.getBoundingClientRect()),
       redrawNow = (skipSvg?: boolean): void => {
         render(state);
         if (!skipSvg && elements.svg && elements.customSvg) svg.renderSvg(state, elements.svg, elements.customSvg);

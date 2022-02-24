@@ -10,23 +10,24 @@ type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
 
 export function bindBoard(s: State, boundsUpdated: () => void): void {
-  const boardEl = s.dom.elements.board;
+  const squaresEl = s.dom.elements.squares;
 
-  if (!s.dom.relative && s.resizable && 'ResizeObserver' in window) new ResizeObserver(boundsUpdated).observe(boardEl);
+  if (!s.dom.relative && s.resizable && 'ResizeObserver' in window)
+    new ResizeObserver(boundsUpdated).observe(squaresEl);
 
   if (s.viewOnly) return;
 
   // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
   const onStart = startDragOrDraw(s);
-  boardEl.addEventListener('touchstart', onStart as EventListener, {
+  squaresEl.addEventListener('touchstart', onStart as EventListener, {
     passive: false,
   });
-  boardEl.addEventListener('mousedown', onStart as EventListener, {
+  squaresEl.addEventListener('mousedown', onStart as EventListener, {
     passive: false,
   });
 
   if (s.disableContextMenu || s.drawable.enabled) {
-    boardEl.addEventListener('contextmenu', e => e.preventDefault());
+    squaresEl.addEventListener('contextmenu', e => e.preventDefault());
   }
 }
 

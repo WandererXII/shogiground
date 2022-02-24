@@ -1,15 +1,14 @@
 import { HeadlessState } from './state.js';
-import { setVisible, createEl } from './util.js';
-import { colors, Notation, Elements, Dimensions } from './types.js';
+import { setVisible, createEl, pos2key } from './util.js';
+import { colors, Notation, Elements, Dimensions, SquareNode, Color } from './types.js';
 import { createElement as createSVG, setAttributes } from './svg.js';
 
 export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boolean): Elements {
   // .sg-wrap (element passed to Shogiground)
-  //     sg-container
-  //       sg-hand
-  //       sg-board
-  //       svg.sg-grid
-  //       sg-hand
+  //     sg-hand
+  //     sg-board
+  //       sg-squares
+  //       sg-pieces
   //       svg.sg-shapes
   //         defs
   //         g
@@ -18,6 +17,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   //       coords.ranks
   //       coords.files
   //       piece.ghost
+  //     sg-hand
 
   element.innerHTML = '';
 
@@ -30,21 +30,22 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   for (const c of colors) element.classList.toggle('orientation-' + c, s.orientation === c);
   element.classList.toggle('manipulable', !s.viewOnly);
 
-  const container = createEl('sg-container');
-  element.appendChild(container);
-
   const board = createEl('sg-board');
-  container.appendChild(board);
+  element.appendChild(board);
+
+  const squares = makeSquares(s.dimensions, s.orientation);
+  board.appendChild(squares);
+
+  const pieces = createEl('sg-pieces');
+  board.appendChild(pieces);
 
   let handTop, handBot;
   if (s.hands.enabled) {
     handTop = createEl('sg-hand', 'hand-top');
     handBot = createEl('sg-hand', 'hand-bot');
-    container.insertBefore(handTop, board);
-    container.insertBefore(handBot, board.nextSibling);
+    element.insertBefore(handTop, board);
+    element.insertBefore(handBot, board.nextSibling);
   }
-
-  if (s.squares) container.insertBefore(makeSquares(s.dimensions), board.nextSibling);
 
   let svg: SVGElement | undefined;
   let customSvg: SVGElement | undefined;
@@ -54,15 +55,15 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     svg.appendChild(createSVG('g'));
     customSvg = setAttributes(createSVG('svg'), { class: 'sg-custom-svgs' });
     customSvg.appendChild(createSVG('g'));
-    container.appendChild(svg);
-    container.appendChild(customSvg);
+    board.appendChild(svg);
+    board.appendChild(customSvg);
   }
 
   if (s.coordinates.enabled) {
     const orientClass = s.orientation === 'gote' ? ' gote' : '';
     const ranks = ranksByNotation(s.coordinates.notation);
-    container.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
-    container.appendChild(
+    board.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
+    board.appendChild(
       renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, s.dimensions.files)
     );
   }
@@ -71,17 +72,18 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   if (s.draggable.showGhost && !relative) {
     ghost = createEl('piece', 'ghost');
     setVisible(ghost, false);
-    container.appendChild(ghost);
+    board.appendChild(ghost);
   }
 
   return {
+    squares,
+    pieces,
     board,
-    handTop,
-    handBot,
-    container,
     ghost,
     svg,
     customSvg,
+    handTop,
+    handBot,
   };
 }
 
@@ -107,10 +109,17 @@ function renderCoords(elems: readonly string[], className: string, trim: number)
   return el;
 }
 
-function makeSquares(dims: Dimensions): HTMLElement {
+function makeSquares(dims: Dimensions, orientation: Color): HTMLElement {
   const squares = createEl('sg-squares');
 
-  for (let i = 0; i < dims.ranks * dims.files; i++) squares.appendChild(createEl('sq'));
+  for (let i = 0; i < dims.ranks * dims.files; i++) {
+    const sq = createEl('sq') as SquareNode;
+    sq.sgKey =
+      orientation === 'sente'
+        ? pos2key([dims.files - 1 - (i % dims.files), Math.floor(i / dims.files)])
+        : pos2key([i % dims.files, dims.files - 1 - Math.floor(i / dims.files)]);
+    squares.appendChild(sq);
+  }
 
   return squares;
 }

@@ -222,10 +222,10 @@ function removeDragElements(s: State): void {
 }
 
 function pieceElementByKey(s: State, key: sg.Key): sg.PieceNode | undefined {
-  let el = s.dom.elements.board.firstChild;
+  let el = s.dom.elements.pieces.firstElementChild as HTMLElement | undefined;
   while (el) {
-    if ((el as sg.KeyedNode).sgKey === key && (el as sg.KeyedNode).tagName === 'PIECE') return el as sg.PieceNode;
-    el = el.nextSibling;
+    if (sg.isPieceNode(el) && el.sgKey === key) return el as sg.PieceNode;
+    el = el.nextElementSibling as HTMLElement | undefined;
   }
   return;
 }

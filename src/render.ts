@@ -23,7 +23,8 @@ export function render(s: State): void {
   const asSente: boolean = sentePov(s),
     posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()),
     translate = s.dom.relative ? translateRel : translateAbs,
-    boardEl: HTMLElement = s.dom.elements.board,
+    squaresEl: HTMLElement = s.dom.elements.squares,
+    piecesEl: HTMLElement = s.dom.elements.pieces,
     handTopEl: HTMLElement | undefined = s.dom.elements.handTop,
     handBotEl: HTMLElement | undefined = s.dom.elements.handBot,
     pieces: sg.Pieces = s.pieces,
@@ -33,25 +34,22 @@ export function render(s: State): void {
     curDrag: DragCurrent | undefined = s.draggable.current,
     squares: SquareClasses = computeSquareClasses(s),
     samePieces: Set<sg.Key> = new Set(),
-    sameSquares: Set<sg.Key> = new Set(),
-    movedPieces: Map<PieceName, sg.PieceNode[]> = new Map(),
-    movedSquares: Map<string, sg.SquareNode[]> = new Map(); // by class name
+    movedPieces: Map<PieceName, sg.PieceNode[]> = new Map();
+
   let k: sg.Key,
-    el: sg.PieceNode | sg.SquareNode | undefined,
+    el: HTMLElement | undefined,
     pieceAtKey: sg.Piece | undefined,
     elPieceName: PieceName,
     anim: AnimVector | undefined,
     fading: sg.Piece | undefined,
     pMvdset: sg.PieceNode[] | undefined,
-    pMvd: sg.PieceNode | undefined,
-    sMvdset: sg.SquareNode[] | undefined,
-    sMvd: sg.SquareNode | undefined;
+    pMvd: sg.PieceNode | undefined;
 
   // walk over all board dom elements, apply animations and flag moved pieces
-  el = boardEl.firstChild as sg.PieceNode | sg.SquareNode | undefined;
+  el = piecesEl.firstElementChild as HTMLElement | undefined;
   while (el) {
-    k = el.sgKey;
-    if (isPieceNode(el)) {
+    if (sg.isPieceNode(el)) {
+      k = el.sgKey;
       pieceAtKey = pieces.get(k);
       anim = anims.get(k);
       fading = fadings.get(k);
@@ -101,33 +99,17 @@ export function render(s: State): void {
       else {
         appendValue(movedPieces, elPieceName, el);
       }
-    } else if (isSquareNode(el)) {
-      const cn = el.className;
-      if (squares.get(k) === cn) sameSquares.add(k);
-      else appendValue(movedSquares, cn, el);
     }
-    el = el.nextSibling as sg.PieceNode | sg.SquareNode | undefined;
+    el = el.nextElementSibling as HTMLElement | undefined;
   }
 
-  // walk over all squares in current set, apply dom changes to moved squares
-  // or append new squares
-  for (const [sk, className] of squares) {
-    if (!sameSquares.has(sk)) {
-      sMvdset = movedSquares.get(className);
-      sMvd = sMvdset && sMvdset.pop();
-      const translation = posToTranslate(key2pos(sk), asSente);
-      if (sMvd) {
-        sMvd.sgKey = sk;
-        translate(sMvd, translation, false);
-      } else {
-        const squareNode = createEl('square', className) as sg.SquareNode;
-        squareNode.sgKey = sk;
-        translate(squareNode, translation, false);
-        boardEl.insertBefore(squareNode, boardEl.firstChild);
-      }
-    }
+  // walk over all squares and apply classes
+  let sqEl = squaresEl.firstElementChild as HTMLElement | undefined;
+  while (sqEl && sg.isSquareNode(sqEl)) {
+    const cc = squares.get(sqEl.sgKey) || '';
+    sqEl.className = cc;
+    sqEl = sqEl.nextElementSibling as HTMLElement | undefined;
   }
-
   // walk over all pieces in current set, apply dom changes to moved pieces
   // or append new pieces
   for (const [k, p] of pieces) {
@@ -168,7 +150,7 @@ export function render(s: State): void {
         }
         translate(pieceNode, posToTranslate(pos, asSente));
 
-        boardEl.appendChild(pieceNode);
+        piecesEl.appendChild(pieceNode);
       }
     }
   }
@@ -180,30 +162,21 @@ export function render(s: State): void {
 
   // remove any element that remains in the moved sets
   for (const nodes of movedPieces.values()) removeNodes(s, nodes);
-  for (const nodes of movedSquares.values()) removeNodes(s, nodes);
 }
 
 export function updateBounds(s: State): void {
   if (s.dom.relative) return;
   const asSente: boolean = sentePov(s),
     posToTranslate = posToTranslateAbs(s.dimensions, s.dom.bounds());
-  let el = s.dom.elements.board.firstChild as sg.PieceNode | sg.SquareNode | undefined;
+  let el = s.dom.elements.pieces.firstElementChild as HTMLElement | undefined;
   while (el) {
-    if (isPieceNode(el) && !el.sgAnimating) translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente));
-    else if (isSquareNode(el)) translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente), false);
-    el = el.nextSibling as sg.PieceNode | sg.SquareNode | undefined;
+    if (sg.isPieceNode(el) && !el.sgAnimating) translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente));
+    el = el.nextElementSibling as HTMLElement | undefined;
   }
 }
 
-function isPieceNode(el: sg.PieceNode | sg.SquareNode): el is sg.PieceNode {
-  return el.tagName === 'PIECE';
-}
-function isSquareNode(el: sg.PieceNode | sg.SquareNode): el is sg.SquareNode {
-  return el.tagName === 'SQUARE';
-}
-
 function removeNodes(s: State, nodes: HTMLElement[]): void {
-  for (const node of nodes) s.dom.elements.board.removeChild(node);
+  for (const node of nodes) s.dom.elements.pieces.removeChild(node);
 }
 
 function pieceNameOf(piece: sg.Piece): string {
