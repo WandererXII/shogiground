@@ -1,81 +1,25 @@
+body {
+  background-color: #1d1d1d;
+  color: #b0b0b0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  margin-top: 2rem;
+}
+
 .main {
   display: flex;
 }
 
-body {
-  background: rgb(17, 17, 17);
-}
-
 nav {
   min-width: 150px;
-}
-
-.main-board {
-  position: relative;
-}
-
-.sg-wrap {
-  width: 100%;
-  height: calc(100% / 11 * 12);
-}
-
-.sg-wrap .sg-grid {
-  opacity: 1;
-  overflow: visible;
-}
-
-.sg-grid line {
-  stroke: black;
-  vector-effect: non-scaling-stroke;
-}
-
-.sg-grid .lines line {
-  stroke-width: 1;
-  /* shape-rendering: crispEdges; */
-}
-.sg-grid .circles line {
-  stroke-width: 6;
-}
-
-sg-hand {
+  min-height: 100vh;
   display: flex;
-  flex: 1;
-  justify-content: space-around;
-  width: 100%;
-  height: 70px;
-  position: absolute;
-}
-.hand-top {
-  top: -16%;
-}
-.hand-bot {
-  top: 101%;
+  flex-direction: column;
 }
 
-.sg-wrap sg-hand piece {
-  display: block;
-  position: relative;
-  width: calc(100% / 7);
-  height: 100%;
-  margin: unset;
-  cursor: pointer;
-  pointer-events: auto;
-  border: 2px solid transparent;
-}
-
-.sg-wrap sg-hand piece::after {
-  content: attr(data-nb);
-  bottom: 0;
-  right: 0;
-  position: absolute;
-  line-height: 0.9em;
-  padding: 3px 0.3em;
+nav a {
+  padding: 1rem;
+  font-size: 1rem;
   font-weight: bold;
-  font-size: 1.5em;
-  color: black;
-  background-color: coral;
-}
-
-.sg-wrap sg-hand piece.selected {
-  border: 2px solid green;
+  color: #b0b0b0;
 }

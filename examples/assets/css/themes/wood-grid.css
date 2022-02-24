@@ -1,0 +1,22 @@
+.sg-wrap sg-squares {
+  background-image: url('../../board/ban2.jpg');
+}
+
+/* grid */
+sg-squares sq {
+  outline: 1px solid black;
+}
+
+/* dots on grid */
+sg-squares sq:nth-child(31)::after,
+sg-squares sq:nth-child(34)::after,
+sg-squares sq:nth-child(58)::after,
+sg-squares sq:nth-child(61)::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  margin: -4px;
+  width: 7px;
+  height: 7px;
+  background-color: black;
+}

@@ -1,0 +1,63 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/shogiground.css" />
+    <link rel="stylesheet" href="assets/css/themes/checker.css" />
+    <link rel="stylesheet" href="assets/css/pieces/ryoko.css" />
+    <style>
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mini-boards {
+        display: grid;
+        grid-gap: 3rem 2rem;
+        grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+      }
+      .board-wrap {
+        width: 300px;
+        height: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav style="position: fixed; top: 0; left: 0">
+      <a href="index.html">Basic Board</a>
+    </nav>
+    <div class="mini-boards">
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+      <div class="board-wrap main-board"><div class="board sg-wrap"></div></div>
+    </div>
+  </body>
+  <script src="../dist/shogiground.js"></script>
+  <script>
+    const boards = document.getElementsByClassName('board');
+    for (let i = 0; i < boards.length; i++) {
+      Shogiground(boards[i], { hands: { enabled: false } });
+    }
+  </script>
+</html>

@@ -1,10 +1,3 @@
-body {
-  background-image: linear-gradient(to bottom, #2c2c2c, #1a1a1a 116px);
-  color: #b0b0b0;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 11px;
-}
-
 /*
    * Shogiground base css properties.
    *
@@ -13,20 +6,24 @@ body {
    */
 
 .sg-wrap {
-  position: absolute;
+  position: relative;
+  box-sizing: content-box;
   width: 100%;
-  height: 100%;
+  /* Correct shogi board ratio is 11:12, for square board, you can use height 100% */
+  height: calc(100% / 11 * 12);
 }
 
-sg-container {
+sg-board {
   position: absolute;
   width: 100%;
   height: 100%;
   display: block;
-  top: 20%;
+  top: 0;
+  left: 0;
 }
 
-sg-board {
+sg-squares,
+sg-pieces {
   position: absolute;
   top: 0;
   left: 0;
@@ -36,44 +33,47 @@ sg-board {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  line-height: 0;
-  background-size: cover;
-  cursor: pointer;
 }
-sg-board square {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(100% / 9);
-  height: calc(100% / 9);
+
+sg-pieces {
+  line-height: 0;
+  background-size: contain;
   pointer-events: none;
 }
-sg-board square.move-dest {
+
+sg-squares {
+  display: grid;
+  grid-template: repeat(9, 1fr) / repeat(9, 1fr);
+  grid-gap: 1px;
+  gap: 1px;
+  cursor: pointer;
+}
+sg-squares sq.move-dest {
   background: radial-gradient(rgba(20, 85, 30, 0.5) 22%, #208530 0, rgba(0, 0, 0, 0.3) 0, rgba(0, 0, 0, 0) 0);
   pointer-events: auto;
 }
-sg-board square.premove-dest {
+sg-squares sq.premove-dest {
   background: radial-gradient(rgba(20, 30, 85, 0.5) 22%, #203085 0, rgba(0, 0, 0, 0.3) 0, rgba(0, 0, 0, 0) 0);
 }
-sg-board square.oc.move-dest {
+sg-squares sq.oc.move-dest {
   background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 85, 0, 0.3) 80%);
 }
-sg-board square.oc.premove-dest {
+sg-squares sq.oc.premove-dest {
   background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 30, 85, 0.2) 80%);
 }
-sg-board square.move-dest:hover {
+sg-squares sq.move-dest:hover {
   background: rgba(20, 85, 30, 0.3);
 }
-sg-board square.premove-dest:hover {
+sg-squares sq.premove-dest:hover {
   background: rgba(20, 30, 85, 0.2);
 }
-sg-board square.last-move {
+sg-squares sq.last-move {
   background-color: rgba(155, 199, 0, 0.41);
 }
-sg-board square.selected {
+sg-squares sq.selected {
   background-color: rgba(20, 85, 30, 0.5);
 }
-sg-board square.check {
+sg-squares sq.check {
   background: radial-gradient(
     ellipse at center,
     rgba(255, 0, 0, 1) 0%,
@@ -82,7 +82,7 @@ sg-board square.check {
     rgba(158, 0, 0, 0) 100%
   );
 }
-sg-board square.current-premove {
+sg-squares sq.current-premove {
   background-color: rgba(20, 30, 85, 0.5);
 }
 .sg-wrap piece {
@@ -92,20 +92,19 @@ sg-board square.current-premove {
   width: calc(200% / 9);
   height: calc(200% / 9);
   margin: calc(-50% / 9);
-  background-size: contain;
+  background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
 }
-sg-board piece.dragging {
+sg-pieces piece.dragging {
   cursor: move;
   z-index: 9;
 }
-sg-board piece.anim {
+sg-pieces piece.anim {
   z-index: 8;
 }
-sg-board piece.fading {
+sg-pieces piece.fading {
   z-index: 1;
   opacity: 0.5;
 }
@@ -118,17 +117,30 @@ sg-board piece.fading {
 .sg-wrap svg {
   overflow: hidden;
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
   opacity: 0.6;
 }
-.sg-wrap svg image {
-  opacity: 0.5;
+
+.sg-wrap .sg-shapes {
+  overflow: hidden;
+  opacity: 0.6;
+  z-index: 3;
 }
+
+.sg-wrap .sg-custom-svgs {
+  /* over piece.anim = 8, but under piece.dragging = 11 */
+  z-index: 9;
+}
+
+.sg-wrap .sg-custom-svgs svg {
+  overflow: visible;
+}
+
 .sg-wrap coords {
   position: absolute;
   display: flex;

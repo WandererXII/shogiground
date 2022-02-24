@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/shogiground.css" />
+    <link rel="stylesheet" href="assets/css/hands.css" />
+    <link rel="stylesheet" href="assets/css/themes/checker.css" />
+    <link rel="stylesheet" href="assets/css/pieces/ryoko.css" />
+  </head>
+
+  <body>
+    <div class="main">
+      <nav>
+        <a href="index.html">Basic Board</a>
+        <a href="hands.html">Board - hands</a>
+        <a href="minis.html">Mini Boards</a>
+        <a href="d5x5.html">Small Board (5x5)</a>
+      </nav>
+      <div style="width: 500px" class="main-board">
+        <div id="dirty" class="sg-wrap"></div>
+      </div>
+    </div>
+    <script src="../dist/shogiground.js"></script>
+    <script>
+      const config = {
+        sfen: {
+          board: 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/+P+P+P+P+P+P+P+P+P/1B5R1/LNSGKGSNL',
+          hands: 'R2P12l10p',
+        },
+        activeColor: 'sente',
+        resizable: true,
+        orientation: 'sente',
+        hands: {
+          enabled: true,
+        },
+      };
+      Shogiground(document.getElementById('dirty'), {});
+    </script>
+  </body>
+</html>

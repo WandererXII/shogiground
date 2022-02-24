@@ -4,7 +4,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" href="assets/css/base.css" />
     <link rel="stylesheet" href="assets/css/shogiground.css" />
-    <link rel="stylesheet" href="assets/css/themes/wood-grid.css" />
+    <link rel="stylesheet" href="assets/css/d5x5.css" />
+    <link rel="stylesheet" href="assets/css/themes/checker.css" />
     <link rel="stylesheet" href="assets/css/pieces/ryoko.css" />
   </head>
 
@@ -15,8 +16,9 @@
         <a href="hands.html">Board - hands</a>
         <a href="minis.html">Mini Boards</a>
         <a href="d5x5.html">Small Board (5x5)</a>
+        </ul>
       </nav>
-      <div style="width: 500px; height: 500px" id="main-wrap" class="main-board">
+      <div style="width: 500px; height: 500px" class="main-board">
         <div id="dirty" class="sg-wrap"></div>
       </div>
     </div>
@@ -29,14 +31,15 @@
     <script>
       const config = {
         sfen: {
-          board: 'lnsgkgsnl/1r5b1/+ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGS+NL',
+          board: 'ppppp/5/5/5/PPPPP',
+          hands: 'RN12P3r',
         },
         activeColor: 'sente',
         resizable: true,
         orientation: 'sente',
         hands: {
-          enabled: false,
-        },
+            enabled: false
+        }
       };
       const ground = Shogiground(document.getElementById('dirty'), config);
       function flip() {

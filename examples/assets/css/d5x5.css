@@ -1,0 +1,8 @@
+.d-5x5 sg-squares {
+  grid-template: repeat(5, 1fr) / repeat(5, 1fr);
+}
+.d-5x5 piece {
+  width: calc(200% / 5);
+  height: calc(200% / 5);
+  margin: calc(-50% / 5);
+}
