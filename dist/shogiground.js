@@ -7,6 +7,12 @@ var Shogiground = (function () {
     function isRole(x) {
         return roles.includes(x);
     }
+    function isPieceNode(el) {
+        return el.tagName === 'PIECE';
+    }
+    function isSquareNode(el) {
+        return el.tagName === 'SQ';
+    }
     const colors = ['sente', 'gote'];
     const roles = [
         'king',
@@ -27,9 +33,9 @@ var Shogiground = (function () {
     const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
     const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
 
-    // 1a, 1b, 1c ...
-    const allKeys = Array.prototype.concat(...files.map(c => ranks.map(r => c + r)));
-    const pos2key = (pos) => allKeys[9 * pos[0] + pos[1]];
+    // 1a, 2a, 3a ...
+    const allKeys = Array.prototype.concat(...ranks.map(r => files.map(f => f + r)));
+    const pos2key = (pos) => allKeys[pos[0] + 9 * pos[1]];
     const key2pos = (k) => [k.charCodeAt(0) - 49, k.charCodeAt(1) - 97];
     function memo(f) {
         let v;
@@ -77,13 +83,11 @@ var Shogiground = (function () {
     };
     const posToTranslateRel = (dims) => (pos, asSente) => posToTranslateBase(pos, dims, asSente, 50, 50);
     // scale, because https://ctidd.com/2015/svg-background-scaling, but for pgn
-    // we don't scale squares
-    const translateAbs = (el, pos, scale = true) => {
-        el.style.transform = `translate(${pos[0]}px,${pos[1]}px) ${scale ? 'scale(0.5)' : ''}`;
+    const translateAbs = (el, pos) => {
+        el.style.transform = `translate(${pos[0]}px,${pos[1]}px) scale(0.5)`;
     };
-    const translateRel = (el, percents, scale = true) => {
-        const scaleRatio = scale ? 1 : 2;
-        el.style.transform = `translate(${scaleRatio * percents[0]}%,${scaleRatio * percents[1]}%) ${scale ? 'scale(0.5)' : ''}`;
+    const translateRel = (el, percents) => {
+        el.style.transform = `translate(${percents[0]}%,${percents[1]}%) scale(0.5)`;
     };
     const setVisible = (el, v) => {
         el.style.visibility = v ? 'visible' : 'hidden';
@@ -1137,11 +1141,11 @@ var Shogiground = (function () {
             setVisible(e.ghost, false);
     }
     function pieceElementByKey(s, key) {
-        let el = s.dom.elements.board.firstChild;
+        let el = s.dom.elements.pieces.firstElementChild;
         while (el) {
-            if (el.sgKey === key && el.tagName === 'PIECE')
+            if (isPieceNode(el) && el.sgKey === key)
                 return el;
-            el = el.nextSibling;
+            el = el.nextElementSibling;
         }
         return;
     }
@@ -1249,7 +1253,6 @@ var Shogiground = (function () {
             orientation: 'sente',
             turnColor: 'sente',
             activeColor: 'both',
-            squares: true,
             viewOnly: false,
             disableContextMenu: false,
             resizable: true,
@@ -1618,11 +1621,10 @@ var Shogiground = (function () {
 
     function renderWrap(element, s, relative) {
         // .sg-wrap (element passed to Shogiground)
-        //     sg-container
-        //       sg-hand
-        //       sg-board
-        //       svg.sg-grid
-        //       sg-hand
+        //     sg-hand
+        //     sg-board
+        //       sg-squares
+        //       sg-pieces
         //       svg.sg-shapes
         //         defs
         //         g
@@ -1631,6 +1633,7 @@ var Shogiground = (function () {
         //       coords.ranks
         //       coords.files
         //       piece.ghost
+        //     sg-hand
         element.innerHTML = '';
         // ensure the sg-wrap class is set
         // so bounds calculation can use the CSS width/height values
@@ -1640,19 +1643,19 @@ var Shogiground = (function () {
         for (const c of colors)
             element.classList.toggle('orientation-' + c, s.orientation === c);
         element.classList.toggle('manipulable', !s.viewOnly);
-        const container = createEl('sg-container');
-        element.appendChild(container);
         const board = createEl('sg-board');
-        container.appendChild(board);
+        element.appendChild(board);
+        const squares = makeSquares(s.dimensions, s.orientation);
+        board.appendChild(squares);
+        const pieces = createEl('sg-pieces');
+        board.appendChild(pieces);
         let handTop, handBot;
         if (s.hands.enabled) {
             handTop = createEl('sg-hand', 'hand-top');
             handBot = createEl('sg-hand', 'hand-bot');
-            container.insertBefore(handTop, board);
-            container.insertBefore(handBot, board.nextSibling);
+            element.insertBefore(handTop, board);
+            element.insertBefore(handBot, board.nextSibling);
         }
-        if (s.squares)
-            container.insertBefore(makeSquares(s.dimensions), board.nextSibling);
         let svg;
         let customSvg;
         if (s.drawable.visible && !relative) {
@@ -1661,29 +1664,30 @@ var Shogiground = (function () {
             svg.appendChild(createElement('g'));
             customSvg = setAttributes(createElement('svg'), { class: 'sg-custom-svgs' });
             customSvg.appendChild(createElement('g'));
-            container.appendChild(svg);
-            container.appendChild(customSvg);
+            board.appendChild(svg);
+            board.appendChild(customSvg);
         }
         if (s.coordinates.enabled) {
             const orientClass = s.orientation === 'gote' ? ' gote' : '';
             const ranks = ranksByNotation(s.coordinates.notation);
-            container.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
-            container.appendChild(renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, s.dimensions.files));
+            board.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
+            board.appendChild(renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, s.dimensions.files));
         }
         let ghost;
         if (s.draggable.showGhost && !relative) {
             ghost = createEl('piece', 'ghost');
             setVisible(ghost, false);
-            container.appendChild(ghost);
+            board.appendChild(ghost);
         }
         return {
+            squares,
+            pieces,
             board,
-            handTop,
-            handBot,
-            container,
             ghost,
             svg,
             customSvg,
+            handTop,
+            handBot,
         };
     }
     function ranksByNotation(notation) {
@@ -1706,10 +1710,16 @@ var Shogiground = (function () {
         }
         return el;
     }
-    function makeSquares(dims) {
+    function makeSquares(dims, orientation) {
         const squares = createEl('sg-squares');
-        for (let i = 0; i < dims.ranks * dims.files; i++)
-            squares.appendChild(createEl('sq'));
+        for (let i = 0; i < dims.ranks * dims.files; i++) {
+            const sq = createEl('sq');
+            sq.sgKey =
+                orientation === 'sente'
+                    ? pos2key([dims.files - 1 - (i % dims.files), Math.floor(i / dims.files)])
+                    : pos2key([i % dims.files, dims.files - 1 - Math.floor(i / dims.files)]);
+            squares.appendChild(sq);
+        }
         return squares;
     }
 
@@ -1734,21 +1744,21 @@ var Shogiground = (function () {
     }
 
     function bindBoard(s, boundsUpdated) {
-        const boardEl = s.dom.elements.board;
+        const squaresEl = s.dom.elements.squares;
         if (!s.dom.relative && s.resizable && 'ResizeObserver' in window)
-            new ResizeObserver(boundsUpdated).observe(boardEl);
+            new ResizeObserver(boundsUpdated).observe(squaresEl);
         if (s.viewOnly)
             return;
         // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
         const onStart = startDragOrDraw(s);
-        boardEl.addEventListener('touchstart', onStart, {
+        squaresEl.addEventListener('touchstart', onStart, {
             passive: false,
         });
-        boardEl.addEventListener('mousedown', onStart, {
+        squaresEl.addEventListener('mousedown', onStart, {
             passive: false,
         });
         if (s.disableContextMenu || s.drawable.enabled) {
-            boardEl.addEventListener('contextmenu', e => e.preventDefault());
+            squaresEl.addEventListener('contextmenu', e => e.preventDefault());
         }
     }
     function bindHands(s) {
@@ -1850,13 +1860,13 @@ var Shogiground = (function () {
     // ported from https://github.com/veloce/lichobile/blob/master/src/js/shogiground/view.js
     // in case of bugs, blame @veloce
     function render(s) {
-        const asSente = sentePov(s), posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()), translate = s.dom.relative ? translateRel : translateAbs, boardEl = s.dom.elements.board, handTopEl = s.dom.elements.handTop, handBotEl = s.dom.elements.handBot, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), curDrag = s.draggable.current, squares = computeSquareClasses(s), samePieces = new Set(), sameSquares = new Set(), movedPieces = new Map(), movedSquares = new Map(); // by class name
-        let k, el, pieceAtKey, elPieceName, anim, fading, pMvdset, pMvd, sMvdset, sMvd;
+        const asSente = sentePov(s), posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()), translate = s.dom.relative ? translateRel : translateAbs, squaresEl = s.dom.elements.squares, piecesEl = s.dom.elements.pieces, handTopEl = s.dom.elements.handTop, handBotEl = s.dom.elements.handBot, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), curDrag = s.draggable.current, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
+        let k, el, pieceAtKey, elPieceName, anim, fading, pMvdset, pMvd;
         // walk over all board dom elements, apply animations and flag moved pieces
-        el = boardEl.firstChild;
+        el = piecesEl.firstElementChild;
         while (el) {
-            k = el.sgKey;
             if (isPieceNode(el)) {
+                k = el.sgKey;
                 pieceAtKey = pieces.get(k);
                 anim = anims.get(k);
                 fading = fadings.get(k);
@@ -1908,33 +1918,14 @@ var Shogiground = (function () {
                     appendValue(movedPieces, elPieceName, el);
                 }
             }
-            else if (isSquareNode(el)) {
-                const cn = el.className;
-                if (squares.get(k) === cn)
-                    sameSquares.add(k);
-                else
-                    appendValue(movedSquares, cn, el);
-            }
-            el = el.nextSibling;
+            el = el.nextElementSibling;
         }
-        // walk over all squares in current set, apply dom changes to moved squares
-        // or append new squares
-        for (const [sk, className] of squares) {
-            if (!sameSquares.has(sk)) {
-                sMvdset = movedSquares.get(className);
-                sMvd = sMvdset && sMvdset.pop();
-                const translation = posToTranslate(key2pos(sk), asSente);
-                if (sMvd) {
-                    sMvd.sgKey = sk;
-                    translate(sMvd, translation, false);
-                }
-                else {
-                    const squareNode = createEl('square', className);
-                    squareNode.sgKey = sk;
-                    translate(squareNode, translation, false);
-                    boardEl.insertBefore(squareNode, boardEl.firstChild);
-                }
-            }
+        // walk over all squares and apply classes
+        let sqEl = squaresEl.firstElementChild;
+        while (sqEl && isSquareNode(sqEl)) {
+            const cc = squares.get(sqEl.sgKey) || '';
+            sqEl.className = cc;
+            sqEl = sqEl.nextElementSibling;
         }
         // walk over all pieces in current set, apply dom changes to moved pieces
         // or append new pieces
@@ -1972,7 +1963,7 @@ var Shogiground = (function () {
                         pos[1] += anim[3];
                     }
                     translate(pieceNode, posToTranslate(pos, asSente));
-                    boardEl.appendChild(pieceNode);
+                    piecesEl.appendChild(pieceNode);
                 }
             }
         }
@@ -1983,31 +1974,21 @@ var Shogiground = (function () {
         // remove any element that remains in the moved sets
         for (const nodes of movedPieces.values())
             removeNodes(s, nodes);
-        for (const nodes of movedSquares.values())
-            removeNodes(s, nodes);
     }
     function updateBounds(s) {
         if (s.dom.relative)
             return;
         const asSente = sentePov(s), posToTranslate = posToTranslateAbs(s.dimensions, s.dom.bounds());
-        let el = s.dom.elements.board.firstChild;
+        let el = s.dom.elements.pieces.firstElementChild;
         while (el) {
             if (isPieceNode(el) && !el.sgAnimating)
                 translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente));
-            else if (isSquareNode(el))
-                translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente), false);
-            el = el.nextSibling;
+            el = el.nextElementSibling;
         }
-    }
-    function isPieceNode(el) {
-        return el.tagName === 'PIECE';
-    }
-    function isSquareNode(el) {
-        return el.tagName === 'SQUARE';
     }
     function removeNodes(s, nodes) {
         for (const node of nodes)
-            s.dom.elements.board.removeChild(node);
+            s.dom.elements.pieces.removeChild(node);
     }
     function pieceNameOf(piece) {
         return `${piece.color} ${piece.role}`;
@@ -2111,7 +2092,7 @@ var Shogiground = (function () {
             const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
             // compute bounds from existing board element if possible
             // this allows non-square boards from CSS to be handled (for ratio)
-            const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(element, maybeState, relative), bounds = memo(() => elements.board.getBoundingClientRect()), redrawNow = (skipSvg) => {
+            const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(element, maybeState, relative), bounds = memo(() => elements.pieces.getBoundingClientRect()), redrawNow = (skipSvg) => {
                 render(state);
                 if (!skipSvg && elements.svg && elements.customSvg)
                     renderSvg(state, elements.svg, elements.customSvg);
