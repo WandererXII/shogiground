@@ -143,7 +143,7 @@ function shapeHash(
   { orig, dest, brush, piece, modifiers, customSvg }: DrawShape,
   arrowDests: ArrowDests,
   current: boolean,
-  bounds: ClientRect
+  bounds: DOMRect
 ): Hash {
   return [
     bounds.width,
@@ -183,7 +183,7 @@ function renderSVGShape(
   { shape, current, hash }: Shape,
   brushes: DrawBrushes,
   arrowDests: ArrowDests,
-  bounds: ClientRect
+  bounds: DOMRect
 ): SVGElement {
   const dims = state.dimensions;
   let el: SVGElement;
@@ -210,7 +210,7 @@ function renderSVGShape(
   return el;
 }
 
-function renderCustomSvg(customSvg: string, pos: sg.Pos, dims: sg.Dimensions, bounds: ClientRect): SVGElement {
+function renderCustomSvg(customSvg: string, pos: sg.Pos, dims: sg.Dimensions, bounds: DOMRect): SVGElement {
   const { width, height } = bounds;
   const w = width / dims.files;
   const h = height / dims.ranks;
@@ -234,7 +234,7 @@ function renderCircle(
   pos: sg.Pos,
   current: boolean,
   dims: sg.Dimensions,
-  bounds: ClientRect
+  bounds: DOMRect
 ): SVGElement {
   const o = pos2px(pos, bounds, dims),
     widths = circleWidth(dims, bounds),
@@ -257,7 +257,7 @@ function renderArrow(
   current: boolean,
   shorten: boolean,
   dims: sg.Dimensions,
-  bounds: ClientRect
+  bounds: DOMRect
 ): SVGElement {
   const m = arrowMargin(dims, bounds, shorten && !current),
     a = pos2px(orig, bounds, dims),
@@ -332,12 +332,12 @@ function makeCustomBrush(base: DrawBrush, modifiers: DrawModifiers): DrawBrush {
   };
 }
 
-function circleWidth(dims: sg.Dimensions, bounds: ClientRect): [number, number] {
+function circleWidth(dims: sg.Dimensions, bounds: DOMRect): [number, number] {
   const base = bounds.width / (55 * dims.files);
   return [3 * base, 4 * base];
 }
 
-function lineWidth(brush: DrawBrush, dims: sg.Dimensions, current: boolean, bounds: ClientRect): number {
+function lineWidth(brush: DrawBrush, dims: sg.Dimensions, current: boolean, bounds: DOMRect): number {
   return (((brush.lineWidth || 10) * (current ? 0.85 : 1)) / (55 * dims.files)) * bounds.width;
 }
 
@@ -345,10 +345,10 @@ function opacity(brush: DrawBrush, current: boolean): number {
   return (brush.opacity || 1) * (current ? 0.9 : 1);
 }
 
-function arrowMargin(dims: sg.Dimensions, bounds: ClientRect, shorten: boolean): number {
+function arrowMargin(dims: sg.Dimensions, bounds: DOMRect, shorten: boolean): number {
   return ((shorten ? 20 : 10) / (55 * dims.files)) * bounds.width;
 }
 
-function pos2px(pos: sg.Pos, bounds: ClientRect, dims: sg.Dimensions): sg.NumberPair {
+function pos2px(pos: sg.Pos, bounds: DOMRect, dims: sg.Dimensions): sg.NumberPair {
   return [((pos[0] + 0.5) * bounds.width) / dims.files, ((dims.ranks - 0.5 - pos[1]) * bounds.height) / dims.ranks];
 }

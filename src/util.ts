@@ -60,7 +60,7 @@ const posToTranslateBase = (
 
 export const posToTranslateAbs = (
   dims: sg.Dimensions,
-  bounds: ClientRect
+  bounds: DOMRect
 ): ((pos: sg.Pos, asSente: boolean) => sg.NumberPair) => {
   const xFactor = bounds.width / dims.files,
     yFactor = bounds.height / dims.ranks;
@@ -103,7 +103,7 @@ export function computeSquareCenter(
   key: sg.Key,
   asSente: boolean,
   dims: sg.Dimensions,
-  bounds: ClientRect
+  bounds: DOMRect
 ): sg.NumberPair {
   const pos = key2pos(key);
   if (asSente) {

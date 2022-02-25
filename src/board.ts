@@ -333,7 +333,7 @@ export function getKeyAtDomPos(
   pos: sg.NumberPair,
   asSente: boolean,
   dims: sg.Dimensions,
-  bounds: ClientRect
+  bounds: DOMRect
 ): sg.Key | undefined {
   let file = Math.floor((dims.files * (pos[0] - bounds.left)) / bounds.width);
   if (asSente) file = dims.files - 1 - file;
