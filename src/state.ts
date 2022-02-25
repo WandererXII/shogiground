@@ -32,8 +32,8 @@ export interface HeadlessState {
     current?: AnimCurrent;
   };
   hands: {
-    handMap: sg.Hands;
     enabled: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
+    handMap: sg.Hands;
     handRoles: sg.Role[]; // roles to render in sg-hand
     captureProcessing: (role: sg.Role) => sg.Role | undefined; // what to do with captured piece, before storing it in hand
   };
@@ -138,8 +138,8 @@ export function defaults(): HeadlessState {
       duration: 200,
     },
     hands: {
+      enabled: false,
       handMap: new Map(),
-      enabled: true,
       handRoles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
       captureProcessing: (role: sg.Role) => {
         switch (role) {
