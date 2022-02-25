@@ -1680,9 +1680,9 @@ var Shogiground = (function () {
             board.appendChild(ghost);
         }
         return {
+            board,
             squares,
             pieces,
-            board,
             ghost,
             svg,
             customSvg,

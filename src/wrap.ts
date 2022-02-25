@@ -76,9 +76,9 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   }
 
   return {
+    board,
     squares,
     pieces,
-    board,
     ghost,
     svg,
     customSvg,

@@ -42,9 +42,9 @@ export type Dests = Map<Key, Key[]>;
 export type DropDests = Map<Role, Key[]>;
 
 export interface Elements {
+  board: HTMLElement;
   squares: HTMLElement;
   pieces: HTMLElement;
-  board: HTMLElement;
   ghost?: HTMLElement;
   svg?: SVGElement;
   customSvg?: SVGElement;

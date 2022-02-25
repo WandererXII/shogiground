@@ -30,11 +30,11 @@ sg-pieces {
   left: 0;
   width: 100%;
   height: 100%;
+  line-height: 0;
   user-select: none;
 }
 
 sg-pieces {
-  line-height: 0;
   pointer-events: none;
 }
 
