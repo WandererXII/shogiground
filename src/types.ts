@@ -48,6 +48,7 @@ export interface Elements {
   ghost?: HTMLElement;
   svg?: SVGElement;
   customSvg?: SVGElement;
+  freePieces?: HTMLElement;
   handTop?: HTMLElement;
   handBot?: HTMLElement;
 }
@@ -83,6 +84,7 @@ export interface PieceNode extends KeyedNode {
   sgAnimating?: boolean;
   sgFading?: boolean;
   sgDragging?: boolean;
+  sgScale?: number;
 }
 export interface SquareNode extends KeyedNode {
   tagName: 'SQ';

@@ -4,7 +4,7 @@ import { HeadlessState, State, defaults } from './state.js';
 import { renderWrap } from './wrap.js';
 import * as events from './events.js';
 import { render, updateBounds } from './render.js';
-import * as svg from './svg.js';
+import * as shapes from './shapes.js';
 import * as util from './util.js';
 
 export function Shogiground(element: HTMLElement, config?: Config): Api {
@@ -19,14 +19,16 @@ export function Shogiground(element: HTMLElement, config?: Config): Api {
     const relative = maybeState.viewOnly && !maybeState.drawable.visible,
       elements = renderWrap(element, maybeState, relative),
       bounds = util.memo(() => elements.pieces.getBoundingClientRect()),
-      redrawNow = (skipSvg?: boolean): void => {
+      redrawNow = (skipShapes?: boolean): void => {
         render(state);
-        if (!skipSvg && elements.svg && elements.customSvg) svg.renderSvg(state, elements.svg, elements.customSvg);
+        if (!skipShapes && elements.svg && elements.customSvg && elements.freePieces)
+          shapes.renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
       },
       boundsUpdated = (): void => {
         bounds.clear();
         updateBounds(state);
-        if (elements.svg && elements.customSvg) svg.renderSvg(state, elements.svg, elements.customSvg);
+        if (elements.svg && elements.customSvg && elements.freePieces)
+          shapes.renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
       };
     const state = maybeState as State;
     state.dom = {

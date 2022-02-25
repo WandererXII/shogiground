@@ -1,9 +1,10 @@
 import { State } from './state.js';
-import { key2pos, createEl } from './util.js';
+import { createEl, key2pos, posToTranslateAbs, translateAbs } from './util.js';
 import { Drawable, DrawShape, DrawShapePiece, DrawBrush, DrawBrushes, DrawModifiers } from './draw.js';
 import * as sg from './types.js';
+import { sentePov } from './board.js';
 
-export function createElement(tagName: string): SVGElement {
+export function createSVGElement(tagName: string): SVGElement {
   return document.createElementNS('http://www.w3.org/2000/svg', tagName);
 }
 
@@ -19,7 +20,7 @@ type ArrowDests = Map<sg.Key, number>; // how many arrows land on a square
 
 type Hash = string;
 
-export function renderSvg(state: State, svg: SVGElement, customSvg: SVGElement): void {
+export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElement, freePieces: HTMLElement): void {
   const d = state.drawable,
     curD = d.current,
     cur = curD && curD.mouseSq ? (curD as DrawShape) : undefined,
@@ -55,13 +56,16 @@ export function renderSvg(state: State, svg: SVGElement, customSvg: SVGElement):
         ...(for brushes)...
       </defs>
       <g>
-        ...(for arrows, circles, and pieces)...
+        ...(for arrows and circles)...
       </g>
     </svg>
     <svg class="sg-custom-svgs"> (<= customSvg)
       <g>
         ...(for custom svgs)...
       </g>
+    <sg-free-pieces>
+      ...(for pieces)...
+    </sg-free-pieces>
     </svg>
   */
   const defsEl = svg.querySelector('defs') as SVGElement;
@@ -70,18 +74,19 @@ export function renderSvg(state: State, svg: SVGElement, customSvg: SVGElement):
 
   syncDefs(d, shapes, defsEl);
   syncShapes(
-    state,
-    shapes.filter(s => !s.shape.customSvg),
-    d.brushes,
-    arrowDests,
-    shapesEl
+    shapes.filter(s => !s.shape.customSvg && !s.shape.piece),
+    shapesEl,
+    shape => renderSVGShape(state, shape, d.brushes, arrowDests, bounds)
   );
   syncShapes(
-    state,
     shapes.filter(s => s.shape.customSvg),
-    d.brushes,
-    arrowDests,
-    customSvgsEl
+    customSvgsEl,
+    shape => renderSVGShape(state, shape, d.brushes, arrowDests, bounds)
+  );
+  syncShapes(
+    shapes.filter(s => s.shape.piece),
+    freePieces,
+    shape => renderPiece(state, shape, bounds)
   );
 }
 
@@ -108,15 +113,12 @@ function syncDefs(d: Drawable, shapes: Shape[], defsEl: SVGElement) {
 }
 
 // append and remove only. No updates.
-function syncShapes(
-  state: State,
+export function syncShapes(
   shapes: Shape[],
-  brushes: DrawBrushes,
-  arrowDests: ArrowDests,
-  root: SVGElement
+  root: HTMLElement | SVGElement,
+  renderShape: (shape: Shape) => HTMLElement | SVGElement
 ): void {
-  const bounds = state.dom.bounds(),
-    hashesInDom = new Map(), // by hash
+  const hashesInDom = new Map(), // by hash
     toRemove: SVGElement[] = [];
   for (const sc of shapes) hashesInDom.set(sc.hash, false);
   let el: SVGElement | undefined = root.firstChild as SVGElement,
@@ -133,7 +135,7 @@ function syncShapes(
   for (const el of toRemove) root.removeChild(el);
   // insert shapes that are not yet in dom
   for (const sc of shapes) {
-    if (!hashesInDom.get(sc.hash)) root.appendChild(renderShape(state, sc, brushes, arrowDests, bounds));
+    if (!hashesInDom.get(sc.hash)) root.appendChild(renderShape(sc));
   }
 }
 
@@ -176,7 +178,7 @@ function customSvgHash(s: string): Hash {
   return 'custom-' + h.toString();
 }
 
-function renderShape(
+function renderSVGShape(
   state: State,
   { shape, current, hash }: Shape,
   brushes: DrawBrushes,
@@ -188,9 +190,7 @@ function renderShape(
   if (shape.customSvg) {
     const orig = orient(key2pos(shape.orig), state.orientation, dims);
     el = renderCustomSvg(shape.customSvg, orig, dims, bounds);
-  } else if (shape.piece && !shape.dest)
-    el = renderPiece(orient(key2pos(shape.orig), state.orientation, dims), shape.piece, dims, bounds);
-  else {
+  } else {
     const orig = orient(key2pos(shape.orig), state.orientation, dims);
     if (shape.dest) {
       let brush: DrawBrush = brushes[shape.brush];
@@ -218,10 +218,10 @@ function renderCustomSvg(customSvg: string, pos: sg.Pos, dims: sg.Dimensions, bo
   const y = (dims.ranks - 1 - pos[1]) * h;
 
   // Translate to top-left of `orig` square
-  const g = setAttributes(createElement('g'), { transform: `translate(${x},${y})` });
+  const g = setAttributes(createSVGElement('g'), { transform: `translate(${x},${y})` });
 
   // Give 100x100 coordinate system to the user for `orig` square
-  const svg = setAttributes(createElement('svg'), { width: w, height: w, viewBox: '0 0 100 100' });
+  const svg = setAttributes(createSVGElement('svg'), { width: w, height: w, viewBox: '0 0 100 100' });
 
   g.appendChild(svg);
   svg.innerHTML = customSvg;
@@ -239,7 +239,7 @@ function renderCircle(
   const o = pos2px(pos, bounds, dims),
     widths = circleWidth(dims, bounds),
     radius = (bounds.width + bounds.height) / (dims.files * 4);
-  return setAttributes(createElement('circle'), {
+  return setAttributes(createSVGElement('circle'), {
     stroke: brush.color,
     'stroke-width': widths[current ? 0 : 1],
     fill: 'none',
@@ -267,7 +267,7 @@ function renderArrow(
     angle = Math.atan2(dy, dx),
     xo = Math.cos(angle) * m,
     yo = Math.sin(angle) * m;
-  return setAttributes(createElement('line'), {
+  return setAttributes(createSVGElement('line'), {
     stroke: brush.color,
     'stroke-width': lineWidth(brush, dims, current, bounds),
     'stroke-linecap': 'round',
@@ -280,28 +280,23 @@ function renderArrow(
   });
 }
 
-function renderPiece(pos: sg.Pos, piece: DrawShapePiece, dims: sg.Dimensions, bounds: ClientRect): SVGElement {
-  const o = pos2px(pos, bounds, dims),
-    size = (bounds.width / dims.files) * (piece.scale || 0.8);
-  // todo - remove foreignObject - seems like it's buggy on chromium and safari?
-  const el = setAttributes(createElement('foreignObject'), {
-    className: `${piece.role} ${piece.color}`,
-    x: o[0] - size / 2,
-    y: o[1] - size / 2,
-    width: size,
-    height: size,
-  });
-  const pieceEl = createEl('piece', `${piece.color} ${piece.role}`);
-  pieceEl.style.width = '200%';
-  pieceEl.style.height = '200%';
-  pieceEl.style.margin = '-50%';
-  pieceEl.style.transform = 'scale(0.5)';
-  el.append(pieceEl);
-  return el;
+export function renderPiece(state: State, { shape, hash }: Shape, bounds: DOMRect): sg.PieceNode {
+  const orig = shape.orig;
+  const role = shape.piece?.role;
+  const color = shape.piece?.color;
+  const scale = shape.piece?.scale;
+
+  const pieceEl = createEl('piece', `${role} ${color}`) as sg.PieceNode;
+  pieceEl.setAttribute('sgHash', hash);
+  pieceEl.sgKey = orig;
+  pieceEl.sgScale = scale;
+  translateAbs(pieceEl, posToTranslateAbs(state.dimensions, bounds)(key2pos(orig), sentePov(state)), scale);
+
+  return pieceEl;
 }
 
 function renderMarker(brush: DrawBrush): SVGElement {
-  const marker = setAttributes(createElement('marker'), {
+  const marker = setAttributes(createSVGElement('marker'), {
     id: 'arrowhead-' + brush.key,
     orient: 'auto',
     markerWidth: 4,
@@ -310,7 +305,7 @@ function renderMarker(brush: DrawBrush): SVGElement {
     refY: 2.01,
   });
   marker.appendChild(
-    setAttributes(createElement('path'), {
+    setAttributes(createSVGElement('path'), {
       d: 'M0,0 V4 L3,2 Z',
       fill: brush.color,
     })

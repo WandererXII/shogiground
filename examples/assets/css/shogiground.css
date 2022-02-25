@@ -82,7 +82,8 @@ sg-squares sq.check {
 sg-squares sq.current-premove {
   background-color: rgba(20, 30, 85, 0.5);
 }
-sg-pieces piece {
+sg-pieces piece,
+sg-free-pieces piece {
   position: absolute;
   top: 0;
   left: 0;
@@ -113,26 +114,33 @@ sg-pieces piece.fading {
 .sg-wrap piece.ghost {
   opacity: 0.3;
 }
-.sg-wrap svg {
-  overflow: hidden;
+.sg-wrap sg-free-pieces,
+.sg-wrap .sg-shapes,
+.sg-wrap .sg-custom-svgs {
+  overflow: visible;
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 0px;
+  left: 0px;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 3;
+  z-index: 4;
+}
+
+.sg-wrap sg-free-pieces {
+  z-index: 2;
+}
+
+.sg-wrap sg-free-pieces piece {
   opacity: 0.6;
 }
 
 .sg-wrap .sg-shapes {
   overflow: hidden;
   opacity: 0.6;
-  z-index: 3;
 }
 
 .sg-wrap .sg-custom-svgs {
-  /* over piece.anim = 8, but under piece.dragging = 11 */
   z-index: 9;
 }
 

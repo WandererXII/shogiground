@@ -1,7 +1,7 @@
 import { HeadlessState } from './state.js';
 import { setVisible, createEl, pos2key } from './util.js';
 import { colors, Notation, Elements, Dimensions, SquareNode, Color } from './types.js';
-import { createElement as createSVG, setAttributes } from './svg.js';
+import { createSVGElement, setAttributes } from './shapes.js';
 
 export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boolean): Elements {
   // .sg-wrap (element passed to Shogiground)
@@ -14,6 +14,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   //         g
   //       svg.sg-custom-svgs
   //         g
+  //     sg-free-pieces
   //       coords.ranks
   //       coords.files
   //       piece.ghost
@@ -49,14 +50,21 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
 
   let svg: SVGElement | undefined;
   let customSvg: SVGElement | undefined;
+  let freePieces: HTMLElement | undefined;
+
   if (s.drawable.visible && !relative) {
-    svg = setAttributes(createSVG('svg'), { class: 'sg-shapes' });
-    svg.appendChild(createSVG('defs'));
-    svg.appendChild(createSVG('g'));
-    customSvg = setAttributes(createSVG('svg'), { class: 'sg-custom-svgs' });
-    customSvg.appendChild(createSVG('g'));
+    svg = setAttributes(createSVGElement('svg'), { class: 'sg-shapes' });
+    svg.appendChild(createSVGElement('defs'));
+    svg.appendChild(createSVGElement('g'));
+
+    customSvg = setAttributes(createSVGElement('svg'), { class: 'sg-custom-svgs' });
+    customSvg.appendChild(createSVGElement('g'));
+
+    freePieces = createEl('sg-free-pieces');
+
     board.appendChild(svg);
     board.appendChild(customSvg);
+    board.appendChild(freePieces);
   }
 
   if (s.coordinates.enabled) {
@@ -82,6 +90,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     ghost,
     svg,
     customSvg,
+    freePieces,
     handTop,
     handBot,
   };

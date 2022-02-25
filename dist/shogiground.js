@@ -83,11 +83,11 @@ var Shogiground = (function () {
     };
     const posToTranslateRel = (dims) => (pos, asSente) => posToTranslateBase(pos, dims, asSente, 50, 50);
     // scale, because https://ctidd.com/2015/svg-background-scaling, but for pgn
-    const translateAbs = (el, pos) => {
-        el.style.transform = `translate(${pos[0]}px,${pos[1]}px) scale(0.5)`;
+    const translateAbs = (el, pos, scale = 1) => {
+        el.style.transform = `translate(${pos[0]}px,${pos[1]}px) scale(${scale * 0.5}`;
     };
-    const translateRel = (el, percents) => {
-        el.style.transform = `translate(${percents[0]}%,${percents[1]}%) scale(0.5)`;
+    const translateRel = (el, percents, scale = 1) => {
+        el.style.transform = `translate(${percents[0]}%,${percents[1]}%) scale(${scale * 0.5})`;
     };
     const setVisible = (el, v) => {
         el.style.visibility = v ? 'visible' : 'hidden';
@@ -1270,8 +1270,8 @@ var Shogiground = (function () {
                 duration: 200,
             },
             hands: {
+                enabled: false,
                 handMap: new Map(),
-                enabled: true,
                 handRoles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
                 captureProcessing: (role) => {
                     switch (role) {
@@ -1361,10 +1361,10 @@ var Shogiground = (function () {
         };
     }
 
-    function createElement(tagName) {
+    function createSVGElement(tagName) {
         return document.createElementNS('http://www.w3.org/2000/svg', tagName);
     }
-    function renderSvg(state, svg, customSvg) {
+    function renderShapes(state, svg, customSvg, freePieces) {
         const d = state.drawable, curD = d.current, cur = curD && curD.mouseSq ? curD : undefined, arrowDests = new Map(), bounds = state.dom.bounds();
         for (const s of d.shapes.concat(d.autoShapes).concat(cur ? [cur] : [])) {
             if (s.dest)
@@ -1394,21 +1394,25 @@ var Shogiground = (function () {
               ...(for brushes)...
             </defs>
             <g>
-              ...(for arrows, circles, and pieces)...
+              ...(for arrows and circles)...
             </g>
           </svg>
           <svg class="sg-custom-svgs"> (<= customSvg)
             <g>
               ...(for custom svgs)...
             </g>
+          <sg-free-pieces>
+            ...(for pieces)...
+          </sg-free-pieces>
           </svg>
         */
         const defsEl = svg.querySelector('defs');
         const shapesEl = svg.querySelector('g');
         const customSvgsEl = customSvg.querySelector('g');
         syncDefs(d, shapes, defsEl);
-        syncShapes(state, shapes.filter(s => !s.shape.customSvg), d.brushes, arrowDests, shapesEl);
-        syncShapes(state, shapes.filter(s => s.shape.customSvg), d.brushes, arrowDests, customSvgsEl);
+        syncShapes(shapes.filter(s => !s.shape.customSvg && !s.shape.piece), shapesEl, shape => renderSVGShape(state, shape, d.brushes, arrowDests, bounds));
+        syncShapes(shapes.filter(s => s.shape.customSvg), customSvgsEl, shape => renderSVGShape(state, shape, d.brushes, arrowDests, bounds));
+        syncShapes(shapes.filter(s => s.shape.piece), freePieces, shape => renderPiece(state, shape, bounds));
     }
     // append only. Don't try to update/remove.
     function syncDefs(d, shapes, defsEl) {
@@ -1434,8 +1438,8 @@ var Shogiground = (function () {
         }
     }
     // append and remove only. No updates.
-    function syncShapes(state, shapes, brushes, arrowDests, root) {
-        const bounds = state.dom.bounds(), hashesInDom = new Map(), // by hash
+    function syncShapes(shapes, root, renderShape) {
+        const hashesInDom = new Map(), // by hash
         toRemove = [];
         for (const sc of shapes)
             hashesInDom.set(sc.hash, false);
@@ -1456,7 +1460,7 @@ var Shogiground = (function () {
         // insert shapes that are not yet in dom
         for (const sc of shapes) {
             if (!hashesInDom.get(sc.hash))
-                root.appendChild(renderShape(state, sc, brushes, arrowDests, bounds));
+                root.appendChild(renderShape(sc));
         }
     }
     function shapeHash({ orig, dest, brush, piece, modifiers, customSvg }, arrowDests, current, bounds) {
@@ -1489,15 +1493,13 @@ var Shogiground = (function () {
         }
         return 'custom-' + h.toString();
     }
-    function renderShape(state, { shape, current, hash }, brushes, arrowDests, bounds) {
+    function renderSVGShape(state, { shape, current, hash }, brushes, arrowDests, bounds) {
         const dims = state.dimensions;
         let el;
         if (shape.customSvg) {
             const orig = orient(key2pos(shape.orig), state.orientation, dims);
             el = renderCustomSvg(shape.customSvg, orig, dims, bounds);
         }
-        else if (shape.piece && !shape.dest)
-            el = renderPiece(orient(key2pos(shape.orig), state.orientation, dims), shape.piece, dims, bounds);
         else {
             const orig = orient(key2pos(shape.orig), state.orientation, dims);
             if (shape.dest) {
@@ -1519,16 +1521,16 @@ var Shogiground = (function () {
         const x = pos[0] * w;
         const y = (dims.ranks - 1 - pos[1]) * h;
         // Translate to top-left of `orig` square
-        const g = setAttributes(createElement('g'), { transform: `translate(${x},${y})` });
+        const g = setAttributes(createSVGElement('g'), { transform: `translate(${x},${y})` });
         // Give 100x100 coordinate system to the user for `orig` square
-        const svg = setAttributes(createElement('svg'), { width: w, height: w, viewBox: '0 0 100 100' });
+        const svg = setAttributes(createSVGElement('svg'), { width: w, height: w, viewBox: '0 0 100 100' });
         g.appendChild(svg);
         svg.innerHTML = customSvg;
         return g;
     }
     function renderCircle(brush, pos, current, dims, bounds) {
         const o = pos2px(pos, bounds, dims), widths = circleWidth(dims, bounds), radius = (bounds.width + bounds.height) / (dims.files * 4);
-        return setAttributes(createElement('circle'), {
+        return setAttributes(createSVGElement('circle'), {
             stroke: brush.color,
             'stroke-width': widths[current ? 0 : 1],
             fill: 'none',
@@ -1540,7 +1542,7 @@ var Shogiground = (function () {
     }
     function renderArrow(brush, orig, dest, current, shorten, dims, bounds) {
         const m = arrowMargin(dims, bounds, shorten && !current), a = pos2px(orig, bounds, dims), b = pos2px(dest, bounds, dims), dx = b[0] - a[0], dy = b[1] - a[1], angle = Math.atan2(dy, dx), xo = Math.cos(angle) * m, yo = Math.sin(angle) * m;
-        return setAttributes(createElement('line'), {
+        return setAttributes(createSVGElement('line'), {
             stroke: brush.color,
             'stroke-width': lineWidth(brush, dims, current, bounds),
             'stroke-linecap': 'round',
@@ -1552,26 +1554,21 @@ var Shogiground = (function () {
             y2: b[1] - yo,
         });
     }
-    function renderPiece(pos, piece, dims, bounds) {
-        const o = pos2px(pos, bounds, dims), size = (bounds.width / dims.files) * (piece.scale || 0.8);
-        // todo - remove foreignObject - seems like it's buggy on chromium and safari?
-        const el = setAttributes(createElement('foreignObject'), {
-            className: `${piece.role} ${piece.color}`,
-            x: o[0] - size / 2,
-            y: o[1] - size / 2,
-            width: size,
-            height: size,
-        });
-        const pieceEl = createEl('piece', `${piece.color} ${piece.role}`);
-        pieceEl.style.width = '200%';
-        pieceEl.style.height = '200%';
-        pieceEl.style.margin = '-50%';
-        pieceEl.style.transform = 'scale(0.5)';
-        el.append(pieceEl);
-        return el;
+    function renderPiece(state, { shape, hash }, bounds) {
+        var _a, _b, _c;
+        const orig = shape.orig;
+        const role = (_a = shape.piece) === null || _a === void 0 ? void 0 : _a.role;
+        const color = (_b = shape.piece) === null || _b === void 0 ? void 0 : _b.color;
+        const scale = (_c = shape.piece) === null || _c === void 0 ? void 0 : _c.scale;
+        const pieceEl = createEl('piece', `${role} ${color}`);
+        pieceEl.setAttribute('sgHash', hash);
+        pieceEl.sgKey = orig;
+        pieceEl.sgScale = scale;
+        translateAbs(pieceEl, posToTranslateAbs(state.dimensions, bounds)(key2pos(orig), sentePov(state)), scale);
+        return pieceEl;
     }
     function renderMarker(brush) {
-        const marker = setAttributes(createElement('marker'), {
+        const marker = setAttributes(createSVGElement('marker'), {
             id: 'arrowhead-' + brush.key,
             orient: 'auto',
             markerWidth: 4,
@@ -1579,7 +1576,7 @@ var Shogiground = (function () {
             refX: 2.05,
             refY: 2.01,
         });
-        marker.appendChild(setAttributes(createElement('path'), {
+        marker.appendChild(setAttributes(createSVGElement('path'), {
             d: 'M0,0 V4 L3,2 Z',
             fill: brush.color,
         }));
@@ -1630,6 +1627,7 @@ var Shogiground = (function () {
         //         g
         //       svg.sg-custom-svgs
         //         g
+        //     sg-free-pieces
         //       coords.ranks
         //       coords.files
         //       piece.ghost
@@ -1658,14 +1656,17 @@ var Shogiground = (function () {
         }
         let svg;
         let customSvg;
+        let freePieces;
         if (s.drawable.visible && !relative) {
-            svg = setAttributes(createElement('svg'), { class: 'sg-shapes' });
-            svg.appendChild(createElement('defs'));
-            svg.appendChild(createElement('g'));
-            customSvg = setAttributes(createElement('svg'), { class: 'sg-custom-svgs' });
-            customSvg.appendChild(createElement('g'));
+            svg = setAttributes(createSVGElement('svg'), { class: 'sg-shapes' });
+            svg.appendChild(createSVGElement('defs'));
+            svg.appendChild(createSVGElement('g'));
+            customSvg = setAttributes(createSVGElement('svg'), { class: 'sg-custom-svgs' });
+            customSvg.appendChild(createSVGElement('g'));
+            freePieces = createEl('sg-free-pieces');
             board.appendChild(svg);
             board.appendChild(customSvg);
+            board.appendChild(freePieces);
         }
         if (s.coordinates.enabled) {
             const orientClass = s.orientation === 'gote' ? ' gote' : '';
@@ -1686,6 +1687,7 @@ var Shogiground = (function () {
             ghost,
             svg,
             customSvg,
+            freePieces,
             handTop,
             handBot,
         };
@@ -2092,15 +2094,15 @@ var Shogiground = (function () {
             const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
             // compute bounds from existing board element if possible
             // this allows non-square boards from CSS to be handled (for ratio)
-            const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(element, maybeState, relative), bounds = memo(() => elements.pieces.getBoundingClientRect()), redrawNow = (skipSvg) => {
+            const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(element, maybeState, relative), bounds = memo(() => elements.pieces.getBoundingClientRect()), redrawNow = (skipShapes) => {
                 render(state);
-                if (!skipSvg && elements.svg && elements.customSvg)
-                    renderSvg(state, elements.svg, elements.customSvg);
+                if (!skipShapes && elements.svg && elements.customSvg && elements.freePieces)
+                    renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
             }, boundsUpdated = () => {
                 bounds.clear();
                 updateBounds(state);
-                if (elements.svg && elements.customSvg)
-                    renderSvg(state, elements.svg, elements.customSvg);
+                if (elements.svg && elements.customSvg && elements.freePieces)
+                    renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
             };
             const state = maybeState;
             state.dom = {
