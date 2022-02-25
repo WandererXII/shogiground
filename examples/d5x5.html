@@ -16,7 +16,6 @@
         <a href="hands.html">Board - hands</a>
         <a href="minis.html">Mini Boards</a>
         <a href="d5x5.html">Small Board (5x5)</a>
-        </ul>
       </nav>
       <div style="width: 500px; height: 500px" class="main-board">
         <div id="dirty" class="sg-wrap"></div>
@@ -38,8 +37,8 @@
         resizable: true,
         orientation: 'sente',
         hands: {
-            enabled: false
-        }
+          enabled: false,
+        },
       };
       const ground = Shogiground(document.getElementById('dirty'), config);
       function flip() {
