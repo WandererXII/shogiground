@@ -1,5 +1,5 @@
 piece {
-  will-change: transform;
+  will-change: transform !important;
 }
 piece.pawn.sente,
 .sg-wrap.orientation-sente piece.pawn.sente,
