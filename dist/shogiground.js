@@ -1427,10 +1427,10 @@ var Shogiground = (function () {
             }
         }
         const keysInDom = new Set();
-        let el = defsEl.firstChild;
+        let el = defsEl.firstElementChild;
         while (el) {
             keysInDom.add(el.getAttribute('sgKey'));
-            el = el.nextSibling;
+            el = el.nextElementSibling;
         }
         for (const [key, brush] of brushes.entries()) {
             if (!keysInDom.has(key))
@@ -1443,7 +1443,7 @@ var Shogiground = (function () {
         toRemove = [];
         for (const sc of shapes)
             hashesInDom.set(sc.hash, false);
-        let el = root.firstChild, elHash;
+        let el = root.firstElementChild, elHash;
         while (el) {
             elHash = el.getAttribute('sgHash');
             // found a shape element that's here to stay
@@ -1452,7 +1452,7 @@ var Shogiground = (function () {
             // or remove it
             else
                 toRemove.push(el);
-            el = el.nextSibling;
+            el = el.nextElementSibling;
         }
         // remove old shapes
         for (const el of toRemove)
@@ -1652,7 +1652,7 @@ var Shogiground = (function () {
             handTop = createEl('sg-hand', 'hand-top');
             handBot = createEl('sg-hand', 'hand-bot');
             element.insertBefore(handTop, board);
-            element.insertBefore(handBot, board.nextSibling);
+            element.insertBefore(handBot, board.nextElementSibling);
         }
         let svg;
         let customSvg;
@@ -2069,13 +2069,13 @@ var Shogiground = (function () {
             }
         }
         else {
-            let piece = handEl.firstChild;
+            let piece = handEl.firstElementChild;
             while (piece) {
                 const role = piece.dataset.role;
                 const num = ((_b = s.hands.handMap.get(color)) === null || _b === void 0 ? void 0 : _b.get(role)) || 0;
                 piece.classList.toggle('selected', s.dropmode.active && ((_c = s.dropmode.piece) === null || _c === void 0 ? void 0 : _c.color) === color && s.dropmode.piece.role === role);
                 piece.dataset.nb = num.toString();
-                piece = piece.nextSibling;
+                piece = piece.nextElementSibling;
             }
         }
     }

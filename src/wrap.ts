@@ -45,7 +45,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     handTop = createEl('sg-hand', 'hand-top');
     handBot = createEl('sg-hand', 'hand-bot');
     element.insertBefore(handTop, board);
-    element.insertBefore(handBot, board.nextSibling);
+    element.insertBefore(handBot, board.nextElementSibling);
   }
 
   let svg: SVGElement | undefined;

@@ -102,10 +102,10 @@ function syncDefs(d: Drawable, shapes: Shape[], defsEl: SVGElement) {
     }
   }
   const keysInDom = new Set();
-  let el: SVGElement | undefined = defsEl.firstChild as SVGElement;
+  let el: SVGElement | undefined = defsEl.firstElementChild as SVGElement;
   while (el) {
     keysInDom.add(el.getAttribute('sgKey'));
-    el = el.nextSibling as SVGElement | undefined;
+    el = el.nextElementSibling as SVGElement | undefined;
   }
   for (const [key, brush] of brushes.entries()) {
     if (!keysInDom.has(key)) defsEl.appendChild(renderMarker(brush));
@@ -121,7 +121,7 @@ export function syncShapes(
   const hashesInDom = new Map(), // by hash
     toRemove: SVGElement[] = [];
   for (const sc of shapes) hashesInDom.set(sc.hash, false);
-  let el: SVGElement | undefined = root.firstChild as SVGElement,
+  let el: SVGElement | undefined = root.firstElementChild as SVGElement,
     elHash: Hash;
   while (el) {
     elHash = el.getAttribute('sgHash') as Hash;
@@ -129,7 +129,7 @@ export function syncShapes(
     if (hashesInDom.has(elHash)) hashesInDom.set(elHash, true);
     // or remove it
     else toRemove.push(el);
-    el = el.nextSibling as SVGElement | undefined;
+    el = el.nextElementSibling as SVGElement | undefined;
   }
   // remove old shapes
   for (const el of toRemove) root.removeChild(el);

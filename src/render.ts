@@ -256,7 +256,7 @@ function updateHand(s: State, color: sg.Color, handEl: HTMLElement): void {
       );
     }
   } else {
-    let piece = handEl.firstChild as HTMLElement | undefined;
+    let piece = handEl.firstElementChild as HTMLElement | undefined;
     while (piece) {
       const role = piece.dataset.role as sg.Role;
       const num = s.hands.handMap.get(color)?.get(role) || 0;
@@ -265,7 +265,7 @@ function updateHand(s: State, color: sg.Color, handEl: HTMLElement): void {
         s.dropmode.active && s.dropmode.piece?.color === color && s.dropmode.piece.role === role
       );
       piece.dataset.nb = num.toString();
-      piece = piece.nextSibling as HTMLHtmlElement | undefined;
+      piece = piece.nextElementSibling as HTMLHtmlElement | undefined;
     }
   }
 }
