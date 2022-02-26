@@ -7,6 +7,7 @@ import {
   translateRel,
   translateAbs,
   opposite,
+  pieceNameOf,
 } from './util.js';
 import { sentePov } from './board.js';
 import { AnimCurrent, AnimVectors, AnimVector, AnimFadings } from './anim.js';
@@ -177,10 +178,6 @@ export function updateBounds(s: State): void {
 
 function removeNodes(s: State, nodes: HTMLElement[]): void {
   for (const node of nodes) s.dom.elements.pieces.removeChild(node);
-}
-
-function pieceNameOf(piece: sg.Piece): string {
-  return `${piece.color} ${piece.role}`;
 }
 
 function computeSquareClasses(s: State): SquareClasses {

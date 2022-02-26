@@ -99,6 +99,10 @@ export const createEl = (tagName: string, className?: string): HTMLElement => {
   return el;
 };
 
+export function pieceNameOf(piece: sg.Piece): string {
+  return `${piece.color} ${piece.role}`;
+}
+
 export function computeSquareCenter(
   key: sg.Key,
   asSente: boolean,

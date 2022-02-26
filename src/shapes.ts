@@ -1,5 +1,5 @@
 import { State } from './state.js';
-import { createEl, key2pos, posToTranslateAbs, translateAbs } from './util.js';
+import { createEl, key2pos, pieceNameOf, posToTranslateAbs, translateAbs } from './util.js';
 import { Drawable, DrawShape, DrawShapePiece, DrawBrush, DrawBrushes, DrawModifiers } from './draw.js';
 import * as sg from './types.js';
 import { sentePov } from './board.js';
@@ -282,11 +282,9 @@ function renderArrow(
 
 export function renderPiece(state: State, { shape, hash }: Shape, bounds: DOMRect): sg.PieceNode {
   const orig = shape.orig;
-  const role = shape.piece?.role;
-  const color = shape.piece?.color;
   const scale = shape.piece?.scale;
 
-  const pieceEl = createEl('piece', `${role} ${color}`) as sg.PieceNode;
+  const pieceEl = createEl('piece', pieceNameOf(shape.piece!)) as sg.PieceNode;
   pieceEl.setAttribute('sgHash', hash);
   pieceEl.sgKey = orig;
   pieceEl.sgScale = scale;
