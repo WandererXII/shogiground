@@ -31,13 +31,6 @@ export type NumberPair = [number, number];
 
 export type NumberQuad = [number, number, number, number];
 
-export interface Rect {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
-
 export type Dests = Map<Key, Key[]>;
 export type DropDests = Map<Role, Key[]>;
 

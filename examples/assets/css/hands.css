@@ -30,6 +30,7 @@
   cursor: pointer;
   pointer-events: auto;
   border: 2px solid transparent;
+  background-repeat: no-repeat;
 }
 
 .sg-wrap sg-hand piece::after {
