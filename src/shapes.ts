@@ -51,7 +51,7 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
 
   /*
     -- DOM hierarchy --
-    <svg class="sg-shapes">      (<= svg)
+    <svg class="sg-shapes"> (<= svg)
       <defs>
         ...(for brushes)...
       </defs>
@@ -63,7 +63,7 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
       <g>
         ...(for custom svgs)...
       </g>
-    <sg-free-pieces>
+    <sg-free-pieces> (<= freePieces)
       ...(for pieces)...
     </sg-free-pieces>
     </svg>
