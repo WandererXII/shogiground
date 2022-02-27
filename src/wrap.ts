@@ -9,6 +9,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   //     sg-board
   //       sg-squares
   //       sg-pieces
+  //       sg-promotion
   //       svg.sg-shapes
   //         defs
   //         g
@@ -39,6 +40,9 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
 
   const pieces = createEl('sg-pieces');
   board.appendChild(pieces);
+
+  const promotion = createEl('sg-promotion');
+  board.appendChild(promotion);
 
   let handTop, handBot;
   if (s.hands.enabled) {
@@ -87,6 +91,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     board,
     squares,
     pieces,
+    promotion,
     ghost,
     svg,
     customSvg,

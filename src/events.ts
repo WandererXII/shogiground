@@ -5,12 +5,14 @@ import { drop } from './drop.js';
 import { eventPosition, isRightButton } from './util.js';
 import * as sg from './types.js';
 import { cancelDropMode, getKeyAtDomPos, sentePov } from './board.js';
+import { promote } from './promotion.js';
 
 type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
 
 export function bindBoard(s: State, boundsUpdated: () => void): void {
   const squaresEl = s.dom.elements.squares;
+  const promotionEl = s.dom.elements.promotion;
 
   if (!s.dom.relative && s.resizable && 'ResizeObserver' in window)
     new ResizeObserver(boundsUpdated).observe(squaresEl);
@@ -26,8 +28,14 @@ export function bindBoard(s: State, boundsUpdated: () => void): void {
     passive: false,
   });
 
+  const pieceSelection = (e: sg.MouchEvent) => promote(s, e);
+  promotionEl.addEventListener('click', pieceSelection as EventListener, {
+    passive: false,
+  });
+
   if (s.disableContextMenu || s.drawable.enabled) {
     squaresEl.addEventListener('contextmenu', e => e.preventDefault());
+    promotionEl.addEventListener('contextmenu', e => e.preventDefault());
   }
 }
 

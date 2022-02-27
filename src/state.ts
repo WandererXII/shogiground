@@ -1,8 +1,8 @@
-import * as sfen from './sfen.js';
 import { AnimCurrent } from './anim.js';
 import { DragCurrent } from './drag.js';
 import { Drawable } from './draw.js';
 import { timer } from './util.js';
+import * as sfen from './sfen.js';
 import * as sg from './types.js';
 
 export interface HeadlessState {
@@ -93,6 +93,13 @@ export interface HeadlessState {
   selectable: {
     // disable to enforce dragging over click-click move
     enabled: boolean;
+  };
+  promotion: {
+    active: boolean;
+    key?: sg.Key; // key at which promotion will occur
+    pieces?: sg.Piece[]; // piece options
+    after?: (piece: sg.Piece) => void; // called after user selects a piece
+    cancel?: () => void; // called after user cancels the selection
   };
   stats: {
     // was last piece dragged or clicked?
@@ -195,6 +202,9 @@ export function defaults(): HeadlessState {
     },
     selectable: {
       enabled: true,
+    },
+    promotion: {
+      active: false,
     },
     stats: {
       // on touchscreen, default to "tap-tap" moves

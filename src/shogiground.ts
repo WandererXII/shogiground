@@ -6,6 +6,7 @@ import * as events from './events.js';
 import { render, updateBounds } from './render.js';
 import * as shapes from './shapes.js';
 import * as util from './util.js';
+import { renderPromotions } from './promotion.js';
 
 export function Shogiground(element: HTMLElement, config?: Config): Api {
   const maybeState: State | HeadlessState = defaults();
@@ -21,12 +22,14 @@ export function Shogiground(element: HTMLElement, config?: Config): Api {
       bounds = util.memo(() => elements.pieces.getBoundingClientRect()),
       redrawNow = (skipShapes?: boolean): void => {
         render(state);
+        renderPromotions(state);
         if (!skipShapes && elements.svg && elements.customSvg && elements.freePieces)
           shapes.renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
       },
       boundsUpdated = (): void => {
         bounds.clear();
         updateBounds(state);
+        renderPromotions(state);
         if (elements.svg && elements.customSvg && elements.freePieces)
           shapes.renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
       };

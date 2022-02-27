@@ -37,6 +37,14 @@
         hands: {
           enabled: false,
         },
+        promotion: {
+          active: true,
+          key: '5c',
+          pieces: [
+            { role: 'tokin', color: 'sente' },
+            { role: 'pawn', color: 'sente' },
+          ],
+        },
       };
       const ground = Shogiground(document.getElementById('dirty'), config);
       function flip() {

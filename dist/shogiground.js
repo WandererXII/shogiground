@@ -92,6 +92,9 @@ var Shogiground = (function () {
     const setVisible = (el, v) => {
         el.style.visibility = v ? 'visible' : 'hidden';
     };
+    const setDisplay = (el, v) => {
+        el.style.display = v ? '' : 'none';
+    };
     const eventPosition = (e) => {
         var _a;
         if (e.clientX || e.clientX === 0)
@@ -107,6 +110,9 @@ var Shogiground = (function () {
             el.className = className;
         return el;
     };
+    function pieceNameOf(piece) {
+        return `${piece.color} ${piece.role}`;
+    }
     function computeSquareCenter(key, asSente, dims, bounds) {
         const pos = key2pos(key);
         if (asSente) {
@@ -1150,6 +1156,54 @@ var Shogiground = (function () {
         return;
     }
 
+    function setPromotion(s, key, pieces) {
+        s.promotion.active = true;
+        s.promotion.key = key;
+        s.promotion.pieces = pieces;
+    }
+    function cancelPromotion(s) {
+        s.promotion.active = false;
+        s.promotion.key = undefined;
+        s.promotion.pieces = undefined;
+    }
+    function renderPromotions(s) {
+        const promotionEl = s.dom.elements.promotion;
+        setDisplay(promotionEl, s.promotion.active);
+        if (!s.promotion.active || !s.promotion.key || !s.promotion.pieces || s.viewOnly)
+            return;
+        const asSente = sentePov(s), initPos = key2pos(s.promotion.key);
+        const promotionNode = createEl('promotion');
+        translateAbs(promotionNode, posToTranslateAbs(s.dimensions, s.dom.bounds())(initPos, asSente), 2);
+        s.promotion.pieces.forEach(p => {
+            const pieceNode = createEl('piece', pieceNameOf(p));
+            pieceNode.dataset.color = p.color;
+            pieceNode.dataset.role = p.role;
+            promotionNode.appendChild(pieceNode);
+        });
+        promotionEl.innerHTML = '';
+        promotionEl.appendChild(promotionNode);
+    }
+    function promote(s, e) {
+        e.preventDefault();
+        const key = s.promotion.key, piece = getPiece$1(e.target);
+        if (s.promotion.active && key && piece) {
+            s.pieces.set(key, piece);
+            callUserFunction(s.promotion.after, piece);
+        }
+        else
+            callUserFunction(s.promotion.cancel);
+        cancelPromotion(s);
+        setDisplay(s.dom.elements.promotion, false);
+        s.dom.redraw();
+    }
+    function getPiece$1(pieceEl) {
+        const role = pieceEl.dataset.role;
+        const color = pieceEl.dataset.color;
+        if (isRole(role) && isColor(color))
+            return { role: role, color: color };
+        return;
+    }
+
     // see API types and documentations in dts/api.d.ts
     function start(state, redrawAll) {
         function toggleOrientation$1() {
@@ -1181,6 +1235,12 @@ var Shogiground = (function () {
             },
             removeFromHand(piece, count) {
                 render$1(state => removeFromHand(state, piece, count), state);
+            },
+            startPromotion(key, pieces) {
+                render$1(state => setPromotion(state, key, pieces), state);
+            },
+            stopPromotion() {
+                render$1(state => cancelPromotion(state), state);
             },
             selectSquare(key, force) {
                 if (key)
@@ -1328,6 +1388,9 @@ var Shogiground = (function () {
             selectable: {
                 enabled: true,
             },
+            promotion: {
+                active: false,
+            },
             stats: {
                 // on touchscreen, default to "tap-tap" moves
                 // instead of drag
@@ -1389,7 +1452,7 @@ var Shogiground = (function () {
         state.drawable.prevSvgHash = fullHash;
         /*
           -- DOM hierarchy --
-          <svg class="sg-shapes">      (<= svg)
+          <svg class="sg-shapes"> (<= svg)
             <defs>
               ...(for brushes)...
             </defs>
@@ -1401,7 +1464,7 @@ var Shogiground = (function () {
             <g>
               ...(for custom svgs)...
             </g>
-          <sg-free-pieces>
+          <sg-free-pieces> (<= freePieces)
             ...(for pieces)...
           </sg-free-pieces>
           </svg>
@@ -1555,12 +1618,10 @@ var Shogiground = (function () {
         });
     }
     function renderPiece(state, { shape, hash }, bounds) {
-        var _a, _b, _c;
+        var _a;
         const orig = shape.orig;
-        const role = (_a = shape.piece) === null || _a === void 0 ? void 0 : _a.role;
-        const color = (_b = shape.piece) === null || _b === void 0 ? void 0 : _b.color;
-        const scale = (_c = shape.piece) === null || _c === void 0 ? void 0 : _c.scale;
-        const pieceEl = createEl('piece', `${role} ${color}`);
+        const scale = (_a = shape.piece) === null || _a === void 0 ? void 0 : _a.scale;
+        const pieceEl = createEl('piece', pieceNameOf(shape.piece));
         pieceEl.setAttribute('sgHash', hash);
         pieceEl.sgKey = orig;
         pieceEl.sgScale = scale;
@@ -1622,6 +1683,7 @@ var Shogiground = (function () {
         //     sg-board
         //       sg-squares
         //       sg-pieces
+        //       sg-promotion
         //       svg.sg-shapes
         //         defs
         //         g
@@ -1647,6 +1709,8 @@ var Shogiground = (function () {
         board.appendChild(squares);
         const pieces = createEl('sg-pieces');
         board.appendChild(pieces);
+        const promotion = createEl('sg-promotion');
+        board.appendChild(promotion);
         let handTop, handBot;
         if (s.hands.enabled) {
             handTop = createEl('sg-hand', 'hand-top');
@@ -1684,6 +1748,7 @@ var Shogiground = (function () {
             board,
             squares,
             pieces,
+            promotion,
             ghost,
             svg,
             customSvg,
@@ -1747,6 +1812,7 @@ var Shogiground = (function () {
 
     function bindBoard(s, boundsUpdated) {
         const squaresEl = s.dom.elements.squares;
+        const promotionEl = s.dom.elements.promotion;
         if (!s.dom.relative && s.resizable && 'ResizeObserver' in window)
             new ResizeObserver(boundsUpdated).observe(squaresEl);
         if (s.viewOnly)
@@ -1759,8 +1825,13 @@ var Shogiground = (function () {
         squaresEl.addEventListener('mousedown', onStart, {
             passive: false,
         });
+        const pieceSelection = (e) => promote(s, e);
+        promotionEl.addEventListener('click', pieceSelection, {
+            passive: false,
+        });
         if (s.disableContextMenu || s.drawable.enabled) {
             squaresEl.addEventListener('contextmenu', e => e.preventDefault());
+            promotionEl.addEventListener('contextmenu', e => e.preventDefault());
         }
     }
     function bindHands(s) {
@@ -1992,9 +2063,6 @@ var Shogiground = (function () {
         for (const node of nodes)
             s.dom.elements.pieces.removeChild(node);
     }
-    function pieceNameOf(piece) {
-        return `${piece.color} ${piece.role}`;
-    }
     function computeSquareClasses(s) {
         var _a, _b, _c, _d;
         const squares = new Map();
@@ -2096,11 +2164,13 @@ var Shogiground = (function () {
             // this allows non-square boards from CSS to be handled (for ratio)
             const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(element, maybeState, relative), bounds = memo(() => elements.pieces.getBoundingClientRect()), redrawNow = (skipShapes) => {
                 render(state);
+                renderPromotions(state);
                 if (!skipShapes && elements.svg && elements.customSvg && elements.freePieces)
                     renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
             }, boundsUpdated = () => {
                 bounds.clear();
                 updateBounds(state);
+                renderPromotions(state);
                 if (elements.svg && elements.customSvg && elements.freePieces)
                     renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
             };

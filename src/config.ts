@@ -106,6 +106,13 @@ export interface Config {
     };
     onChange?: (shapes: DrawShape[]) => void; // called after drawable shapes change
   };
+  promotion?: {
+    active?: boolean;
+    key?: sg.Key; // key at which promotion will occur
+    pieces?: sg.Piece[]; // piece options
+    after?: (piece: sg.Piece) => void; // called after user selects a piece
+    cancel?: () => void; // called after user cancels the selection
+  };
 }
 
 export function applyAnimation(state: HeadlessState, config: Config): void {

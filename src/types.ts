@@ -38,6 +38,7 @@ export interface Elements {
   board: HTMLElement;
   squares: HTMLElement;
   pieces: HTMLElement;
+  promotion: HTMLElement;
   ghost?: HTMLElement;
   svg?: SVGElement;
   customSvg?: SVGElement;

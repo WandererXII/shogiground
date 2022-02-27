@@ -85,6 +85,10 @@ export const setVisible = (el: HTMLElement, v: boolean): void => {
   el.style.visibility = v ? 'visible' : 'hidden';
 };
 
+export const setDisplay = (el: HTMLElement, v: boolean): void => {
+  el.style.display = v ? '' : 'none';
+};
+
 export const eventPosition = (e: sg.MouchEvent): sg.NumberPair | undefined => {
   if (e.clientX || e.clientX === 0) return [e.clientX, e.clientY!];
   if (e.targetTouches?.[0]) return [e.targetTouches[0].clientX, e.targetTouches[0].clientY];

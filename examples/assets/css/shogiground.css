@@ -23,7 +23,8 @@ sg-board {
 }
 
 sg-squares,
-sg-pieces {
+sg-pieces,
+sg-promotion {
   display: block;
   position: absolute;
   top: 0;
@@ -36,6 +37,40 @@ sg-pieces {
 
 sg-pieces {
   pointer-events: none;
+}
+
+sg-promotion {
+  z-index: 5;
+}
+sg-promotion.active {
+  display: block;
+  pointer-events: auto;
+}
+
+sg-promotion promotion {
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% / 9);
+  height: calc(100% / 9 * 2);
+  background-color: #2e2e2e;
+  box-shadow: 3px 3px 7px #000000aa;
+  border-radius: 8px;
+  transition: all 150ms;
+}
+
+sg-promotion promotion piece {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 50%;
+  margin: 0;
+  pointer-events: auto;
+}
+
+sg-promotion promotion:hover {
+  border-radius: 5px;
 }
 
 sg-squares {
@@ -83,13 +118,14 @@ sg-squares sq.current-premove {
   background-color: rgba(20, 30, 85, 0.5);
 }
 sg-pieces piece,
-sg-free-pieces piece {
+sg-free-pieces piece,
+sg-promotion piece {
   position: absolute;
   top: 0;
   left: 0;
   width: calc(200% / 9);
   height: calc(200% / 9);
-  margin: calc(-50% / 9);
+  margin: calc(-50% / 11 * 12 / 9) calc(-50% / 9);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

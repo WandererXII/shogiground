@@ -6,6 +6,7 @@ import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
 import { DrawShape } from './draw.js';
 import * as sg from './types.js';
+import { cancelPromotion, setPromotion } from './promotion.js';
 
 export interface Api {
   // reconfigure the instance. Accepts all config options, except for viewOnly & drawable.visible.
@@ -38,6 +39,12 @@ export interface Api {
 
   // remove piece.role from hand of piece.color
   removeFromHand(piece: sg.Piece, count?: number): void;
+
+  // places pieces on separate layer, selected piece will be placed on key
+  startPromotion(key: sg.Key, pieces: sg.Piece[]): void;
+
+  // stops the current promotion, if promotion is active
+  stopPromotion(): void;
 
   // click a square programmatically
   selectSquare(key: sg.Key | null, force?: boolean): void;
@@ -120,6 +127,14 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     removeFromHand(piece: sg.Piece, count: number): void {
       render(state => board.removeFromHand(state, piece, count), state);
+    },
+
+    startPromotion(key: sg.Key, pieces: sg.Piece[]): void {
+      render(state => setPromotion(state, key, pieces), state);
+    },
+
+    stopPromotion(): void {
+      render(state => cancelPromotion(state), state);
     },
 
     selectSquare(key, force): void {
