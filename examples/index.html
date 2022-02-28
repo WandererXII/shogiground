@@ -25,25 +25,22 @@
     </div>
     <button onclick="flip()">FLIP</button>
     <button onclick="pieceSVG()">PIECE</button>
+    <button onclick="move()">MOVE</button>
+    <button onclick="promote()">PROMOTION</button>
     <script src="../dist/shogiground.js"></script>
     <script>
       const config = {
         sfen: {
-          board: 'lnsgkgsnl/1r5b1/+ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGS+NL',
+          board: 'lnsgkgsnl/1r5b1/+ppppppppp/9/9/9/PPPP1PPPP/1B5R1/LNSGKGS+NL',
         },
         activeColor: 'sente',
         resizable: true,
         orientation: 'sente',
+        coordinates: {
+          notation: 3,
+        },
         hands: {
           enabled: false,
-        },
-        promotion: {
-          active: true,
-          key: '5c',
-          pieces: [
-            { role: 'tokin', color: 'sente' },
-            { role: 'pawn', color: 'sente' },
-          ],
         },
       };
       const ground = Shogiground(document.getElementById('dirty'), config);
@@ -60,6 +57,15 @@
           },
         };
         ground.setShapes([shape]);
+      }
+      function move() {
+        ground.move('1g', '1c');
+      }
+      function promote() {
+        ground.startPromotion('5c', [
+          { role: 'tokin', color: 'sente' },
+          { role: 'pawn', color: 'sente' },
+        ]);
       }
     </script>
     <script>

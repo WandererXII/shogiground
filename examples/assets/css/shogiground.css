@@ -48,7 +48,8 @@ sg-promotion.active {
 }
 
 sg-promotion promotion {
-  cursor: pointer;
+  display: flex;
+  flex-direction: column;
   position: absolute;
   top: 0;
   left: 0;
@@ -56,8 +57,13 @@ sg-promotion promotion {
   height: calc(100% / 9 * 2);
   background-color: #2e2e2e;
   box-shadow: 3px 3px 7px #000000aa;
-  border-radius: 8px;
-  transition: all 150ms;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.orientation-gote sg-promotion promotion {
+  margin: calc(-100% / 11 * 12 / 9) 0;
+  flex-direction: column-reverse;
 }
 
 sg-promotion promotion piece {
@@ -67,10 +73,13 @@ sg-promotion promotion piece {
   height: 50%;
   margin: 0;
   pointer-events: auto;
+  border-radius: 10px;
+  transition: all 200ms;
+  background-color: #2e2e2e;
 }
 
-sg-promotion promotion:hover {
-  border-radius: 5px;
+sg-promotion promotion piece:hover {
+  border-radius: 0px;
 }
 
 sg-squares {

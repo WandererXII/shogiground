@@ -16,3 +16,17 @@
   border-bottom: 1px solid black;
   border-right: 1px solid black;
 }
+
+/* dots on grid */
+.sg-wrap sg-squares sq:nth-child(31)::after,
+.sg-wrap sg-squares sq:nth-child(34)::after,
+.sg-wrap sg-squares sq:nth-child(58)::after,
+.sg-wrap sg-squares sq:nth-child(61)::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  margin: -4px;
+  width: 7px;
+  height: 7px;
+  background-color: black;
+}
