@@ -76,7 +76,6 @@ sg-promotion promotion:hover {
 sg-squares {
   display: grid;
   grid-template: repeat(9, 1fr) / repeat(9, 1fr);
-  gap: 1px;
   cursor: pointer;
   background-size: cover;
 }

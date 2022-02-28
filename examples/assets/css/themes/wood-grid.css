@@ -1,10 +1,13 @@
 .sg-wrap sg-squares {
+  border-top: 1px solid black;
+  border-left: 1px solid black;
   background-image: url('../../board/ban2.jpg');
 }
 
 /* grid */
-sg-squares sq {
-  outline: 1px solid black;
+.sg-wrap sg-squares sq {
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
 }
 
 /* dots on grid */

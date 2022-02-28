@@ -1,7 +1,5 @@
 .sg-wrap sg-squares {
   background-color: blanchedalmond;
-  grid-gap: 0;
-  gap: 0;
 }
 
 sq:nth-child(even) {
