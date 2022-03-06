@@ -7,8 +7,8 @@ import { anim } from './anim.js';
 import { predrop } from './predrop.js';
 
 export interface DragCurrent {
-  orig: sg.Key; // orig key of dragging piece
   piece: sg.Piece;
+  orig?: sg.Key; // orig key of dragging piece, undefined if outside the board
   origPos: sg.NumberPair; // first event position
   touch: boolean; // is the initial event from 'touchstart'
   pos: sg.NumberPair; // latest event position
@@ -59,8 +59,8 @@ export function start(s: State, e: sg.MouchEvent): void {
       draggedEl = s.dom.elements.dragged;
 
     s.draggable.current = {
-      orig,
       piece,
+      orig,
       touch,
       origPos: position,
       pos: position,
@@ -94,10 +94,7 @@ function pieceCloseTo(s: State, pos: sg.NumberPair): boolean {
 }
 
 export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: boolean, force: boolean): void {
-  const key = '00';
-  s.pieces.set(key, piece);
   board.unselect(s);
-  s.dom.redraw();
 
   const position = util.eventPosition(e)!,
     pieceName = util.pieceNameOf(piece),
@@ -105,7 +102,6 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: 
     draggedEl = s.dom.elements.dragged;
 
   s.draggable.current = {
-    orig: key,
     piece,
     touch,
     origPos: position,
@@ -127,6 +123,8 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: 
     s.dropmode.active = true;
     s.dropmode.piece = piece;
   }
+
+  s.dom.redraw();
   processDrag(s);
 }
 
@@ -135,9 +133,9 @@ function processDrag(s: State): void {
     const cur = s.draggable.current;
     if (!cur) return;
     // cancel animations while dragging
-    if (s.animation.current?.plan.anims.has(cur.orig)) s.animation.current = undefined;
+    if (cur.orig && s.animation.current?.plan.anims.has(cur.orig)) s.animation.current = undefined;
     // if moving piece is gone, cancel
-    const origPiece = s.pieces.get(cur.orig);
+    const origPiece = cur.orig ? s.pieces.get(cur.orig) : cur.piece;
     if (!origPiece || !util.samePiece(origPiece, cur.piece)) cancel(s);
     else {
       if (!cur.started && util.distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 2)) {
@@ -163,10 +161,7 @@ function processDrag(s: State): void {
         }
         const hover = board.getKeyAtDomPos(cur.pos, board.sentePov(s), s.dimensions, bounds);
 
-        cur.keyHasChanged =
-          cur.keyHasChanged ||
-          (!cur.newPiece && cur.orig !== hover) ||
-          (!!cur.fromHand && util.distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 4));
+        cur.keyHasChanged = cur.keyHasChanged || (!cur.newPiece && cur.orig !== hover);
 
         // if the hovered square changed
         if (hover !== cur.hovering) {
@@ -216,16 +211,14 @@ export function end(s: State, e: sg.MouchEvent): void {
   if (dest && cur.started && cur.orig !== dest) {
     if (cur.newPiece) {
       board.userDrop(s, cur.piece, dest, cur.force, cur.fromHand);
-      s.pieces.delete('00');
-    } else {
+    } else if (cur.orig) {
       board.userMove(s, cur.orig, dest);
     }
   } else if (cur.newPiece) {
-    s.pieces.delete(cur.orig);
-    if (cur.fromHand && cur.keyHasChanged) {
+    if (cur.fromHand && util.distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 4)) {
       board.cancelDropMode(s);
     }
-  } else if (s.draggable.deleteOnDropOff && !dest) {
+  } else if (cur.orig && s.draggable.deleteOnDropOff && !dest) {
     s.draggable.lastDropOff = cur;
     s.pieces.delete(cur.orig);
     board.callUserFunction(s.events.change);
@@ -240,7 +233,6 @@ export function end(s: State, e: sg.MouchEvent): void {
 export function cancel(s: State): void {
   const cur = s.draggable.current;
   if (cur) {
-    if (cur.newPiece) s.pieces.delete(cur.orig);
     s.draggable.current = undefined;
     board.unselect(s);
     s.dom.redraw();

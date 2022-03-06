@@ -6,7 +6,7 @@ export type Role = typeof roles[number];
 export function isRole(x: any): x is Role {
   return roles.includes(x);
 }
-export type Key = '00' | `${File}${Rank}`;
+export type Key = `${File}${Rank}`;
 export type File = typeof files[number];
 export type Rank = typeof ranks[number];
 export type BoardSfen = string;

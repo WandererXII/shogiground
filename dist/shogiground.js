@@ -930,8 +930,8 @@ var Shogiground = (function () {
         if (piece && stillSelected && isDraggable(s, orig)) {
             const touch = e.type === 'touchstart', pieceName = pieceNameOf(piece), draggedEl = s.dom.elements.dragged;
             s.draggable.current = {
-                orig,
                 piece,
+                orig,
                 touch,
                 origPos: position,
                 pos: position,
@@ -964,13 +964,9 @@ var Shogiground = (function () {
     }
     function dragNewPiece(s, piece, e, hand, force) {
         var _a;
-        const key = '00';
-        s.pieces.set(key, piece);
         unselect(s);
-        s.dom.redraw();
         const position = eventPosition(e), pieceName = pieceNameOf(piece), touch = e.type === 'touchstart', draggedEl = s.dom.elements.dragged;
         s.draggable.current = {
-            orig: key,
             piece,
             touch,
             origPos: position,
@@ -991,6 +987,7 @@ var Shogiground = (function () {
             s.dropmode.active = true;
             s.dropmode.piece = piece;
         }
+        s.dom.redraw();
         processDrag(s);
     }
     function processDrag(s) {
@@ -1000,10 +997,10 @@ var Shogiground = (function () {
             if (!cur)
                 return;
             // cancel animations while dragging
-            if ((_a = s.animation.current) === null || _a === void 0 ? void 0 : _a.plan.anims.has(cur.orig))
+            if (cur.orig && ((_a = s.animation.current) === null || _a === void 0 ? void 0 : _a.plan.anims.has(cur.orig)))
                 s.animation.current = undefined;
             // if moving piece is gone, cancel
-            const origPiece = s.pieces.get(cur.orig);
+            const origPiece = cur.orig ? s.pieces.get(cur.orig) : cur.piece;
             if (!origPiece || !samePiece(origPiece, cur.piece))
                 cancel(s);
             else {
@@ -1022,10 +1019,7 @@ var Shogiground = (function () {
                         setDisplay(draggedEl, true);
                     }
                     const hover = getKeyAtDomPos(cur.pos, sentePov(s), s.dimensions, bounds);
-                    cur.keyHasChanged =
-                        cur.keyHasChanged ||
-                            (!cur.newPiece && cur.orig !== hover) ||
-                            (!!cur.fromHand && distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 4));
+                    cur.keyHasChanged = cur.keyHasChanged || (!cur.newPiece && cur.orig !== hover);
                     // if the hovered square changed
                     if (hover !== cur.hovering) {
                         const prevHover = cur.hovering;
@@ -1071,19 +1065,17 @@ var Shogiground = (function () {
         if (dest && cur.started && cur.orig !== dest) {
             if (cur.newPiece) {
                 userDrop(s, cur.piece, dest, cur.force, cur.fromHand);
-                s.pieces.delete('00');
             }
-            else {
+            else if (cur.orig) {
                 userMove(s, cur.orig, dest);
             }
         }
         else if (cur.newPiece) {
-            s.pieces.delete(cur.orig);
-            if (cur.fromHand && cur.keyHasChanged) {
+            if (cur.fromHand && distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 4)) {
                 cancelDropMode(s);
             }
         }
-        else if (s.draggable.deleteOnDropOff && !dest) {
+        else if (cur.orig && s.draggable.deleteOnDropOff && !dest) {
             s.draggable.lastDropOff = cur;
             s.pieces.delete(cur.orig);
             callUserFunction(s.events.change);
@@ -1098,8 +1090,6 @@ var Shogiground = (function () {
     function cancel(s) {
         const cur = s.draggable.current;
         if (cur) {
-            if (cur.newPiece)
-                s.pieces.delete(cur.orig);
             s.draggable.current = undefined;
             unselect(s);
             s.dom.redraw();
