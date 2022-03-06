@@ -101,11 +101,6 @@ export interface HeadlessState {
     after?: (piece: sg.Piece) => void; // called after user selects a piece
     cancel?: () => void; // called after user cancels the selection
   };
-  stats: {
-    // was last piece dragged or clicked?
-    // needs default to false for touch
-    dragged: boolean;
-  };
   events: {
     change?: () => void; // called after the situation changes on the board
     move?: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => void;
@@ -185,11 +180,6 @@ export function defaults(): HeadlessState {
     },
     promotion: {
       active: false,
-    },
-    stats: {
-      // on touchscreen, default to "tap-tap" moves
-      // instead of drag
-      dragged: !('ontouchstart' in window),
     },
     events: {},
     drawable: {

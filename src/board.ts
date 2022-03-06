@@ -181,7 +181,6 @@ export function selectSquare(state: HeadlessState, key: sg.Key, force?: boolean)
       return;
     } else if ((state.selectable.enabled || force) && state.selected !== key) {
       if (userMove(state, state.selected, key)) {
-        state.stats.dragged = false;
         return;
       }
     }

@@ -218,7 +218,7 @@ export function end(s: State, e: sg.MouchEvent): void {
       board.userDrop(s, cur.piece, dest, cur.force, cur.fromHand);
       s.pieces.delete('00');
     } else {
-      if (board.userMove(s, cur.orig, dest)) s.stats.dragged = true;
+      board.userMove(s, cur.orig, dest);
     }
   } else if (cur.newPiece) {
     s.pieces.delete(cur.orig);

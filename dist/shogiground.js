@@ -356,7 +356,6 @@ var Shogiground = (function () {
             }
             else if ((state.selectable.enabled || force) && state.selected !== key) {
                 if (userMove(state, state.selected, key)) {
-                    state.stats.dragged = false;
                     return;
                 }
             }
@@ -1075,8 +1074,7 @@ var Shogiground = (function () {
                 s.pieces.delete('00');
             }
             else {
-                if (userMove(s, cur.orig, dest))
-                    s.stats.dragged = true;
+                userMove(s, cur.orig, dest);
             }
         }
         else if (cur.newPiece) {
@@ -1337,11 +1335,6 @@ var Shogiground = (function () {
             },
             promotion: {
                 active: false,
-            },
-            stats: {
-                // on touchscreen, default to "tap-tap" moves
-                // instead of drag
-                dragged: !('ontouchstart' in window),
             },
             events: {},
             drawable: {
