@@ -19,24 +19,6 @@ export function memo<A>(f: () => A): sg.Memo<A> {
   return ret;
 }
 
-export const timer = (): sg.Timer => {
-  let startAt: number | undefined;
-  return {
-    start() {
-      startAt = performance.now();
-    },
-    cancel() {
-      startAt = undefined;
-    },
-    stop() {
-      if (!startAt) return 0;
-      const time = performance.now() - startAt;
-      startAt = undefined;
-      return time;
-    },
-  };
-};
-
 export const opposite = (c: sg.Color): sg.Color => (c === 'sente' ? 'gote' : 'sente');
 
 export const distanceSq = (pos1: sg.Pos, pos2: sg.Pos): number => {

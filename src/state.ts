@@ -1,7 +1,6 @@
 import { AnimCurrent } from './anim.js';
 import { DragCurrent } from './drag.js';
 import { Drawable } from './draw.js';
-import { timer } from './util.js';
 import * as sfen from './sfen.js';
 import * as sg from './types.js';
 
@@ -116,7 +115,6 @@ export interface HeadlessState {
     insert?: (elements: sg.Elements) => void; // when the board DOM has been (re)inserted
   };
   drawable: Drawable;
-  hold: sg.Timer;
 }
 export interface State extends HeadlessState {
   dom: sg.Dom;
@@ -218,6 +216,5 @@ export function defaults(): HeadlessState {
       },
       prevSvgHash: '',
     },
-    hold: timer(),
   };
 }

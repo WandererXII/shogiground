@@ -60,7 +60,6 @@ export interface Dom {
 export interface MoveMetadata {
   premove: boolean;
   ctrlKey?: boolean;
-  holdTime?: number;
   captured?: Piece;
   predrop?: boolean;
 }
@@ -96,12 +95,6 @@ export function isSquareNode(el: HTMLElement): el is SquareNode {
 export interface Memo<A> {
   (): A;
   clear: () => void;
-}
-
-export interface Timer {
-  start: () => void;
-  cancel: () => void;
-  stop: () => number;
 }
 
 export type Redraw = () => void;

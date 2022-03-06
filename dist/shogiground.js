@@ -49,24 +49,6 @@ var Shogiground = (function () {
         };
         return ret;
     }
-    const timer = () => {
-        let startAt;
-        return {
-            start() {
-                startAt = performance.now();
-            },
-            cancel() {
-                startAt = undefined;
-            },
-            stop() {
-                if (!startAt)
-                    return 0;
-                const time = performance.now() - startAt;
-                startAt = undefined;
-                return time;
-            },
-        };
-    };
     const opposite = (c) => (c === 'sente' ? 'gote' : 'sente');
     const distanceSq = (pos1, pos2) => {
         const dx = pos1[0] - pos2[0], dy = pos1[1] - pos2[1];
@@ -335,12 +317,10 @@ var Shogiground = (function () {
         if (canMove(state, orig, dest)) {
             const result = baseUserMove(state, orig, dest);
             if (result) {
-                const holdTime = state.hold.stop();
                 unselect(state);
                 const metadata = {
                     premove: false,
                     ctrlKey: state.stats.ctrlKey,
-                    holdTime,
                 };
                 if (result !== true)
                     metadata.captured = result;
@@ -374,7 +354,6 @@ var Shogiground = (function () {
         if (state.selected) {
             if (state.selected === key && !state.draggable.enabled) {
                 unselect(state);
-                state.hold.cancel();
                 return;
             }
             else if ((state.selectable.enabled || force) && state.selected !== key) {
@@ -386,7 +365,6 @@ var Shogiground = (function () {
         }
         if (isMovable(state, key) || isPremovable(state, key)) {
             setSelected(state, key);
-            state.hold.start();
         }
     }
     function setSelected(state, key) {
@@ -403,7 +381,6 @@ var Shogiground = (function () {
         state.selected = undefined;
         state.premovable.dests = undefined;
         state.predroppable.dests = undefined;
-        state.hold.cancel();
     }
     function cancelDropMode(state) {
         state.dropmode.active = false;
@@ -1394,7 +1371,6 @@ var Shogiground = (function () {
                 },
                 prevSvgHash: '',
             },
-            hold: timer(),
         };
     }
 
