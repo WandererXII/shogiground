@@ -58,7 +58,7 @@ export interface Config {
     showDests?: boolean; // whether to add the premove-dest class on squares
     dests?: sg.Key[]; // premove destinations for the current selection
     events?: {
-      set?: (orig: sg.Key, dest: sg.Key, metadata?: sg.SetPremoveMetadata) => void; // called after the premove has been set
+      set?: (orig: sg.Key, dest: sg.Key) => void; // called after the premove has been set
       unset?: () => void; // called after the premove has been unset
     };
   };

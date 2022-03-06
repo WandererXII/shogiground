@@ -38,10 +38,10 @@ export function setCheck(state: HeadlessState, color: sg.Color | boolean): void 
     }
 }
 
-function setPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key, meta: sg.SetPremoveMetadata): void {
+function setPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): void {
   unsetPredrop(state);
   state.premovable.current = [orig, dest];
-  callUserFunction(state.premovable.events.set, orig, dest, meta);
+  callUserFunction(state.premovable.events.set, orig, dest);
 }
 
 export function unsetPremove(state: HeadlessState): void {
@@ -147,16 +147,14 @@ export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): bool
       unselect(state);
       const metadata: sg.MoveMetadata = {
         premove: false,
-        ctrlKey: state.stats.ctrlKey,
+        predrop: false,
       };
       if (result !== true) metadata.captured = result;
       callUserFunction(state.movable.events.after, orig, dest, metadata);
       return true;
     }
   } else if (canPremove(state, orig, dest)) {
-    setPremove(state, orig, dest, {
-      ctrlKey: state.stats.ctrlKey,
-    });
+    setPremove(state, orig, dest);
     unselect(state);
     return true;
   }
@@ -281,7 +279,7 @@ export function playPremove(state: HeadlessState): boolean {
   if (canMove(state, orig, dest)) {
     const result = baseUserMove(state, orig, dest);
     if (result) {
-      const metadata: sg.MoveMetadata = { premove: true };
+      const metadata: sg.MoveMetadata = { premove: true, predrop: false };
       if (result !== true) metadata.captured = result;
       callUserFunction(state.movable.events.after, orig, dest, metadata);
       success = true;

@@ -221,10 +221,10 @@ var Shogiground = (function () {
                 }
             }
     }
-    function setPremove(state, orig, dest, meta) {
+    function setPremove(state, orig, dest) {
         unsetPredrop(state);
         state.premovable.current = [orig, dest];
-        callUserFunction(state.premovable.events.set, orig, dest, meta);
+        callUserFunction(state.premovable.events.set, orig, dest);
     }
     function unsetPremove(state) {
         if (state.premovable.current) {
@@ -320,7 +320,7 @@ var Shogiground = (function () {
                 unselect(state);
                 const metadata = {
                     premove: false,
-                    ctrlKey: state.stats.ctrlKey,
+                    predrop: false,
                 };
                 if (result !== true)
                     metadata.captured = result;
@@ -329,9 +329,7 @@ var Shogiground = (function () {
             }
         }
         else if (canPremove(state, orig, dest)) {
-            setPremove(state, orig, dest, {
-                ctrlKey: state.stats.ctrlKey,
-            });
+            setPremove(state, orig, dest);
             unselect(state);
             return true;
         }
@@ -436,7 +434,7 @@ var Shogiground = (function () {
         if (canMove(state, orig, dest)) {
             const result = baseUserMove(state, orig, dest);
             if (result) {
-                const metadata = { premove: true };
+                const metadata = { premove: true, predrop: false };
                 if (result !== true)
                     metadata.captured = result;
                 callUserFunction(state.movable.events.after, orig, dest, metadata);
@@ -923,7 +921,6 @@ var Shogiground = (function () {
             e.preventDefault();
         const hadPremove = !!s.premovable.current;
         const hadPredrop = !!s.predroppable.current || !!s.predroppable.dests;
-        s.stats.ctrlKey = e.ctrlKey;
         if (s.selected && canMove(s, s.selected, orig)) {
             anim(state => selectSquare(state, orig), s);
         }
@@ -1078,7 +1075,6 @@ var Shogiground = (function () {
                 s.pieces.delete('00');
             }
             else {
-                s.stats.ctrlKey = e.ctrlKey;
                 if (userMove(s, cur.orig, dest))
                     s.stats.dragged = true;
             }

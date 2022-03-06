@@ -46,7 +46,6 @@ export function start(s: State, e: sg.MouchEvent): void {
     e.preventDefault();
   const hadPremove = !!s.premovable.current;
   const hadPredrop = !!s.predroppable.current || !!s.predroppable.dests;
-  s.stats.ctrlKey = e.ctrlKey;
   if (s.selected && board.canMove(s, s.selected, orig)) {
     anim(state => board.selectSquare(state, orig), s);
   } else {
@@ -219,7 +218,6 @@ export function end(s: State, e: sg.MouchEvent): void {
       board.userDrop(s, cur.piece, dest, cur.force, cur.fromHand);
       s.pieces.delete('00');
     } else {
-      s.stats.ctrlKey = e.ctrlKey;
       if (board.userMove(s, cur.orig, dest)) s.stats.dragged = true;
     }
   } else if (cur.newPiece) {

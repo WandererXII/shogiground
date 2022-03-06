@@ -59,12 +59,8 @@ export interface Dom {
 
 export interface MoveMetadata {
   premove: boolean;
-  ctrlKey?: boolean;
+  predrop: boolean;
   captured?: Piece;
-  predrop?: boolean;
-}
-export interface SetPremoveMetadata {
-  ctrlKey?: boolean;
 }
 
 export type MouchEvent = Event & Partial<MouseEvent & TouchEvent>;

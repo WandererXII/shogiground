@@ -58,7 +58,7 @@ export interface HeadlessState {
     dests?: sg.Key[]; // premove destinations for the current selection
     current?: sg.KeyPair; // keys of the current saved premove ["5f" "5d"]
     events: {
-      set?: (orig: sg.Key, dest: sg.Key, metadata?: sg.SetPremoveMetadata) => void; // called after the premove has been set
+      set?: (orig: sg.Key, dest: sg.Key) => void; // called after the premove has been set
       unset?: () => void; // called after the premove has been unset
     };
   };
@@ -105,7 +105,6 @@ export interface HeadlessState {
     // was last piece dragged or clicked?
     // needs default to false for touch
     dragged: boolean;
-    ctrlKey?: boolean;
   };
   events: {
     change?: () => void; // called after the situation changes on the board
