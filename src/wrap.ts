@@ -8,6 +8,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   //     sg-hand
   //     sg-board
   //       sg-squares
+  //       sg-pieces
   //       sg-promotion
   //       sg-square-over
   //       piece dragging

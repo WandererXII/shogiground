@@ -36,7 +36,6 @@ export interface Config {
   hands?: {
     enabled?: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
     handRoles?: sg.Role[]; // roles to render in sg-hand
-    captureProcessing?: (role: sg.Role) => sg.Role | undefined; // update role, before storing it in hand, e.g. unpromoting, undefined to discard piece
   };
   movable?: {
     free?: boolean; // all moves are valid - board editor

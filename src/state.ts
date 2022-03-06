@@ -36,7 +36,6 @@ export interface HeadlessState {
     enabled: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
     handMap: sg.Hands;
     handRoles: sg.Role[]; // roles to render in sg-hand
-    captureProcessing: (role: sg.Role) => sg.Role | undefined; // what to do with captured piece, before storing it in hand
   };
   movable: {
     free: boolean; // all moves are valid - board editor
@@ -151,26 +150,6 @@ export function defaults(): HeadlessState {
       enabled: false,
       handMap: new Map(),
       handRoles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
-      captureProcessing: (role: sg.Role) => {
-        switch (role) {
-          case 'tokin':
-            return 'pawn';
-          case 'promotedlance':
-            return 'lance';
-          case 'promotedknight':
-            return 'knight';
-          case 'promotedsilver':
-            return 'silver';
-          case 'dragon':
-            return 'rook';
-          case 'horse':
-            return 'bishop';
-          case 'king':
-            return undefined;
-          default:
-            return role;
-        }
-      },
     },
     movable: {
       free: true,

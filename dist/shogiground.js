@@ -267,11 +267,6 @@ var Shogiground = (function () {
         if (orig === dest || !origPiece)
             return false;
         const captured = destPiece && destPiece.color !== origPiece.color ? destPiece : undefined;
-        if (state.hands.enabled && captured) {
-            const afterRole = state.hands.captureProcessing(captured.role);
-            if (afterRole)
-                addToHand(state, { color: opposite(captured.color), role: afterRole });
-        }
         if (dest === state.selected)
             unselect(state);
         callUserFunction(state.events.move, orig, dest, captured);
@@ -1331,26 +1326,6 @@ var Shogiground = (function () {
                 enabled: false,
                 handMap: new Map(),
                 handRoles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
-                captureProcessing: (role) => {
-                    switch (role) {
-                        case 'tokin':
-                            return 'pawn';
-                        case 'promotedlance':
-                            return 'lance';
-                        case 'promotedknight':
-                            return 'knight';
-                        case 'promotedsilver':
-                            return 'silver';
-                        case 'dragon':
-                            return 'rook';
-                        case 'horse':
-                            return 'bishop';
-                        case 'king':
-                            return undefined;
-                        default:
-                            return role;
-                    }
-                },
             },
             movable: {
                 free: true,
@@ -1681,6 +1656,7 @@ var Shogiground = (function () {
         //     sg-hand
         //     sg-board
         //       sg-squares
+        //       sg-pieces
         //       sg-promotion
         //       sg-square-over
         //       piece dragging
