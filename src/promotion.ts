@@ -24,7 +24,7 @@ export function renderPromotions(s: State): void {
   const asSente = board.sentePov(s),
     initPos = key2pos(s.promotion.key);
   const promotionNode = createEl('promotion');
-  translateAbs(promotionNode, posToTranslateAbs(s.dimensions, s.dom.bounds())(initPos, asSente), 2);
+  translateAbs(promotionNode, posToTranslateAbs(s.dimensions, s.dom.bounds())(initPos, asSente), 1);
 
   s.promotion.pieces.forEach(p => {
     const pieceNode = createEl('piece', pieceNameOf(p));

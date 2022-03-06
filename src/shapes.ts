@@ -282,7 +282,7 @@ function renderArrow(
 
 export function renderPiece(state: State, { shape, hash }: Shape, bounds: DOMRect): sg.PieceNode {
   const orig = shape.orig;
-  const scale = shape.piece?.scale;
+  const scale = (shape.piece?.scale || 1) * (state.scaleDownPieces ? 0.5 : 1);
 
   const pieceEl = createEl('piece', pieceNameOf(shape.piece!)) as sg.PieceNode;
   pieceEl.setAttribute('sgHash', hash);

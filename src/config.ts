@@ -20,6 +20,7 @@ export interface Config {
   disableContextMenu?: boolean; // because who needs a context menu on a board
   blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
   resizable?: boolean; // listens to shogiground.resize on document.body to clear bounds cache
+  scaleDownPieces?: Boolean; // helpful for pgns - https://ctidd.com/2015/svg-background-scaling
   coordinates?: {
     enabled?: boolean; // include coords attributes
     notation?: sg.Notation;
@@ -76,6 +77,7 @@ export interface Config {
     distance?: number; // minimum distance to initiate a drag; in pixels
     autoDistance?: boolean; // lets shogiground set distance to zero when user drags pieces
     showGhost?: boolean; // show ghost of piece being dragged
+    showTouchSquareOverlay: boolean; // show square overlay on the square that is currently being hovered, touch only
     deleteOnDropOff?: boolean; // delete a piece when it is dropped off the board
   };
   selectable?: {
@@ -134,9 +136,7 @@ export function configure(state: HeadlessState, config: Config): void {
   // if a sfen was provided, replace the pieces, except the currently dragged one
   if (config.sfen?.board) {
     state.dimensions = inferDimensions(config.sfen.board);
-    const pieceToDrop = state.pieces.get('00');
     state.pieces = sfenRead(config.sfen.board, state.dimensions);
-    if (pieceToDrop) state.pieces.set('00', pieceToDrop);
     state.drawable.shapes = [];
   }
 

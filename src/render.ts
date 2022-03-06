@@ -2,6 +2,7 @@ import { State } from './state.js';
 import {
   key2pos,
   createEl,
+  setDisplay,
   posToTranslateRel,
   posToTranslateAbs,
   translateRel,
@@ -18,14 +19,15 @@ type PieceName = string; // `$color $role`
 
 type SquareClasses = Map<sg.Key, string>;
 
-// ported from https://github.com/veloce/lichobile/blob/master/src/js/shogiground/view.js
-// in case of bugs, blame @veloce
 export function render(s: State): void {
   const asSente: boolean = sentePov(s),
+    scaleDown = s.scaleDownPieces ? 0.5 : 1,
     posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()),
     translate = s.dom.relative ? translateRel : translateAbs,
     squaresEl: HTMLElement = s.dom.elements.squares,
     piecesEl: HTMLElement = s.dom.elements.pieces,
+    draggedEl: sg.PieceNode = s.dom.elements.dragged,
+    squareOverEl: HTMLElement = s.dom.elements.squareOver,
     handTopEl: HTMLElement | undefined = s.dom.elements.handTop,
     handBotEl: HTMLElement | undefined = s.dom.elements.handBot,
     pieces: sg.Pieces = s.pieces,
@@ -36,6 +38,13 @@ export function render(s: State): void {
     squares: SquareClasses = computeSquareClasses(s),
     samePieces: Set<sg.Key> = new Set(),
     movedPieces: Map<PieceName, sg.PieceNode[]> = new Map();
+
+  // if piece not being dragged anymore, hide it
+  if (!curDrag && draggedEl.sgDragging) {
+    draggedEl.sgDragging = false;
+    setDisplay(draggedEl, false);
+    setDisplay(squareOverEl, false);
+  }
 
   let k: sg.Key,
     el: HTMLElement | undefined,
@@ -56,10 +65,12 @@ export function render(s: State): void {
       fading = fadings.get(k);
       elPieceName = el.sgPiece;
 
-      // if piece not being dragged anymore, remove dragging style
-      if (el.sgDragging && (!curDrag || curDrag.orig !== k)) {
-        el.classList.remove('dragging');
-        translate(el, posToTranslate(key2pos(k), asSente));
+      // if piece dragged add or remove ghost class
+      if (curDrag && curDrag.orig === k) {
+        el.classList.add('ghost');
+        el.sgGhost = true;
+      } else if (el.sgGhost && (!curDrag || curDrag.orig !== k)) {
+        el.classList.remove('ghost');
         el.sgDragging = false;
       }
       // remove fading class if it still remains
@@ -76,11 +87,11 @@ export function render(s: State): void {
           pos[0] += anim[2];
           pos[1] += anim[3];
           el.classList.add('anim');
-          translate(el, posToTranslate(pos, asSente));
+          translate(el, posToTranslate(pos, asSente), scaleDown);
         } else if (el.sgAnimating) {
           el.sgAnimating = false;
           el.classList.remove('anim');
-          translate(el, posToTranslate(key2pos(k), asSente));
+          translate(el, posToTranslate(key2pos(k), asSente), scaleDown);
         }
         // same piece: flag as same
         if (elPieceName === pieceNameOf(pieceAtKey) && (!fading || !el.sgFading)) {
@@ -111,6 +122,7 @@ export function render(s: State): void {
     sqEl.className = cc;
     sqEl = sqEl.nextElementSibling as HTMLElement | undefined;
   }
+
   // walk over all pieces in current set, apply dom changes to moved pieces
   // or append new pieces
   for (const [k, p] of pieces) {
@@ -133,7 +145,7 @@ export function render(s: State): void {
           pos[0] += anim[2];
           pos[1] += anim[3];
         }
-        translate(pMvd, posToTranslate(pos, asSente));
+        translate(pMvd, posToTranslate(pos, asSente), scaleDown);
       }
       // no piece in moved obj: insert the new piece
       // assumes the new piece is not being dragged
@@ -149,7 +161,7 @@ export function render(s: State): void {
           pos[0] += anim[2];
           pos[1] += anim[3];
         }
-        translate(pieceNode, posToTranslate(pos, asSente));
+        translate(pieceNode, posToTranslate(pos, asSente), scaleDown);
 
         piecesEl.appendChild(pieceNode);
       }
@@ -168,10 +180,11 @@ export function render(s: State): void {
 export function updateBounds(s: State): void {
   if (s.dom.relative) return;
   const asSente: boolean = sentePov(s),
+    scaleDown = s.scaleDownPieces ? 0.5 : 1,
     posToTranslate = posToTranslateAbs(s.dimensions, s.dom.bounds());
   let el = s.dom.elements.pieces.firstElementChild as HTMLElement | undefined;
   while (el) {
-    if (sg.isPieceNode(el) && !el.sgAnimating) translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente));
+    if (sg.isPieceNode(el) && !el.sgAnimating) translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente), scaleDown);
     el = el.nextElementSibling as HTMLElement | undefined;
   }
 }
@@ -182,11 +195,9 @@ function removeNodes(s: State, nodes: HTMLElement[]): void {
 
 function computeSquareClasses(s: State): SquareClasses {
   const squares: SquareClasses = new Map();
-  if (s.lastMove && s.highlight.lastMove)
-    for (const k of s.lastMove) {
-      if (!k.includes('*')) addSquare(squares, k, 'last-move');
-    }
+  if (s.lastMove && s.highlight.lastMove) for (const k of s.lastMove) addSquare(squares, k, 'last-move');
   if (s.check && s.highlight.check) addSquare(squares, s.check, 'check');
+  if (s.draggable.current?.hovering) addSquare(squares, s.draggable.current.hovering, 'hover');
   if (s.selected) {
     addSquare(squares, s.selected, 'selected');
     if (s.movable.showDests) {

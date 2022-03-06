@@ -39,7 +39,8 @@ export interface Elements {
   squares: HTMLElement;
   pieces: HTMLElement;
   promotion: HTMLElement;
-  ghost?: HTMLElement;
+  squareOver: HTMLElement;
+  dragged: PieceNode;
   svg?: SVGElement;
   customSvg?: SVGElement;
   freePieces?: HTMLElement;
@@ -77,6 +78,7 @@ export interface PieceNode extends KeyedNode {
   sgPiece: string;
   sgAnimating?: boolean;
   sgFading?: boolean;
+  sgGhost?: boolean;
   sgDragging?: boolean;
   sgScale?: number;
 }

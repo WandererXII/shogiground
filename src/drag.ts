@@ -10,9 +10,10 @@ export interface DragCurrent {
   orig: sg.Key; // orig key of dragging piece
   piece: sg.Piece;
   origPos: sg.NumberPair; // first event position
+  touch: boolean; // is the initial event from 'touchstart'
   pos: sg.NumberPair; // latest event position
+  hovering?: sg.Key; // currently hovered square
   started: boolean; // whether the drag has started; as per the distance setting
-  element: sg.PieceNode | (() => sg.PieceNode | undefined);
   newPiece?: boolean; // is it a new piece from outside the board
   fromHand?: boolean; // is it a piece from shogiground hand
   force?: boolean; // can the new piece replace an existing one (editor)
@@ -24,14 +25,18 @@ export interface DragCurrent {
 export function start(s: State, e: sg.MouchEvent): void {
   if (!e.isTrusted || (e.button !== undefined && e.button !== 0)) return; // only touch or left click
   if (e.touches && e.touches.length > 1) return; // support one finger touch only
+
   const bounds = s.dom.bounds(),
-    position = util.eventPosition(e)!,
-    orig = board.getKeyAtDomPos(position, board.sentePov(s), s.dimensions, bounds);
-  if (!orig) return;
-  const piece = s.pieces.get(orig);
-  const previouslySelected = s.selected;
+    position = util.eventPosition(e),
+    orig = position && board.getKeyAtDomPos(position, board.sentePov(s), s.dimensions, bounds);
+
+  if (!orig || !position) return;
+
+  const piece = s.pieces.get(orig),
+    previouslySelected = s.selected;
   if (!previouslySelected && s.drawable.enabled && (s.drawable.eraseOnClick || !piece || piece.color !== s.turnColor))
     drawClear(s);
+
   // Prevent touch scroll and create no corresponding mouse event, if there
   // is an intent to interact with the board.
   if (
@@ -48,28 +53,28 @@ export function start(s: State, e: sg.MouchEvent): void {
     board.selectSquare(s, orig);
   }
   const stillSelected = s.selected === orig;
-  const element = pieceElementByKey(s, orig);
-  if (piece && element && stillSelected && board.isDraggable(s, orig)) {
+
+  if (piece && stillSelected && board.isDraggable(s, orig)) {
+    const touch = e.type === 'touchstart',
+      pieceName = util.pieceNameOf(piece),
+      draggedEl = s.dom.elements.dragged;
+
     s.draggable.current = {
       orig,
       piece,
+      touch,
       origPos: position,
       pos: position,
-      started: s.draggable.autoDistance && s.stats.dragged,
-      element,
+      started: s.draggable.autoDistance && !touch,
       previouslySelected,
       originTarget: e.target,
       keyHasChanged: false,
     };
-    element.sgDragging = true;
-    element.classList.add('dragging');
-    // place ghost
-    const ghost = s.dom.elements.ghost;
-    if (ghost) {
-      ghost.className = `ghost ${piece.color} ${piece.role}`;
-      util.translateAbs(ghost, util.posToTranslateAbs(s.dimensions, bounds)(util.key2pos(orig), board.sentePov(s)));
-      util.setVisible(ghost, true);
-    }
+
+    draggedEl.sgPiece = pieceName;
+    draggedEl.className = `dragging ${pieceName}`;
+    draggedEl.classList.toggle('touch', touch);
+
     processDrag(s);
   } else {
     if (hadPremove) board.unsetPremove(s);
@@ -95,21 +100,29 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: 
   board.unselect(s);
   s.dom.redraw();
 
-  const position = util.eventPosition(e)!;
+  const position = util.eventPosition(e)!,
+    pieceName = util.pieceNameOf(piece),
+    touch = e.type === 'touchstart',
+    draggedEl = s.dom.elements.dragged;
 
   s.draggable.current = {
     orig: key,
     piece,
+    touch,
     origPos: position,
     pos: position,
     started: true,
-    element: () => pieceElementByKey(s, key),
     originTarget: e.target,
     newPiece: true,
     fromHand: hand,
     force: force,
     keyHasChanged: s.dropmode.active && s.dropmode.piece?.role === piece.role && s.dropmode.piece.color === piece.color,
   };
+
+  draggedEl.sgPiece = pieceName;
+  draggedEl.className = `dragging ${pieceName}`;
+  draggedEl.classList.toggle('touch', touch);
+
   if (board.isPredroppable(s, piece)) s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
   if (hand) {
     s.dropmode.active = true;
@@ -128,27 +141,50 @@ function processDrag(s: State): void {
     const origPiece = s.pieces.get(cur.orig);
     if (!origPiece || !util.samePiece(origPiece, cur.piece)) cancel(s);
     else {
-      if (!cur.started && util.distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 2))
+      if (!cur.started && util.distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 2)) {
         cur.started = true;
+        s.dom.redraw();
+      }
       if (cur.started) {
-        // support lazy elements
-        if (typeof cur.element === 'function') {
-          const found = cur.element();
-          if (!found) return;
-          found.sgDragging = true;
-          found.classList.add('dragging');
-          cur.element = found;
-        }
+        const draggedEl = s.dom.elements.dragged,
+          bounds = s.dom.bounds();
 
-        const bounds = s.dom.bounds();
-        util.translateAbs(cur.element, [
-          cur.pos[0] - bounds.left - bounds.width / (s.dimensions.files * 2),
-          cur.pos[1] - bounds.top - bounds.height / (s.dimensions.ranks * 2),
-        ]);
+        util.translateAbs(
+          draggedEl,
+          [
+            cur.pos[0] - bounds.left - bounds.width / (s.dimensions.files * 2),
+            cur.pos[1] - bounds.top - bounds.height / (s.dimensions.ranks * 2),
+          ],
+          s.scaleDownPieces ? 0.5 : 1
+        );
+
+        if (!draggedEl.sgDragging) {
+          draggedEl.sgDragging = true;
+          util.setDisplay(draggedEl, true);
+        }
+        const hover = board.getKeyAtDomPos(cur.pos, board.sentePov(s), s.dimensions, bounds);
+
         cur.keyHasChanged =
           cur.keyHasChanged ||
-          (!cur.newPiece && cur.orig !== board.getKeyAtDomPos(cur.pos, board.sentePov(s), s.dimensions, bounds)) ||
+          (!cur.newPiece && cur.orig !== hover) ||
           (!!cur.fromHand && util.distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 4));
+
+        // if the hovered square changed
+        if (hover !== cur.hovering) {
+          const prevHover = cur.hovering;
+          cur.hovering = hover;
+          updateHovers(s, prevHover);
+          if (hover && cur.touch && s.draggable.showTouchSquareOverlay) {
+            util.translateAbs(
+              s.dom.elements.squareOver,
+              util.posToTranslateAbs(s.dimensions, bounds)(util.key2pos(hover), board.sentePov(s)),
+              1
+            );
+            util.setDisplay(s.dom.elements.squareOver, true);
+          } else if (cur.touch) {
+            util.setDisplay(s.dom.elements.squareOver, false);
+          }
+        }
       }
     }
     processDrag(s);
@@ -199,8 +235,6 @@ export function end(s: State, e: sg.MouchEvent): void {
   if ((cur.orig === cur.previouslySelected || cur.keyHasChanged) && (cur.orig === dest || !dest)) board.unselect(s);
   else if (!s.selectable.enabled) board.unselect(s);
 
-  removeDragElements(s);
-
   s.draggable.current = undefined;
   s.dom.redraw();
 }
@@ -211,21 +245,18 @@ export function cancel(s: State): void {
     if (cur.newPiece) s.pieces.delete(cur.orig);
     s.draggable.current = undefined;
     board.unselect(s);
-    removeDragElements(s);
     s.dom.redraw();
   }
 }
 
-function removeDragElements(s: State): void {
-  const e = s.dom.elements;
-  if (e.ghost) util.setVisible(e.ghost, false);
-}
+export function updateHovers(s: State, prevHover?: sg.Key): void {
+  let el = s.dom.elements.squares.firstElementChild as HTMLElement | undefined;
+  while (el && sg.isSquareNode(el)) {
+    const key = el.sgKey;
 
-function pieceElementByKey(s: State, key: sg.Key): sg.PieceNode | undefined {
-  let el = s.dom.elements.pieces.firstElementChild as HTMLElement | undefined;
-  while (el) {
-    if (sg.isPieceNode(el) && el.sgKey === key) return el as sg.PieceNode;
+    if (s.draggable.current?.hovering === key) el.classList.add('hover');
+    else if (prevHover === key) el.classList.remove('hover');
+
     el = el.nextElementSibling as HTMLElement | undefined;
   }
-  return;
 }

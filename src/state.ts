@@ -18,6 +18,7 @@ export interface HeadlessState {
   disableContextMenu: boolean; // because who needs a context menu on a shogi board
   resizable: boolean; // listens to shogiground.resize on document.body to clear bounds cache
   blockTouchScroll: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
+  scaleDownPieces: boolean;
   coordinates: {
     enabled: boolean; // include coords attributes
     notation: sg.Notation;
@@ -81,6 +82,7 @@ export interface HeadlessState {
     distance: number; // minimum distance to initiate a drag; in pixels
     autoDistance: boolean; // lets shogiground set distance to zero when user drags pieces
     showGhost: boolean; // show ghost of piece being dragged
+    showTouchSquareOverlay: boolean; // show square overlay on the square that is currently being hovered, touch only
     deleteOnDropOff: boolean; // delete a piece when it is dropped off the board
     lastDropOff?: DragCurrent; // last piece that was dropped off
     current?: DragCurrent;
@@ -132,6 +134,7 @@ export function defaults(): HeadlessState {
     disableContextMenu: false,
     resizable: true,
     blockTouchScroll: false,
+    scaleDownPieces: true,
     coordinates: {
       enabled: true,
       notation: sg.Notation.WESTERN,
@@ -142,7 +145,7 @@ export function defaults(): HeadlessState {
     },
     animation: {
       enabled: true,
-      duration: 200,
+      duration: 250,
     },
     hands: {
       enabled: false,
@@ -194,6 +197,7 @@ export function defaults(): HeadlessState {
       distance: 3,
       autoDistance: true,
       showGhost: true,
+      showTouchSquareOverlay: true,
       deleteOnDropOff: false,
     },
     dropmode: {

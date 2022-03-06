@@ -1,6 +1,6 @@
 import { HeadlessState } from './state.js';
-import { setVisible, createEl, pos2key } from './util.js';
-import { colors, Notation, Elements, Dimensions, SquareNode, Color } from './types.js';
+import { createEl, pos2key, setDisplay } from './util.js';
+import { colors, Notation, Elements, Dimensions, SquareNode, Color, PieceNode } from './types.js';
 import { createSVGElement, setAttributes } from './shapes.js';
 
 export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boolean): Elements {
@@ -8,8 +8,9 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   //     sg-hand
   //     sg-board
   //       sg-squares
-  //       sg-pieces
   //       sg-promotion
+  //       sg-square-over
+  //       piece dragging
   //       svg.sg-shapes
   //         defs
   //         g
@@ -18,7 +19,6 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   //     sg-free-pieces
   //       coords.ranks
   //       coords.files
-  //       piece.ghost
   //     sg-hand
 
   element.innerHTML = '';
@@ -43,6 +43,14 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
 
   const promotion = createEl('sg-promotion');
   board.appendChild(promotion);
+
+  const squareOver = createEl('sg-square-over');
+  setDisplay(squareOver, !!s.draggable.current?.touch);
+  board.appendChild(squareOver);
+
+  const dragged = createEl('piece') as PieceNode;
+  setDisplay(dragged, !!s.draggable.current);
+  board.appendChild(dragged);
 
   let handTop, handBot;
   if (s.hands.enabled) {
@@ -80,19 +88,13 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     );
   }
 
-  let ghost: HTMLElement | undefined;
-  if (s.draggable.showGhost && !relative) {
-    ghost = createEl('piece', 'ghost');
-    setVisible(ghost, false);
-    board.appendChild(ghost);
-  }
-
   return {
     board,
     squares,
     pieces,
     promotion,
-    ghost,
+    squareOver,
+    dragged,
     svg,
     customSvg,
     freePieces,

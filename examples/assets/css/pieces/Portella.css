@@ -1,5 +1,9 @@
 piece {
   will-change: transform !important;
+  width: 200%;
+  height: 200%;
+  transform: scale(0.5);
+  margin: calc(-50% / 11 * 12) calc(-50%);
 }
 piece.pawn.sente,
 .sg-wrap.orientation-sente piece.pawn.sente,

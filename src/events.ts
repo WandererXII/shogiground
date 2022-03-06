@@ -11,20 +11,19 @@ type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
 
 export function bindBoard(s: State, boundsUpdated: () => void): void {
-  const squaresEl = s.dom.elements.squares;
+  const piecesEl = s.dom.elements.pieces;
   const promotionEl = s.dom.elements.promotion;
 
-  if (!s.dom.relative && s.resizable && 'ResizeObserver' in window)
-    new ResizeObserver(boundsUpdated).observe(squaresEl);
+  if (!s.dom.relative && s.resizable && 'ResizeObserver' in window) new ResizeObserver(boundsUpdated).observe(piecesEl);
 
   if (s.viewOnly) return;
 
   // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
   const onStart = startDragOrDraw(s);
-  squaresEl.addEventListener('touchstart', onStart as EventListener, {
+  piecesEl.addEventListener('touchstart', onStart as EventListener, {
     passive: false,
   });
-  squaresEl.addEventListener('mousedown', onStart as EventListener, {
+  piecesEl.addEventListener('mousedown', onStart as EventListener, {
     passive: false,
   });
 
@@ -34,7 +33,7 @@ export function bindBoard(s: State, boundsUpdated: () => void): void {
   });
 
   if (s.disableContextMenu || s.drawable.enabled) {
-    squaresEl.addEventListener('contextmenu', e => e.preventDefault());
+    piecesEl.addEventListener('contextmenu', e => e.preventDefault());
     promotionEl.addEventListener('contextmenu', e => e.preventDefault());
   }
 }

@@ -27,6 +27,8 @@
     <button onclick="pieceSVG()">PIECE</button>
     <button onclick="move()">MOVE</button>
     <button onclick="promote()">PROMOTION</button>
+    <button onclick="setPieces()">PIECES</button>
+    <button onclick="tmout(0)">TIMEOUT</button>
     <script src="../dist/shogiground.js"></script>
     <script>
       const config = {
@@ -35,12 +37,23 @@
         },
         activeColor: 'sente',
         resizable: true,
-        orientation: 'sente',
         coordinates: {
           notation: 3,
         },
         hands: {
           enabled: false,
+        },
+        movable: {
+          events: {
+            after: (orig, dest, metadata) => {
+              console.log(orig, dest, metadata);
+            },
+          },
+        },
+        events: {
+          select: key => {
+            console.log(key);
+          },
         },
       };
       const ground = Shogiground(document.getElementById('dirty'), config);
@@ -59,13 +72,41 @@
         ground.setShapes([shape]);
       }
       function move() {
-        ground.move('1g', '1c');
+        ground.move('1g', '1e');
       }
       function promote() {
         ground.startPromotion('5c', [
           { role: 'tokin', color: 'sente' },
           { role: 'pawn', color: 'sente' },
         ]);
+      }
+      function setPieces() {
+        ground.setPieces(
+          new Map([
+            ['1c', { role: 'pawn', color: 'sente' }],
+            ['2c', { role: 'pawn', color: 'sente' }],
+            ['3c', { role: 'pawn', color: 'sente' }],
+            ['4c', { role: 'pawn', color: 'sente' }],
+            ['6c', { role: 'pawn', color: 'sente' }],
+            ['7c', { role: 'pawn', color: 'sente' }],
+            ['8c', { role: 'pawn', color: 'sente' }],
+            ['9c', { role: 'gold', color: 'sente' }],
+            ['1g', undefined],
+            ['2g', undefined],
+            ['3g', undefined],
+            ['4g', undefined],
+            ['6g', undefined],
+            ['7g', undefined],
+            ['8g', undefined],
+            ['6i', undefined],
+          ])
+        );
+      }
+      function reconf() {
+        ground.set(config);
+      }
+      function tmout(ms) {
+        setTimeout(reconf, ms);
       }
     </script>
     <script>

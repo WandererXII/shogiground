@@ -4,5 +4,5 @@
 .d-5x5 piece {
   width: calc(200% / 5);
   height: calc(200% / 5);
-  margin: calc(-50% / 5);
+  margin: calc(-50% / 5 / 11 * 12) calc(-50% / 5);
 }

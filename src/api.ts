@@ -98,7 +98,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
     set(config): void {
       if (config.orientation && config.orientation !== state.orientation) toggleOrientation();
       applyAnimation(state, config);
-      (config.sfen ? anim : render)(state => configure(state, config), state);
+      (config.sfen?.board ? anim : render)(state => configure(state, config), state);
     },
 
     state,

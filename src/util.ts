@@ -72,13 +72,12 @@ export const posToTranslateRel =
   (pos, asSente) =>
     posToTranslateBase(pos, dims, asSente, 50, 50);
 
-// scale, because https://ctidd.com/2015/svg-background-scaling, but for pgn
-export const translateAbs = (el: HTMLElement, pos: sg.NumberPair, scale = 1): void => {
-  el.style.transform = `translate(${pos[0]}px,${pos[1]}px) scale(${scale * 0.5}`;
+export const translateAbs = (el: HTMLElement, pos: sg.NumberPair, scale: number): void => {
+  el.style.transform = `translate(${pos[0]}px,${pos[1]}px) scale(${scale}`;
 };
 
-export const translateRel = (el: HTMLElement, percents: sg.NumberPair, scale = 1): void => {
-  el.style.transform = `translate(${percents[0]}%,${percents[1]}%) scale(${scale * 0.5})`;
+export const translateRel = (el: HTMLElement, percents: sg.NumberPair, scale: number): void => {
+  el.style.transform = `translate(${percents[0]}%,${percents[1]}%) scale(${scale})`;
 };
 
 export const setVisible = (el: HTMLElement, v: boolean): void => {
