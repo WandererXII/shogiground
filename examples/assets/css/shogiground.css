@@ -131,6 +131,9 @@ sg-squares sq.last-move {
 sg-squares sq.selected {
   background-color: rgba(20, 85, 30, 0.5);
 }
+sg-squares sq.preselected {
+  background-color: rgba(20, 30, 85, 0.5);
+}
 sg-squares sq.check {
   background: radial-gradient(
     ellipse at center,

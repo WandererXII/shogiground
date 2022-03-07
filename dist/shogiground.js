@@ -2013,7 +2013,10 @@ var Shogiground = (function () {
         if ((_a = s.draggable.current) === null || _a === void 0 ? void 0 : _a.hovering)
             addSquare(squares, s.draggable.current.hovering, 'hover');
         if (s.selected) {
-            addSquare(squares, s.selected, 'selected');
+            if (s.activeColor === 'both' || s.activeColor === s.turnColor)
+                addSquare(squares, s.selected, 'selected');
+            else
+                addSquare(squares, s.selected, 'preselected');
             if (s.movable.showDests) {
                 const dests = (_b = s.movable.dests) === null || _b === void 0 ? void 0 : _b.get(s.selected);
                 if (dests)

@@ -199,7 +199,8 @@ function computeSquareClasses(s: State): SquareClasses {
   if (s.check && s.highlight.check) addSquare(squares, s.check, 'check');
   if (s.draggable.current?.hovering) addSquare(squares, s.draggable.current.hovering, 'hover');
   if (s.selected) {
-    addSquare(squares, s.selected, 'selected');
+    if (s.activeColor === 'both' || s.activeColor === s.turnColor) addSquare(squares, s.selected, 'selected');
+    else addSquare(squares, s.selected, 'preselected');
     if (s.movable.showDests) {
       const dests = s.movable.dests?.get(s.selected);
       if (dests)
