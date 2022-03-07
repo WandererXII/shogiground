@@ -57,7 +57,7 @@
   <script>
     const boards = document.getElementsByClassName('board');
     for (let i = 0; i < boards.length; i++) {
-      Shogiground(boards[i], { hands: { enabled: false } });
+      Shogiground(boards[i], { viewOnly: true, hands: { enabled: false }, drawable: { visible: false } });
     }
   </script>
 </html>

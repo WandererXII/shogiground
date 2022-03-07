@@ -2,11 +2,15 @@
   Alternatively instead of grid we can use flex
 */
 
+.sg-wrap sg-board {
+  box-sizing: border-box;
+  border-top: 1px solid black;
+  border-left: 1px solid black;
+}
+
 .sg-wrap sg-squares {
   display: flex;
   flex-wrap: wrap;
-  border-top: 1px solid black;
-  border-left: 1px solid black;
   background-image: url('../../board/bird.jpg');
 }
 
