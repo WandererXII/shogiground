@@ -908,7 +908,7 @@ var Shogiground = (function () {
         if (e.touches && e.touches.length > 1)
             return; // support one finger touch only
         const bounds = s.dom.bounds(), position = eventPosition(e), orig = position && getKeyAtDomPos(position, sentePov(s), s.dimensions, bounds);
-        if (!orig || !position)
+        if (!orig)
             return;
         const piece = s.pieces.get(orig), previouslySelected = s.selected;
         if (!previouslySelected && s.drawable.enabled && (s.drawable.eraseOnClick || !piece || piece.color !== s.turnColor))

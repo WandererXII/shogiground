@@ -30,7 +30,7 @@ export function start(s: State, e: sg.MouchEvent): void {
     position = util.eventPosition(e),
     orig = position && board.getKeyAtDomPos(position, board.sentePov(s), s.dimensions, bounds);
 
-  if (!orig || !position) return;
+  if (!orig) return;
 
   const piece = s.pieces.get(orig),
     previouslySelected = s.selected;

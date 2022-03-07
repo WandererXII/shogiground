@@ -20,7 +20,7 @@ export interface Config {
   disableContextMenu?: boolean; // because who needs a context menu on a board
   blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
   resizable?: boolean; // listens to shogiground.resize on document.body to clear bounds cache
-  scaleDownPieces?: Boolean; // helpful for pgns - https://ctidd.com/2015/svg-background-scaling
+  scaleDownPieces?: boolean; // helpful for pgns - https://ctidd.com/2015/svg-background-scaling
   coordinates?: {
     enabled?: boolean; // include coords attributes
     notation?: sg.Notation;
