@@ -161,7 +161,7 @@ sg-pieces piece.ghost {
   opacity: 0.3;
 }
 piece.dragging.touch {
-  top: -5%;
+  top: -10%;
 }
 
 sg-square-over {
@@ -175,7 +175,7 @@ sg-square-over {
   padding: 5%;
   margin: calc(-5%);
   will-change: transform;
-  transition: 100ms;
+  transition: 50ms;
   pointer-events: none;
   z-index: 3;
 }
