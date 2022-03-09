@@ -119,10 +119,18 @@ sg-squares sq.oc.move-dest {
 sg-squares sq.oc.premove-dest {
   background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 30, 85, 0.2) 80%);
 }
-sg-squares sq.move-dest.hover {
+sg-squares sq.last-move.oc.move-dest {
+  background: radial-gradient(rgba(155, 199, 0, 0.41) 0%, rgba(155, 199, 0, 0.41) 80%, rgba(20, 85, 0, 0.3) 80%);
+}
+sg-squares sq.last-move.oc.premove-dest {
+  background: radial-gradient(rgba(155, 199, 0, 0.41) 0%, rgba(155, 199, 0, 0.41) 80%, rgba(20, 30, 85, 0.2) 80%);
+}
+sg-squares sq.move-dest.hover,
+sg-squares sq.last-move.oc.move-dest.hover {
   background: rgba(20, 85, 30, 0.3);
 }
-sg-squares sq.premove-dest.hover {
+sg-squares sq.premove-dest.hover,
+sg-squares sq.last-move.oc.premove-dest.hover {
   background: rgba(20, 30, 85, 0.2);
 }
 sg-squares sq.last-move {
