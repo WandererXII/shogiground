@@ -55,7 +55,6 @@ export function start(s: State, e: sg.MouchEvent): void {
 
   if (piece && stillSelected && board.isDraggable(s, orig)) {
     const touch = e.type === 'touchstart',
-      pieceName = util.pieceNameOf(piece),
       draggedEl = s.dom.elements.dragged;
 
     s.draggable.current = {
@@ -70,8 +69,9 @@ export function start(s: State, e: sg.MouchEvent): void {
       keyHasChanged: false,
     };
 
-    draggedEl.sgPiece = pieceName;
-    draggedEl.className = `dragging ${pieceName}`;
+    draggedEl.sgColor = piece.color;
+    draggedEl.sgRole = piece.role;
+    draggedEl.className = `dragging ${util.pieceNameOf(piece)}`;
     draggedEl.classList.toggle('touch', touch);
 
     processDrag(s);
@@ -97,7 +97,6 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: 
   board.unselect(s);
 
   const position = util.eventPosition(e)!,
-    pieceName = util.pieceNameOf(piece),
     touch = e.type === 'touchstart',
     draggedEl = s.dom.elements.dragged;
 
@@ -114,8 +113,9 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, hand: 
     keyHasChanged: s.dropmode.active && s.dropmode.piece?.role === piece.role && s.dropmode.piece.color === piece.color,
   };
 
-  draggedEl.sgPiece = pieceName;
-  draggedEl.className = `dragging ${pieceName}`;
+  draggedEl.sgColor = piece.color;
+  draggedEl.sgRole = piece.role;
+  draggedEl.className = `dragging ${util.pieceNameOf(piece)}`;
   draggedEl.classList.toggle('touch', touch);
 
   if (board.isPredroppable(s, piece)) s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);

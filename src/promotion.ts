@@ -27,9 +27,9 @@ export function renderPromotions(s: State): void {
   translateAbs(promotionNode, posToTranslateAbs(s.dimensions, s.dom.bounds())(initPos, asSente), 1);
 
   s.promotion.pieces.forEach(p => {
-    const pieceNode = createEl('piece', pieceNameOf(p));
-    pieceNode.dataset.color = p.color;
-    pieceNode.dataset.role = p.role;
+    const pieceNode = createEl('piece', pieceNameOf(p)) as sg.PieceNode;
+    pieceNode.sgColor = p.color;
+    pieceNode.sgRole = p.role;
     promotionNode.appendChild(pieceNode);
   });
 
@@ -41,9 +41,10 @@ export function promote(s: State, e: sg.MouchEvent): void {
   e.preventDefault();
 
   const key = s.promotion.key,
-    piece = getPiece(e.target as HTMLElement);
+    target = e.target as HTMLElement;
 
-  if (s.promotion.active && key && piece) {
+  if (s.promotion.active && key && sg.isPieceNode(target)) {
+    const piece = { color: target.sgColor, role: target.sgRole };
     s.pieces.set(key, piece);
     board.callUserFunction(s.promotion.after, piece);
   } else board.callUserFunction(s.promotion.cancel);
@@ -52,11 +53,4 @@ export function promote(s: State, e: sg.MouchEvent): void {
   setDisplay(s.dom.elements.promotion, false);
 
   s.dom.redraw();
-}
-
-function getPiece(pieceEl: HTMLElement): sg.Piece | undefined {
-  const role = pieceEl.dataset.role;
-  const color = pieceEl.dataset.color;
-  if (sg.isRole(role) && sg.isColor(color)) return { role: role, color: color };
-  return;
 }

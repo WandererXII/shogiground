@@ -1,12 +1,6 @@
 var Shogiground = (function () {
     'use strict';
 
-    function isColor(x) {
-        return colors.includes(x);
-    }
-    function isRole(x) {
-        return roles.includes(x);
-    }
     function isPieceNode(el) {
         return el.tagName === 'PIECE';
     }
@@ -14,22 +8,6 @@ var Shogiground = (function () {
         return el.tagName === 'SQ';
     }
     const colors = ['sente', 'gote'];
-    const roles = [
-        'king',
-        'rook',
-        'bishop',
-        'gold',
-        'silver',
-        'knight',
-        'lance',
-        'pawn',
-        'dragon',
-        'horse',
-        'promotedsilver',
-        'promotedknight',
-        'promotedlance',
-        'tokin',
-    ];
     const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
     const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
 
@@ -935,7 +913,7 @@ var Shogiground = (function () {
         }
         const stillSelected = s.selected === orig;
         if (piece && stillSelected && isDraggable(s, orig)) {
-            const touch = e.type === 'touchstart', pieceName = pieceNameOf(piece), draggedEl = s.dom.elements.dragged;
+            const touch = e.type === 'touchstart', draggedEl = s.dom.elements.dragged;
             s.draggable.current = {
                 piece,
                 orig,
@@ -947,8 +925,9 @@ var Shogiground = (function () {
                 originTarget: e.target,
                 keyHasChanged: false,
             };
-            draggedEl.sgPiece = pieceName;
-            draggedEl.className = `dragging ${pieceName}`;
+            draggedEl.sgColor = piece.color;
+            draggedEl.sgRole = piece.role;
+            draggedEl.className = `dragging ${pieceNameOf(piece)}`;
             draggedEl.classList.toggle('touch', touch);
             processDrag(s);
         }
@@ -972,7 +951,7 @@ var Shogiground = (function () {
     function dragNewPiece(s, piece, e, hand, force) {
         var _a;
         unselect(s);
-        const position = eventPosition(e), pieceName = pieceNameOf(piece), touch = e.type === 'touchstart', draggedEl = s.dom.elements.dragged;
+        const position = eventPosition(e), touch = e.type === 'touchstart', draggedEl = s.dom.elements.dragged;
         s.draggable.current = {
             piece,
             touch,
@@ -985,8 +964,9 @@ var Shogiground = (function () {
             force: force,
             keyHasChanged: s.dropmode.active && ((_a = s.dropmode.piece) === null || _a === void 0 ? void 0 : _a.role) === piece.role && s.dropmode.piece.color === piece.color,
         };
-        draggedEl.sgPiece = pieceName;
-        draggedEl.className = `dragging ${pieceName}`;
+        draggedEl.sgColor = piece.color;
+        draggedEl.sgRole = piece.role;
+        draggedEl.className = `dragging ${pieceNameOf(piece)}`;
         draggedEl.classList.toggle('touch', touch);
         if (isPredroppable(s, piece))
             s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
@@ -1133,8 +1113,8 @@ var Shogiground = (function () {
         translateAbs(promotionNode, posToTranslateAbs(s.dimensions, s.dom.bounds())(initPos, asSente), 1);
         s.promotion.pieces.forEach(p => {
             const pieceNode = createEl('piece', pieceNameOf(p));
-            pieceNode.dataset.color = p.color;
-            pieceNode.dataset.role = p.role;
+            pieceNode.sgColor = p.color;
+            pieceNode.sgRole = p.role;
             promotionNode.appendChild(pieceNode);
         });
         promotionEl.innerHTML = '';
@@ -1142,8 +1122,9 @@ var Shogiground = (function () {
     }
     function promote(s, e) {
         e.preventDefault();
-        const key = s.promotion.key, piece = getPiece$1(e.target);
-        if (s.promotion.active && key && piece) {
+        const key = s.promotion.key, target = e.target;
+        if (s.promotion.active && key && isPieceNode(target)) {
+            const piece = { color: target.sgColor, role: target.sgRole };
             s.pieces.set(key, piece);
             callUserFunction(s.promotion.after, piece);
         }
@@ -1152,13 +1133,6 @@ var Shogiground = (function () {
         cancelPromotion(s);
         setDisplay(s.dom.elements.promotion, false);
         s.dom.redraw();
-    }
-    function getPiece$1(pieceEl) {
-        const role = pieceEl.dataset.role;
-        const color = pieceEl.dataset.color;
-        if (isRole(role) && isColor(color))
-            return { role: role, color: color };
-        return;
     }
 
     // see API types and documentations in dts/api.d.ts
@@ -1847,22 +1821,17 @@ var Shogiground = (function () {
             return true;
         return false;
     }
-    function getPiece(pieceEl) {
-        const role = pieceEl.dataset.role;
-        const color = pieceEl.dataset.color;
-        if (isRole(role) && isColor(color))
-            return { role: role, color: color };
-        return;
-    }
     function startDragFromHand(s) {
         return e => {
             var _a;
             e.preventDefault();
-            const piece = getPiece(e.target);
-            if (piece &&
-                (s.activeColor === 'both' || s.activeColor === piece.color) &&
-                ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role))) {
-                dragNewPiece(s, piece, e, true, false);
+            const target = e.target;
+            if (isPieceNode(target)) {
+                const piece = { color: target.sgColor, role: target.sgRole };
+                if ((s.activeColor === 'both' || s.activeColor === piece.color) &&
+                    ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role))) {
+                    dragNewPiece(s, piece, e, true, false);
+                }
             }
         };
     }
@@ -1884,7 +1853,7 @@ var Shogiground = (function () {
                 pieceAtKey = pieces.get(k);
                 anim = anims.get(k);
                 fading = fadings.get(k);
-                elPieceName = el.sgPiece;
+                elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
                 // if piece dragged add or remove ghost class
                 if ((curDrag === null || curDrag === void 0 ? void 0 : curDrag.started) && curDrag.orig === k) {
                     el.classList.add('ghost');
@@ -1971,8 +1940,9 @@ var Shogiground = (function () {
                 // no piece in moved obj: insert the new piece
                 // assumes the new piece is not being dragged
                 else {
-                    const pieceName = pieceNameOf(p), pieceNode = createEl('piece', pieceName), pos = key2pos(k);
-                    pieceNode.sgPiece = pieceName;
+                    const pieceNode = createEl('piece', pieceNameOf(p)), pos = key2pos(k);
+                    pieceNode.sgColor = p.color;
+                    pieceNode.sgRole = p.role;
                     pieceNode.sgKey = k;
                     if (anim) {
                         pieceNode.sgAnimating = true;
@@ -2069,8 +2039,8 @@ var Shogiground = (function () {
         var _a;
         const pieceEl = createEl('piece', pieceNameOf(piece));
         const num = ((_a = hands.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role)) || 0;
-        pieceEl.dataset.role = piece.role;
-        pieceEl.dataset.color = piece.color;
+        pieceEl.sgRole = piece.role;
+        pieceEl.sgColor = piece.color;
         pieceEl.dataset.nb = num.toString();
         pieceEl.classList.toggle('selected', selected);
         return pieceEl;
@@ -2086,7 +2056,7 @@ var Shogiground = (function () {
         else {
             let piece = handEl.firstElementChild;
             while (piece) {
-                const role = piece.dataset.role;
+                const role = piece.sgRole;
                 const num = ((_b = s.hands.handMap.get(color)) === null || _b === void 0 ? void 0 : _b.get(role)) || 0;
                 piece.classList.toggle('selected', s.dropmode.active && ((_c = s.dropmode.piece) === null || _c === void 0 ? void 0 : _c.color) === color && s.dropmode.piece.role === role);
                 piece.dataset.nb = num.toString();

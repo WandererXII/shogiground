@@ -63,7 +63,7 @@ export function render(s: State): void {
       pieceAtKey = pieces.get(k);
       anim = anims.get(k);
       fading = fadings.get(k);
-      elPieceName = el.sgPiece;
+      elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
 
       // if piece dragged add or remove ghost class
       if (curDrag?.started && curDrag.orig === k) {
@@ -150,11 +150,11 @@ export function render(s: State): void {
       // no piece in moved obj: insert the new piece
       // assumes the new piece is not being dragged
       else {
-        const pieceName = pieceNameOf(p),
-          pieceNode = createEl('piece', pieceName) as sg.PieceNode,
+        const pieceNode = createEl('piece', pieceNameOf(p)) as sg.PieceNode,
           pos = key2pos(k);
 
-        pieceNode.sgPiece = pieceName;
+        pieceNode.sgColor = p.color;
+        pieceNode.sgRole = p.role;
         pieceNode.sgKey = k;
         if (anim) {
           pieceNode.sgAnimating = true;
@@ -242,10 +242,10 @@ function addSquare(squares: SquareClasses, key: sg.Key, klass: string): void {
 }
 
 function makeHandPiece(piece: sg.Piece, hands: sg.Hands, selected: boolean): HTMLElement {
-  const pieceEl = createEl('piece', pieceNameOf(piece));
+  const pieceEl = createEl('piece', pieceNameOf(piece)) as sg.PieceNode;
   const num = hands.get(piece.color)?.get(piece.role) || 0;
-  pieceEl.dataset.role = piece.role;
-  pieceEl.dataset.color = piece.color;
+  pieceEl.sgRole = piece.role;
+  pieceEl.sgColor = piece.color;
   pieceEl.dataset.nb = num.toString();
   pieceEl.classList.toggle('selected', selected);
 
@@ -265,16 +265,16 @@ function updateHand(s: State, color: sg.Color, handEl: HTMLElement): void {
       );
     }
   } else {
-    let piece = handEl.firstElementChild as HTMLElement | undefined;
+    let piece = handEl.firstElementChild as sg.PieceNode | undefined;
     while (piece) {
-      const role = piece.dataset.role as sg.Role;
+      const role = piece.sgRole;
       const num = s.hands.handMap.get(color)?.get(role) || 0;
       piece.classList.toggle(
         'selected',
         s.dropmode.active && s.dropmode.piece?.color === color && s.dropmode.piece.role === role
       );
       piece.dataset.nb = num.toString();
-      piece = piece.nextElementSibling as HTMLHtmlElement | undefined;
+      piece = piece.nextElementSibling as sg.PieceNode | undefined;
     }
   }
 }

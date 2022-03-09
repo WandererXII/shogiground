@@ -119,23 +119,18 @@ function squareOccupied(s: State, e: sg.MouchEvent): boolean {
   return false;
 }
 
-function getPiece(pieceEl: HTMLElement): sg.Piece | undefined {
-  const role = pieceEl.dataset.role;
-  const color = pieceEl.dataset.color;
-  if (sg.isRole(role) && sg.isColor(color)) return { role: role, color: color };
-  return;
-}
-
 function startDragFromHand(s: State): MouchBind {
   return e => {
     e.preventDefault();
-    const piece = getPiece(e.target as HTMLElement);
-    if (
-      piece &&
-      (s.activeColor === 'both' || s.activeColor === piece.color) &&
-      s.hands.handMap.get(piece.color)?.get(piece.role)
-    ) {
-      drag.dragNewPiece(s, piece, e, true, false);
+    const target = e.target as HTMLElement;
+    if (sg.isPieceNode(target)) {
+      const piece = { color: target.sgColor, role: target.sgRole };
+      if (
+        (s.activeColor === 'both' || s.activeColor === piece.color) &&
+        s.hands.handMap.get(piece.color)?.get(piece.role)
+      ) {
+        drag.dragNewPiece(s, piece, e, true, false);
+      }
     }
   };
 }

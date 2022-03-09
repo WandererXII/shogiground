@@ -70,7 +70,8 @@ export interface KeyedNode extends HTMLElement {
 }
 export interface PieceNode extends KeyedNode {
   tagName: 'PIECE';
-  sgPiece: string;
+  sgRole: Role;
+  sgColor: Color;
   sgAnimating?: boolean;
   sgFading?: boolean;
   sgGhost?: boolean;
