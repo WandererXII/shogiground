@@ -325,8 +325,8 @@ export function getKeyAtDomPos(
 ): sg.Key | undefined {
   let file = Math.floor((dims.files * (pos[0] - bounds.left)) / bounds.width);
   if (asSente) file = dims.files - 1 - file;
-  let rank = dims.ranks - 1 - Math.floor((dims.ranks * (pos[1] - bounds.top)) / bounds.height);
-  if (asSente) rank = dims.ranks - 1 - rank;
+  let rank = Math.floor((dims.ranks * (pos[1] - bounds.top)) / bounds.height);
+  if (!asSente) rank = dims.ranks - 1 - rank;
   return file >= 0 && file < dims.files && rank >= 0 && rank < dims.ranks ? pos2key([file, rank]) : undefined;
 }
 

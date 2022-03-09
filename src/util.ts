@@ -104,3 +104,11 @@ export function computeSquareCenter(
     bounds.top + (bounds.height * (dims.ranks - 1 - pos[1])) / dims.ranks + bounds.height / (dims.ranks * 2),
   ];
 }
+
+export function domSquareIndexOfKey(key: sg.Key, asSente: boolean, dims: sg.Dimensions): number {
+  const pos = key2pos(key);
+  let index = dims.files - 1 - pos[0] + pos[1] * dims.files;
+  if (!asSente) index = dims.files * dims.ranks - 1 - index;
+
+  return index;
+}

@@ -239,14 +239,16 @@ export function cancel(s: State): void {
   }
 }
 
-export function updateHovers(s: State, prevHover?: sg.Key): void {
-  let el = s.dom.elements.squares.firstElementChild as HTMLElement | undefined;
-  while (el && sg.isSquareNode(el)) {
-    const key = el.sgKey;
+function updateHovers(s: State, prevHover?: sg.Key): void {
+  const asSente = board.sentePov(s),
+    sqaureEls = s.dom.elements.squares.children;
 
-    if (s.draggable.current?.hovering === key) el.classList.add('hover');
-    else if (prevHover === key) el.classList.remove('hover');
+  const curIndex =
+      s.draggable.current?.hovering && util.domSquareIndexOfKey(s.draggable.current?.hovering, asSente, s.dimensions),
+    curHoverEl = curIndex && sqaureEls[curIndex];
+  if (curHoverEl) curHoverEl.classList.add('hover');
 
-    el = el.nextElementSibling as HTMLElement | undefined;
-  }
+  const prevIndex = prevHover && util.domSquareIndexOfKey(prevHover, asSente, s.dimensions),
+    prevHoverEl = prevIndex && sqaureEls[prevIndex];
+  if (prevHoverEl) prevHoverEl.classList.remove('hover');
 }

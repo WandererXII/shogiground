@@ -102,6 +102,13 @@ var Shogiground = (function () {
             bounds.top + (bounds.height * (dims.ranks - 1 - pos[1])) / dims.ranks + bounds.height / (dims.ranks * 2),
         ];
     }
+    function domSquareIndexOfKey(key, asSente, dims) {
+        const pos = key2pos(key);
+        let index = dims.files - 1 - pos[0] + pos[1] * dims.files;
+        if (!asSente)
+            index = dims.files * dims.ranks - 1 - index;
+        return index;
+    }
 
     function diff(a, b) {
         return Math.abs(a - b);
@@ -474,8 +481,8 @@ var Shogiground = (function () {
         let file = Math.floor((dims.files * (pos[0] - bounds.left)) / bounds.width);
         if (asSente)
             file = dims.files - 1 - file;
-        let rank = dims.ranks - 1 - Math.floor((dims.ranks * (pos[1] - bounds.top)) / bounds.height);
-        if (asSente)
+        let rank = Math.floor((dims.ranks * (pos[1] - bounds.top)) / bounds.height);
+        if (!asSente)
             rank = dims.ranks - 1 - rank;
         return file >= 0 && file < dims.files && rank >= 0 && rank < dims.ranks ? pos2key([file, rank]) : undefined;
     }
@@ -1096,16 +1103,14 @@ var Shogiground = (function () {
         }
     }
     function updateHovers(s, prevHover) {
-        var _a;
-        let el = s.dom.elements.squares.firstElementChild;
-        while (el && isSquareNode(el)) {
-            const key = el.sgKey;
-            if (((_a = s.draggable.current) === null || _a === void 0 ? void 0 : _a.hovering) === key)
-                el.classList.add('hover');
-            else if (prevHover === key)
-                el.classList.remove('hover');
-            el = el.nextElementSibling;
-        }
+        var _a, _b;
+        const asSente = sentePov(s), sqaureEls = s.dom.elements.squares.children;
+        const curIndex = ((_a = s.draggable.current) === null || _a === void 0 ? void 0 : _a.hovering) && domSquareIndexOfKey((_b = s.draggable.current) === null || _b === void 0 ? void 0 : _b.hovering, asSente, s.dimensions), curHoverEl = curIndex && sqaureEls[curIndex];
+        if (curHoverEl)
+            curHoverEl.classList.add('hover');
+        const prevIndex = prevHover && domSquareIndexOfKey(prevHover, asSente, s.dimensions), prevHoverEl = prevIndex && sqaureEls[prevIndex];
+        if (prevHoverEl)
+            prevHoverEl.classList.remove('hover');
     }
 
     function setPromotion(s, key, pieces) {
@@ -1881,7 +1886,7 @@ var Shogiground = (function () {
                 fading = fadings.get(k);
                 elPieceName = el.sgPiece;
                 // if piece dragged add or remove ghost class
-                if (curDrag && curDrag.orig === k) {
+                if ((curDrag === null || curDrag === void 0 ? void 0 : curDrag.started) && curDrag.orig === k) {
                     el.classList.add('ghost');
                     el.sgGhost = true;
                 }
