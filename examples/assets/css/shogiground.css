@@ -154,10 +154,6 @@ sg-squares sq.check {
 sg-squares sq.current-premove {
   background-color: rgba(20, 30, 85, 0.5);
 }
-sg-pieces piece.dragging {
-  will-change: transform;
-  z-index: 10;
-}
 sg-pieces piece.anim {
   z-index: 3;
 }
@@ -167,6 +163,10 @@ sg-pieces piece.fading {
 }
 sg-pieces piece.ghost {
   opacity: 0.3;
+}
+piece.dragging {
+  will-change: transform;
+  z-index: 10;
 }
 piece.dragging.touch {
   top: -10%;
