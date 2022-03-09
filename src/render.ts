@@ -66,7 +66,7 @@ export function render(s: State): void {
       elPieceName = el.sgPiece;
 
       // if piece dragged add or remove ghost class
-      if (curDrag && curDrag.orig === k) {
+      if (curDrag?.started && curDrag.orig === k) {
         el.classList.add('ghost');
         el.sgGhost = true;
       } else if (el.sgGhost && (!curDrag || curDrag.orig !== k)) {
