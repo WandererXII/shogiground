@@ -76,7 +76,7 @@ export interface Config {
     distance?: number; // minimum distance to initiate a drag; in pixels
     autoDistance?: boolean; // lets shogiground set distance to zero when user drags pieces
     showGhost?: boolean; // show ghost of piece being dragged
-    showTouchSquareOverlay: boolean; // show square overlay on the square that is currently being hovered, touch only
+    showTouchSquareOverlay?: boolean; // show square overlay on the square that is currently being hovered, touch only
     deleteOnDropOff?: boolean; // delete a piece when it is dropped off the board
   };
   selectable?: {
