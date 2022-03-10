@@ -618,11 +618,11 @@ var Shogiground = (function () {
             ['gote', gote],
         ]);
     }
-    function writeHands(hands, handRoles) {
+    function writeHands(hands, roles) {
         var _a, _b;
         let senteHandStr = '';
         let goteHandStr = '';
-        for (const role of handRoles) {
+        for (const role of roles) {
             const senteCnt = (_a = hands.get('sente')) === null || _a === void 0 ? void 0 : _a.get(role);
             const goteCnt = (_b = hands.get('gote')) === null || _b === void 0 ? void 0 : _b.get(role);
             if (senteCnt)
@@ -1151,7 +1151,7 @@ var Shogiground = (function () {
             },
             state,
             getBoardSfen: () => writeBoard(state.pieces, state.dimensions),
-            getHandsSfen: () => writeHands(state.hands.handMap, state.hands.handRoles),
+            getHandsSfen: () => writeHands(state.hands.handMap, state.hands.roles),
             toggleOrientation: toggleOrientation$1,
             move(orig, dest) {
                 anim(state => baseMove(state, orig, dest), state);
@@ -1265,7 +1265,7 @@ var Shogiground = (function () {
             hands: {
                 enabled: false,
                 handMap: new Map(),
-                handRoles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
+                roles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
             },
             movable: {
                 free: true,
@@ -1629,8 +1629,8 @@ var Shogiground = (function () {
         board.appendChild(dragged);
         let handTop, handBot;
         if (s.hands.enabled) {
-            handTop = renderHand(opposite(s.orientation), s.hands.handRoles, 'top');
-            handBot = renderHand(s.orientation, s.hands.handRoles, 'bottom');
+            handTop = renderHand(opposite(s.orientation), s.hands.roles, 'top');
+            handBot = renderHand(s.orientation, s.hands.roles, 'bottom');
             element.insertBefore(handTop, board);
             element.insertBefore(handBot, board.nextElementSibling);
         }
@@ -1700,9 +1700,9 @@ var Shogiground = (function () {
         }
         return squares;
     }
-    function renderHand(color, handRoles, position) {
+    function renderHand(color, roles, position) {
         const hand = createEl('sg-hand', `hand-${position}`);
-        for (const role of handRoles) {
+        for (const role of roles) {
             const piece = { role: role, color: color }, pieceEl = createEl('piece', pieceNameOf(piece));
             pieceEl.sgColor = color;
             pieceEl.sgRole = role;

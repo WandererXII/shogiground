@@ -34,7 +34,7 @@ export interface HeadlessState {
   hands: {
     enabled: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
     handMap: sg.Hands;
-    handRoles: sg.Role[]; // roles to render in sg-hand
+    roles: sg.Role[]; // roles to render in sg-hand
   };
   movable: {
     free: boolean; // all moves are valid - board editor
@@ -141,7 +141,7 @@ export function defaults(): HeadlessState {
     hands: {
       enabled: false,
       handMap: new Map(),
-      handRoles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
+      roles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
     },
     movable: {
       free: true,

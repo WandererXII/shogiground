@@ -105,7 +105,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     getBoardSfen: () => writeBoard(state.pieces, state.dimensions),
 
-    getHandsSfen: () => writeHands(state.hands.handMap, state.hands.handRoles),
+    getHandsSfen: () => writeHands(state.hands.handMap, state.hands.roles),
 
     toggleOrientation,
 

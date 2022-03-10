@@ -153,10 +153,10 @@ export function readHands(str: sg.HandsSfen): sg.Hands {
   ]);
 }
 
-export function writeHands(hands: sg.Hands, handRoles: sg.Role[]): sg.HandsSfen {
+export function writeHands(hands: sg.Hands, roles: sg.Role[]): sg.HandsSfen {
   let senteHandStr = '';
   let goteHandStr = '';
-  for (const role of handRoles) {
+  for (const role of roles) {
     const senteCnt = hands.get('sente')?.get(role);
     const goteCnt = hands.get('gote')?.get(role);
     if (senteCnt) senteHandStr += senteCnt > 1 ? senteCnt.toString() + letters[role] : letters[role];

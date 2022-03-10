@@ -35,7 +35,7 @@ export interface Config {
   };
   hands?: {
     enabled?: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
-    handRoles?: sg.Role[]; // roles to render in sg-hand
+    roles?: sg.Role[]; // roles to render in sg-hand
   };
   movable?: {
     free?: boolean; // all moves are valid - board editor

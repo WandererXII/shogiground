@@ -55,8 +55,8 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
 
   let handTop, handBot;
   if (s.hands.enabled) {
-    handTop = renderHand(opposite(s.orientation), s.hands.handRoles, 'top');
-    handBot = renderHand(s.orientation, s.hands.handRoles, 'bottom');
+    handTop = renderHand(opposite(s.orientation), s.hands.roles, 'top');
+    handBot = renderHand(s.orientation, s.hands.roles, 'bottom');
     element.insertBefore(handTop, board);
     element.insertBefore(handBot, board.nextElementSibling);
   }
@@ -141,9 +141,9 @@ function renderSquares(dims: Dimensions, orientation: Color): HTMLElement {
   return squares;
 }
 
-function renderHand(color: Color, handRoles: Role[], position: 'top' | 'bottom'): HTMLElement {
+function renderHand(color: Color, roles: Role[], position: 'top' | 'bottom'): HTMLElement {
   const hand = createEl('sg-hand', `hand-${position}`);
-  for (const role of handRoles) {
+  for (const role of roles) {
     const piece = { role: role, color: color },
       pieceEl = createEl('piece', pieceNameOf(piece)) as PieceNode;
     pieceEl.sgColor = color;
