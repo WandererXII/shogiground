@@ -1135,7 +1135,7 @@ var Shogiground = (function () {
         s.dom.redraw();
     }
 
-    // see API types and documentations in dts/api.d.ts
+    // see API types and documentations in api.d.ts
     function start(state, redrawAll) {
         function toggleOrientation$1() {
             toggleOrientation(state);
@@ -1615,7 +1615,7 @@ var Shogiground = (function () {
         element.classList.toggle('manipulable', !s.viewOnly);
         const board = createEl('sg-board');
         element.appendChild(board);
-        const squares = makeSquares(s.dimensions, s.orientation);
+        const squares = renderSquares(s.dimensions, s.orientation);
         board.appendChild(squares);
         const pieces = createEl('sg-pieces');
         board.appendChild(pieces);
@@ -1688,7 +1688,7 @@ var Shogiground = (function () {
         }
         return el;
     }
-    function makeSquares(dims, orientation) {
+    function renderSquares(dims, orientation) {
         const squares = createEl('sg-squares');
         for (let i = 0; i < dims.ranks * dims.files; i++) {
             const sq = createEl('sq');
@@ -2077,7 +2077,7 @@ var Shogiground = (function () {
         configure(maybeState, config || {});
         function redrawAll() {
             const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
-            // compute bounds from existing board element if possible
+            // compute bounds from existing sg-pieces element if possible
             // this allows non-square boards from CSS to be handled (for ratio)
             const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(element, maybeState, relative), bounds = memo(() => elements.pieces.getBoundingClientRect()), redrawNow = (skipShapes) => {
                 render(state);

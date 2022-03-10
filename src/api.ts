@@ -87,7 +87,7 @@ export interface Api {
   destroy: sg.Unbind;
 }
 
-// see API types and documentations in dts/api.d.ts
+// see API types and documentations in api.d.ts
 export function start(state: State, redrawAll: sg.Redraw): Api {
   function toggleOrientation(): void {
     board.toggleOrientation(state);

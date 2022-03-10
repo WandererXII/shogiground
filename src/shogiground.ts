@@ -15,7 +15,7 @@ export function Shogiground(element: HTMLElement, config?: Config): Api {
 
   function redrawAll(): State {
     const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
-    // compute bounds from existing board element if possible
+    // compute bounds from existing sg-pieces element if possible
     // this allows non-square boards from CSS to be handled (for ratio)
     const relative = maybeState.viewOnly && !maybeState.drawable.visible,
       elements = renderWrap(element, maybeState, relative),

@@ -180,10 +180,9 @@ sg-square-over {
   height: calc(100% / 9);
   background: #00000050;
   border-radius: 50%;
-  padding: 5%;
-  margin: calc(-5%);
+  padding: 6%;
+  margin: calc(-6%);
   will-change: transform;
-  transition: 50ms;
   pointer-events: none;
   z-index: 3;
 }
