@@ -1,6 +1,6 @@
 import { HeadlessState } from './state.js';
-import { createEl, pos2key, setDisplay } from './util.js';
-import { colors, Notation, Elements, Dimensions, SquareNode, Color, PieceNode } from './types.js';
+import { createEl, opposite, pieceNameOf, pos2key, setDisplay } from './util.js';
+import { colors, Notation, Elements, Dimensions, SquareNode, Color, PieceNode, Role } from './types.js';
 import { createSVGElement, setAttributes } from './shapes.js';
 
 export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boolean): Elements {
@@ -36,7 +36,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   const board = createEl('sg-board');
   element.appendChild(board);
 
-  const squares = makeSquares(s.dimensions, s.orientation);
+  const squares = renderSquares(s.dimensions, s.orientation);
   board.appendChild(squares);
 
   const pieces = createEl('sg-pieces');
@@ -55,8 +55,8 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
 
   let handTop, handBot;
   if (s.hands.enabled) {
-    handTop = createEl('sg-hand', 'hand-top');
-    handBot = createEl('sg-hand', 'hand-bot');
+    handTop = renderHand(opposite(s.orientation), s.hands.handRoles, 'top');
+    handBot = renderHand(s.orientation, s.hands.handRoles, 'bottom');
     element.insertBefore(handTop, board);
     element.insertBefore(handBot, board.nextElementSibling);
   }
@@ -126,7 +126,7 @@ function renderCoords(elems: readonly string[], className: string, trim: number)
   return el;
 }
 
-function makeSquares(dims: Dimensions, orientation: Color): HTMLElement {
+function renderSquares(dims: Dimensions, orientation: Color): HTMLElement {
   const squares = createEl('sg-squares');
 
   for (let i = 0; i < dims.ranks * dims.files; i++) {
@@ -139,4 +139,16 @@ function makeSquares(dims: Dimensions, orientation: Color): HTMLElement {
   }
 
   return squares;
+}
+
+function renderHand(color: Color, handRoles: Role[], position: 'top' | 'bottom'): HTMLElement {
+  const hand = createEl('sg-hand', `hand-${position}`);
+  for (const role of handRoles) {
+    const piece = { role: role, color: color },
+      pieceEl = createEl('piece', pieceNameOf(piece)) as PieceNode;
+    pieceEl.sgColor = color;
+    pieceEl.sgRole = role;
+    hand.appendChild(pieceEl);
+  }
+  return hand;
 }

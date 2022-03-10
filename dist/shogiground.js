@@ -1629,8 +1629,8 @@ var Shogiground = (function () {
         board.appendChild(dragged);
         let handTop, handBot;
         if (s.hands.enabled) {
-            handTop = createEl('sg-hand', 'hand-top');
-            handBot = createEl('sg-hand', 'hand-bot');
+            handTop = renderHand(opposite(s.orientation), s.hands.handRoles, 'top');
+            handBot = renderHand(s.orientation, s.hands.handRoles, 'bottom');
             element.insertBefore(handTop, board);
             element.insertBefore(handBot, board.nextElementSibling);
         }
@@ -1699,6 +1699,16 @@ var Shogiground = (function () {
             squares.appendChild(sq);
         }
         return squares;
+    }
+    function renderHand(color, handRoles, position) {
+        const hand = createEl('sg-hand', `hand-${position}`);
+        for (const role of handRoles) {
+            const piece = { role: role, color: color }, pieceEl = createEl('piece', pieceNameOf(piece));
+            pieceEl.sgColor = color;
+            pieceEl.sgRole = role;
+            hand.appendChild(pieceEl);
+        }
+        return hand;
     }
 
     function drop(s, e) {
@@ -1955,8 +1965,8 @@ var Shogiground = (function () {
             }
         }
         if (s.hands.enabled && handTopEl && handBotEl) {
-            updateHand(s, opposite(s.orientation), handTopEl);
-            updateHand(s, s.orientation, handBotEl);
+            updateHand(s, handTopEl);
+            updateHand(s, handBotEl);
         }
         // remove any element that remains in the moved sets
         for (const nodes of movedPieces.values())
@@ -2035,33 +2045,22 @@ var Shogiground = (function () {
         else
             squares.set(key, klass);
     }
-    function makeHandPiece(piece, hands, selected) {
-        var _a;
-        const pieceEl = createEl('piece', pieceNameOf(piece));
-        const num = ((_a = hands.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role)) || 0;
-        pieceEl.sgRole = piece.role;
-        pieceEl.sgColor = piece.color;
-        pieceEl.dataset.nb = num.toString();
-        pieceEl.classList.toggle('selected', selected);
-        return pieceEl;
-    }
-    function updateHand(s, color, handEl) {
+    function updateHand(s, handEl) {
         var _a, _b, _c;
-        if (handEl.children.length !== s.hands.handRoles.length) {
-            handEl.innerHTML = '';
-            for (const role of s.hands.handRoles) {
-                handEl.appendChild(makeHandPiece({ role: role, color: color }, s.hands.handMap, s.dropmode.active && ((_a = s.dropmode.piece) === null || _a === void 0 ? void 0 : _a.color) === color && s.dropmode.piece.role === role));
-            }
-        }
-        else {
-            let piece = handEl.firstElementChild;
-            while (piece) {
-                const role = piece.sgRole;
-                const num = ((_b = s.hands.handMap.get(color)) === null || _b === void 0 ? void 0 : _b.get(role)) || 0;
-                piece.classList.toggle('selected', s.dropmode.active && ((_c = s.dropmode.piece) === null || _c === void 0 ? void 0 : _c.color) === color && s.dropmode.piece.role === role);
-                piece.dataset.nb = num.toString();
-                piece = piece.nextElementSibling;
-            }
+        let pieceEl = handEl.firstElementChild;
+        while (pieceEl) {
+            const role = pieceEl.sgRole;
+            const color = pieceEl.sgColor;
+            const num = ((_a = s.hands.handMap.get(color)) === null || _a === void 0 ? void 0 : _a.get(role)) || 0;
+            pieceEl.classList.toggle('selected', (s.dropmode.active &&
+                s.dropmode.fromHand &&
+                ((_b = s.dropmode.piece) === null || _b === void 0 ? void 0 : _b.color) === color &&
+                s.dropmode.piece.role === role) ||
+                (!!((_c = s.draggable.current) === null || _c === void 0 ? void 0 : _c.fromHand) &&
+                    s.draggable.current.piece.color === color &&
+                    s.draggable.current.piece.role === role));
+            pieceEl.dataset.nb = num.toString();
+            pieceEl = pieceEl.nextElementSibling;
         }
     }
     function appendValue(map, key, value) {

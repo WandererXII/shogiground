@@ -17,7 +17,7 @@
   flex: 1;
   justify-content: space-around;
 }
-.sg-wrap sg-hand.hand-bot {
+.sg-wrap sg-hand.hand-bottom {
   top: calc(100% / 11 * 10 + 20px);
 }
 
@@ -45,7 +45,7 @@
   color: black;
   background-color: coral;
 }
-.sg-wrap sg-hand.hand-bot piece::after {
+.sg-wrap sg-hand.hand-bottom piece::after {
   top: unset;
   bottom: 0;
 }

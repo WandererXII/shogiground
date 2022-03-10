@@ -7,7 +7,6 @@ import {
   posToTranslateAbs,
   translateRel,
   translateAbs,
-  opposite,
   pieceNameOf,
 } from './util.js';
 import { sentePov } from './board.js';
@@ -169,8 +168,8 @@ export function render(s: State): void {
   }
 
   if (s.hands.enabled && handTopEl && handBotEl) {
-    updateHand(s, opposite(s.orientation), handTopEl);
-    updateHand(s, s.orientation, handBotEl);
+    updateHand(s, handTopEl);
+    updateHand(s, handBotEl);
   }
 
   // remove any element that remains in the moved sets
@@ -241,41 +240,25 @@ function addSquare(squares: SquareClasses, key: sg.Key, klass: string): void {
   else squares.set(key, klass);
 }
 
-function makeHandPiece(piece: sg.Piece, hands: sg.Hands, selected: boolean): HTMLElement {
-  const pieceEl = createEl('piece', pieceNameOf(piece)) as sg.PieceNode;
-  const num = hands.get(piece.color)?.get(piece.role) || 0;
-  pieceEl.sgRole = piece.role;
-  pieceEl.sgColor = piece.color;
-  pieceEl.dataset.nb = num.toString();
-  pieceEl.classList.toggle('selected', selected);
+function updateHand(s: State, handEl: HTMLElement): void {
+  let pieceEl = handEl.firstElementChild as sg.PieceNode | undefined;
+  while (pieceEl) {
+    const role = pieceEl.sgRole;
+    const color = pieceEl.sgColor;
+    const num = s.hands.handMap.get(color)?.get(role) || 0;
 
-  return pieceEl;
-}
-
-function updateHand(s: State, color: sg.Color, handEl: HTMLElement): void {
-  if (handEl.children.length !== s.hands.handRoles.length) {
-    handEl.innerHTML = '';
-    for (const role of s.hands.handRoles) {
-      handEl.appendChild(
-        makeHandPiece(
-          { role: role, color: color },
-          s.hands.handMap,
-          s.dropmode.active && s.dropmode.piece?.color === color && s.dropmode.piece.role === role
-        )
-      );
-    }
-  } else {
-    let piece = handEl.firstElementChild as sg.PieceNode | undefined;
-    while (piece) {
-      const role = piece.sgRole;
-      const num = s.hands.handMap.get(color)?.get(role) || 0;
-      piece.classList.toggle(
-        'selected',
-        s.dropmode.active && s.dropmode.piece?.color === color && s.dropmode.piece.role === role
-      );
-      piece.dataset.nb = num.toString();
-      piece = piece.nextElementSibling as sg.PieceNode | undefined;
-    }
+    pieceEl.classList.toggle(
+      'selected',
+      (s.dropmode.active &&
+        s.dropmode.fromHand &&
+        s.dropmode.piece?.color === color &&
+        s.dropmode.piece.role === role) ||
+        (!!s.draggable.current?.fromHand &&
+          s.draggable.current.piece.color === color &&
+          s.draggable.current.piece.role === role)
+    );
+    pieceEl.dataset.nb = num.toString();
+    pieceEl = pieceEl.nextElementSibling as sg.PieceNode | undefined;
   }
 }
 

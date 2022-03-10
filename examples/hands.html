@@ -21,6 +21,7 @@
         <div id="dirty" class="sg-wrap"></div>
       </div>
     </div>
+    <button onclick="flip()">flip</button>
     <script src="../dist/shogiground.js"></script>
     <script>
       const config = {
@@ -35,7 +36,10 @@
           enabled: true,
         },
       };
-      Shogiground(document.getElementById('dirty'), config);
+      const sg = Shogiground(document.getElementById('dirty'), config);
+      function flip() {
+        sg.toggleOrientation();
+      }
     </script>
   </body>
 </html>
