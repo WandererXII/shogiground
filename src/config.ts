@@ -15,9 +15,8 @@ export interface Config {
   check?: sg.Color | boolean; // true for current color, false to unset
   lastMove?: sg.Key[]; // squares part of the last move ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
-  renderHands?: boolean; // include hands elements
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
-  disableContextMenu?: boolean; // because who needs a context menu on a board
+  disableContextMenu?: boolean; // because who needs a context menu on a board, only without viewOnly
   blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
   resizable?: boolean; // listens to shogiground.resize on document.body to clear bounds cache
   scaleDownPieces?: boolean; // helpful for pgns - https://ctidd.com/2015/svg-background-scaling
@@ -34,7 +33,7 @@ export interface Config {
     duration?: number;
   };
   hands?: {
-    enabled?: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
+    inlined?: boolean; // attaches sg-hands directly to sg-wrap, ignores HTMLElements passed to Shogiground
     roles?: sg.Role[]; // roles to render in sg-hand
   };
   movable?: {

@@ -32,7 +32,7 @@ export interface HeadlessState {
     current?: AnimCurrent;
   };
   hands: {
-    enabled: boolean; // true if shogiground should render sg-hand, bind events to it and manage it
+    inlined: boolean; // attaches sg-hands directly to sg-wrap, ignores HTMLElements passed to Shogiground
     handMap: sg.Hands;
     roles: sg.Role[]; // roles to render in sg-hand
   };
@@ -139,7 +139,7 @@ export function defaults(): HeadlessState {
       duration: 250,
     },
     hands: {
-      enabled: false,
+      inlined: false,
       handMap: new Map(),
       roles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
     },

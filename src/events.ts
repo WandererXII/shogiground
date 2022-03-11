@@ -39,9 +39,9 @@ export function bindBoard(s: State, boundsUpdated: () => void): void {
 }
 
 export function bindHands(s: State): void {
-  if (!s.hands.enabled || s.viewOnly || !s.dom.elements.handTop || !s.dom.elements.handBot) return;
-  bindHand(s, s.dom.elements.handBot);
+  if (s.viewOnly || !s.dom.elements.handTop || !s.dom.elements.handBottom) return;
   bindHand(s, s.dom.elements.handTop);
+  bindHand(s, s.dom.elements.handBottom);
 }
 
 function bindHand(s: State, handEl: HTMLElement): void {
@@ -121,7 +121,6 @@ function squareOccupied(s: State, e: sg.MouchEvent): boolean {
 
 function startDragFromHand(s: State): MouchBind {
   return e => {
-    e.preventDefault();
     const target = e.target as HTMLElement;
     if (sg.isPieceNode(target)) {
       const piece = { color: target.sgColor, role: target.sgRole };
@@ -129,6 +128,7 @@ function startDragFromHand(s: State): MouchBind {
         (s.activeColor === 'both' || s.activeColor === piece.color) &&
         s.hands.handMap.get(piece.color)?.get(piece.role)
       ) {
+        e.preventDefault();
         drag.dragNewPiece(s, piece, e, true, false);
       }
     }

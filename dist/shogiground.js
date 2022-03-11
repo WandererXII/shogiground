@@ -187,6 +187,13 @@ var Shogiground = (function () {
         state.orientation = opposite(state.orientation);
         state.animation.current = state.draggable.current = state.selected = undefined;
     }
+    function reset(state) {
+        state.lastMove = undefined;
+        state.animation.current = state.draggable.current = undefined;
+        unselect(state);
+        unsetPremove(state);
+        unsetPredrop(state);
+    }
     function setPieces(state, pieces) {
         for (const [key, piece] of pieces) {
             if (piece)
@@ -1104,10 +1111,10 @@ var Shogiground = (function () {
         s.promotion.pieces = undefined;
     }
     function renderPromotions(s) {
-        const promotionEl = s.dom.elements.promotion;
-        setDisplay(promotionEl, s.promotion.active);
         if (!s.promotion.active || !s.promotion.key || !s.promotion.pieces || s.viewOnly)
             return;
+        const promotionEl = s.dom.elements.promotion;
+        setDisplay(promotionEl, s.promotion.active);
         const asSente = sentePov(s), initPos = key2pos(s.promotion.key);
         const promotionNode = createEl('promotion');
         translateAbs(promotionNode, posToTranslateAbs(s.dimensions, s.dom.bounds())(initPos, asSente), 1);
@@ -1143,11 +1150,30 @@ var Shogiground = (function () {
         }
         return {
             set(config) {
-                var _a;
-                if (config.orientation && config.orientation !== state.orientation)
-                    toggleOrientation$1();
+                var _a, _b;
+                let toRedraw = false;
+                if (config.orientation && config.orientation !== state.orientation) {
+                    toggleOrientation(state);
+                    toRedraw = true;
+                }
+                if (config.viewOnly !== undefined && config.viewOnly !== state.viewOnly) {
+                    state.viewOnly = config.viewOnly;
+                    reset(state);
+                    toRedraw = true;
+                }
+                if (config.viewOnly !== undefined && config.viewOnly !== state.viewOnly) {
+                    state.viewOnly = config.viewOnly;
+                    reset(state);
+                    toRedraw = true;
+                }
+                if (((_a = config.hands) === null || _a === void 0 ? void 0 : _a.roles) !== undefined && config.hands.roles !== state.hands.roles) {
+                    state.hands.roles = config.hands.roles;
+                    toRedraw = true;
+                }
+                if (toRedraw)
+                    redrawAll();
                 applyAnimation(state, config);
-                (((_a = config.sfen) === null || _a === void 0 ? void 0 : _a.board) ? anim : render$1)(state => configure(state, config), state);
+                (((_b = config.sfen) === null || _b === void 0 ? void 0 : _b.board) ? anim : render$1)(state => configure(state, config), state);
             },
             state,
             getBoardSfen: () => writeBoard(state.pieces, state.dimensions),
@@ -1263,7 +1289,7 @@ var Shogiground = (function () {
                 duration: 250,
             },
             hands: {
-                enabled: false,
+                inlined: false,
                 handMap: new Map(),
                 roles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
             },
@@ -1585,9 +1611,9 @@ var Shogiground = (function () {
         return [((pos[0] + 0.5) * bounds.width) / dims.files, ((dims.ranks - 0.5 - pos[1]) * bounds.height) / dims.ranks];
     }
 
-    function renderWrap(element, s, relative) {
+    function renderWrap(wrapElements, s, relative) {
         // .sg-wrap (element passed to Shogiground)
-        //     sg-hand
+        //     sg-hand  // if inlined
         //     sg-board
         //       sg-squares
         //       sg-pieces
@@ -1602,19 +1628,19 @@ var Shogiground = (function () {
         //     sg-free-pieces
         //       coords.ranks
         //       coords.files
-        //     sg-hand
+        //     sg-hand // if inlined
         var _a;
-        element.innerHTML = '';
+        wrapElements.board.innerHTML = '';
         // ensure the sg-wrap class is set
         // so bounds calculation can use the CSS width/height values
         // add that class yourself to the element before calling shogiground
         // for a slight performance improvement! (avoids recomputing style)
-        element.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
+        wrapElements.board.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
         for (const c of colors)
-            element.classList.toggle('orientation-' + c, s.orientation === c);
-        element.classList.toggle('manipulable', !s.viewOnly);
+            wrapElements.board.classList.toggle('orientation-' + c, s.orientation === c);
+        wrapElements.board.classList.toggle('manipulable', !s.viewOnly);
         const board = createEl('sg-board');
-        element.appendChild(board);
+        wrapElements.board.appendChild(board);
         const squares = renderSquares(s.dimensions, s.orientation);
         board.appendChild(squares);
         const pieces = createEl('sg-pieces');
@@ -1627,12 +1653,24 @@ var Shogiground = (function () {
         const dragged = createEl('piece');
         setDisplay(dragged, !!s.draggable.current);
         board.appendChild(dragged);
-        let handTop, handBot;
-        if (s.hands.enabled) {
+        let handTop, handBottom;
+        if (s.hands.inlined || wrapElements.handTop || wrapElements.handBottom) {
             handTop = renderHand(opposite(s.orientation), s.hands.roles, 'top');
-            handBot = renderHand(s.orientation, s.hands.roles, 'bottom');
-            element.insertBefore(handTop, board);
-            element.insertBefore(handBot, board.nextElementSibling);
+            handBottom = renderHand(s.orientation, s.hands.roles, 'bottom');
+            if (s.hands.inlined) {
+                wrapElements.board.insertBefore(handTop, board);
+                wrapElements.board.insertBefore(handBottom, board.nextElementSibling);
+            }
+            else {
+                if (wrapElements.handTop) {
+                    wrapElements.handTop.innerHTML = '';
+                    wrapElements.handTop.appendChild(handTop);
+                }
+                if (wrapElements.handBottom) {
+                    wrapElements.handBottom.innerHTML = '';
+                    wrapElements.handBottom.appendChild(handBottom);
+                }
+            }
         }
         let svg;
         let customSvg;
@@ -1665,7 +1703,7 @@ var Shogiground = (function () {
             customSvg,
             freePieces,
             handTop,
-            handBot,
+            handBottom,
         };
     }
     function ranksByNotation(notation) {
@@ -1756,10 +1794,10 @@ var Shogiground = (function () {
         }
     }
     function bindHands(s) {
-        if (!s.hands.enabled || s.viewOnly || !s.dom.elements.handTop || !s.dom.elements.handBot)
+        if (s.viewOnly || !s.dom.elements.handTop || !s.dom.elements.handBottom)
             return;
-        bindHand(s, s.dom.elements.handBot);
         bindHand(s, s.dom.elements.handTop);
+        bindHand(s, s.dom.elements.handBottom);
     }
     function bindHand(s, handEl) {
         handEl.addEventListener('mousedown', startDragFromHand(s), { passive: false });
@@ -1834,12 +1872,12 @@ var Shogiground = (function () {
     function startDragFromHand(s) {
         return e => {
             var _a;
-            e.preventDefault();
             const target = e.target;
             if (isPieceNode(target)) {
                 const piece = { color: target.sgColor, role: target.sgRole };
                 if ((s.activeColor === 'both' || s.activeColor === piece.color) &&
                     ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role))) {
+                    e.preventDefault();
                     dragNewPiece(s, piece, e, true, false);
                 }
             }
@@ -1847,7 +1885,7 @@ var Shogiground = (function () {
     }
 
     function render(s) {
-        const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()), translate = s.dom.relative ? translateRel : translateAbs, squaresEl = s.dom.elements.squares, piecesEl = s.dom.elements.pieces, draggedEl = s.dom.elements.dragged, squareOverEl = s.dom.elements.squareOver, handTopEl = s.dom.elements.handTop, handBotEl = s.dom.elements.handBot, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), curDrag = s.draggable.current, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
+        const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()), translate = s.dom.relative ? translateRel : translateAbs, squaresEl = s.dom.elements.squares, piecesEl = s.dom.elements.pieces, draggedEl = s.dom.elements.dragged, squareOverEl = s.dom.elements.squareOver, handTopEl = s.dom.elements.handTop, handBotEl = s.dom.elements.handBottom, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), curDrag = s.draggable.current, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
         // if piece not being dragged anymore, hide it
         if (!curDrag && draggedEl.sgDragging) {
             draggedEl.sgDragging = false;
@@ -1964,10 +2002,10 @@ var Shogiground = (function () {
                 }
             }
         }
-        if (s.hands.enabled && handTopEl && handBotEl) {
+        if (handTopEl)
             updateHand(s, handTopEl);
+        if (handBotEl)
             updateHand(s, handBotEl);
-        }
         // remove any element that remains in the moved sets
         for (const nodes of movedPieces.values())
             removeNodes(s, nodes);
@@ -2071,14 +2109,12 @@ var Shogiground = (function () {
             map.set(key, [value]);
     }
 
-    function Shogiground(element, config) {
+    function Shogiground(wrapElements, config) {
         const maybeState = defaults();
         configure(maybeState, config || {});
         function redrawAll() {
             const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
-            // compute bounds from existing sg-pieces element if possible
-            // this allows non-square boards from CSS to be handled (for ratio)
-            const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(element, maybeState, relative), bounds = memo(() => elements.pieces.getBoundingClientRect()), redrawNow = (skipShapes) => {
+            const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(wrapElements, maybeState, relative), bounds = memo(() => elements.pieces.getBoundingClientRect()), redrawNow = (skipShapes) => {
                 render(state);
                 renderPromotions(state);
                 if (!skipShapes && elements.svg && elements.customSvg && elements.freePieces)

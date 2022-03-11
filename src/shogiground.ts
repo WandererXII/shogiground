@@ -7,18 +7,17 @@ import { render, updateBounds } from './render.js';
 import * as shapes from './shapes.js';
 import * as util from './util.js';
 import { renderPromotions } from './promotion.js';
+import { WrapElements } from './types.js';
 
-export function Shogiground(element: HTMLElement, config?: Config): Api {
+export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
   const maybeState: State | HeadlessState = defaults();
 
   configure(maybeState, config || {});
 
   function redrawAll(): State {
     const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
-    // compute bounds from existing sg-pieces element if possible
-    // this allows non-square boards from CSS to be handled (for ratio)
     const relative = maybeState.viewOnly && !maybeState.drawable.visible,
-      elements = renderWrap(element, maybeState, relative),
+      elements = renderWrap(wrapElements, maybeState, relative),
       bounds = util.memo(() => elements.pieces.getBoundingClientRect()),
       redrawNow = (skipShapes?: boolean): void => {
         render(state);

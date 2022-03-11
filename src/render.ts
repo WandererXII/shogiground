@@ -28,7 +28,7 @@ export function render(s: State): void {
     draggedEl: sg.PieceNode = s.dom.elements.dragged,
     squareOverEl: HTMLElement = s.dom.elements.squareOver,
     handTopEl: HTMLElement | undefined = s.dom.elements.handTop,
-    handBotEl: HTMLElement | undefined = s.dom.elements.handBot,
+    handBotEl: HTMLElement | undefined = s.dom.elements.handBottom,
     pieces: sg.Pieces = s.pieces,
     curAnim: AnimCurrent | undefined = s.animation.current,
     anims: AnimVectors = curAnim ? curAnim.plan.anims : new Map(),
@@ -167,10 +167,8 @@ export function render(s: State): void {
     }
   }
 
-  if (s.hands.enabled && handTopEl && handBotEl) {
-    updateHand(s, handTopEl);
-    updateHand(s, handBotEl);
-  }
+  if (handTopEl) updateHand(s, handTopEl);
+  if (handBotEl) updateHand(s, handBotEl);
 
   // remove any element that remains in the moved sets
   for (const nodes of movedPieces.values()) removeNodes(s, nodes);

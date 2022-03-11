@@ -34,6 +34,12 @@ export type NumberQuad = [number, number, number, number];
 export type Dests = Map<Key, Key[]>;
 export type DropDests = Map<Role, Key[]>;
 
+export interface WrapElements {
+  board: HTMLElement;
+  handTop?: HTMLElement;
+  handBottom?: HTMLElement;
+}
+
 export interface Elements {
   board: HTMLElement;
   squares: HTMLElement;
@@ -45,7 +51,7 @@ export interface Elements {
   customSvg?: SVGElement;
   freePieces?: HTMLElement;
   handTop?: HTMLElement;
-  handBot?: HTMLElement;
+  handBottom?: HTMLElement;
 }
 export interface Dom {
   elements: Elements;

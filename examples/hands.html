@@ -17,8 +17,12 @@
         <a href="minis.html">Mini Boards</a>
         <a href="d5x5.html">Small Board (5x5)</a>
       </nav>
-      <div style="width: 500px" class="main-board">
-        <div id="dirty" class="sg-wrap"></div>
+      <div class="wrap">
+        <div id="hand-top" class="hand-wrap"></div>
+        <div style="width: 500px" class="main-board">
+          <div id="dirty" class="sg-wrap"></div>
+        </div>
+        <div id="hand-bottom" class="hand-wrap"></div>
       </div>
     </div>
     <button onclick="flip()">flip</button>
@@ -34,9 +38,17 @@
         orientation: 'sente',
         hands: {
           enabled: true,
+          //inlined: true,
         },
       };
-      const sg = Shogiground(document.getElementById('dirty'), config);
+      const sg = Shogiground(
+        {
+          board: document.getElementById('dirty'),
+          handTop: document.getElementById('hand-top'),
+          handBottom: document.getElementById('hand-bottom'),
+        },
+        config
+      );
       function flip() {
         sg.toggleOrientation();
       }

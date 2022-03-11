@@ -1,11 +1,11 @@
 import { HeadlessState } from './state.js';
 import { createEl, opposite, pieceNameOf, pos2key, setDisplay } from './util.js';
-import { colors, Notation, Elements, Dimensions, SquareNode, Color, PieceNode, Role } from './types.js';
+import { colors, Notation, Elements, Dimensions, SquareNode, Color, PieceNode, Role, WrapElements } from './types.js';
 import { createSVGElement, setAttributes } from './shapes.js';
 
-export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boolean): Elements {
+export function renderWrap(wrapElements: WrapElements, s: HeadlessState, relative: boolean): Elements {
   // .sg-wrap (element passed to Shogiground)
-  //     sg-hand
+  //     sg-hand  // if inlined
   //     sg-board
   //       sg-squares
   //       sg-pieces
@@ -20,21 +20,21 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   //     sg-free-pieces
   //       coords.ranks
   //       coords.files
-  //     sg-hand
+  //     sg-hand // if inlined
 
-  element.innerHTML = '';
+  wrapElements.board.innerHTML = '';
 
   // ensure the sg-wrap class is set
   // so bounds calculation can use the CSS width/height values
   // add that class yourself to the element before calling shogiground
   // for a slight performance improvement! (avoids recomputing style)
-  element.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
+  wrapElements.board.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
 
-  for (const c of colors) element.classList.toggle('orientation-' + c, s.orientation === c);
-  element.classList.toggle('manipulable', !s.viewOnly);
+  for (const c of colors) wrapElements.board.classList.toggle('orientation-' + c, s.orientation === c);
+  wrapElements.board.classList.toggle('manipulable', !s.viewOnly);
 
   const board = createEl('sg-board');
-  element.appendChild(board);
+  wrapElements.board.appendChild(board);
 
   const squares = renderSquares(s.dimensions, s.orientation);
   board.appendChild(squares);
@@ -53,12 +53,23 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
   setDisplay(dragged, !!s.draggable.current);
   board.appendChild(dragged);
 
-  let handTop, handBot;
-  if (s.hands.enabled) {
+  let handTop, handBottom;
+  if (s.hands.inlined || wrapElements.handTop || wrapElements.handBottom) {
     handTop = renderHand(opposite(s.orientation), s.hands.roles, 'top');
-    handBot = renderHand(s.orientation, s.hands.roles, 'bottom');
-    element.insertBefore(handTop, board);
-    element.insertBefore(handBot, board.nextElementSibling);
+    handBottom = renderHand(s.orientation, s.hands.roles, 'bottom');
+    if (s.hands.inlined) {
+      wrapElements.board.insertBefore(handTop, board);
+      wrapElements.board.insertBefore(handBottom, board.nextElementSibling);
+    } else {
+      if (wrapElements.handTop) {
+        wrapElements.handTop.innerHTML = '';
+        wrapElements.handTop.appendChild(handTop);
+      }
+      if (wrapElements.handBottom) {
+        wrapElements.handBottom.innerHTML = '';
+        wrapElements.handBottom.appendChild(handBottom);
+      }
+    }
   }
 
   let svg: SVGElement | undefined;
@@ -100,7 +111,7 @@ export function renderWrap(element: HTMLElement, s: HeadlessState, relative: boo
     customSvg,
     freePieces,
     handTop,
-    handBot,
+    handBottom,
   };
 }
 

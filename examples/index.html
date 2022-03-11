@@ -23,12 +23,14 @@
     <div class="slidecontainer">
       <input type="range" min="1" max="100" value="50" class="slider" id="myRange" />
     </div>
-    <button onclick="flip()">FLIP</button>
-    <button onclick="pieceSVG()">PIECE</button>
-    <button onclick="move()">MOVE</button>
-    <button onclick="promote()">PROMOTION</button>
-    <button onclick="setPieces()">PIECES</button>
-    <button onclick="tmout(0)">TIMEOUT</button>
+    <div style="max-width: 150px">
+      <button onclick="flip()">FLIP</button>
+      <button onclick="pieceSVG()">PIECE</button>
+      <button onclick="move()">MOVE</button>
+      <button onclick="promote()">PROMOTION</button>
+      <button onclick="setPieces()">PIECES</button>
+      <button onclick="tmout(0)">TIMEOUT</button>
+    </div>
     <script src="../dist/shogiground.js"></script>
     <script>
       const config = {
@@ -56,7 +58,7 @@
           },
         },
       };
-      const ground = Shogiground(document.getElementById('dirty'), config);
+      const ground = Shogiground({ board: document.getElementById('dirty') }, config);
       function flip() {
         ground.toggleOrientation();
       }
@@ -103,7 +105,12 @@
         );
       }
       function reconf() {
-        ground.set(config);
+        ground.set({
+          viewOnly: true,
+          drawable: {
+            visible: false,
+          },
+        });
       }
       function tmout(ms) {
         setTimeout(reconf, ms);
