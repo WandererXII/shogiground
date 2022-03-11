@@ -9,11 +9,11 @@ import * as sg from './types.js';
 import { cancelPromotion, setPromotion } from './promotion.js';
 
 export interface Api {
-  // reconfigure the instance. Accepts all config options, except for viewOnly & drawable.visible.
-  // board will be animated accordingly, if animations are enabled.
+  // reconfigure the instance. Accepts all config options
+  // board will be animated accordingly, if animations are enabled
   set(config: Config): void;
 
-  // read shogiground state; write at your own risks.
+  // read shogiground state; write at your own risks
   state: State;
 
   // get the position on the board in Forsyth notation
@@ -96,7 +96,28 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
   return {
     set(config): void {
-      if (config.orientation && config.orientation !== state.orientation) toggleOrientation();
+      let toRedraw = false;
+      if (config.orientation && config.orientation !== state.orientation) {
+        board.toggleOrientation(state);
+        toRedraw = true;
+      }
+      if (config.viewOnly !== undefined && config.viewOnly !== state.viewOnly) {
+        state.viewOnly = config.viewOnly;
+        board.reset(state);
+        toRedraw = true;
+      }
+      if (config.viewOnly !== undefined && config.viewOnly !== state.viewOnly) {
+        state.viewOnly = config.viewOnly;
+        board.reset(state);
+        toRedraw = true;
+      }
+
+      if (config.hands?.roles !== undefined && config.hands.roles !== state.hands.roles) {
+        state.hands.roles = config.hands.roles;
+        toRedraw = true;
+      }
+
+      if (toRedraw) redrawAll();
       applyAnimation(state, config);
       (config.sfen?.board ? anim : render)(state => configure(state, config), state);
     },
