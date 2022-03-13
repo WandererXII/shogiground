@@ -44,9 +44,9 @@ export interface Elements {
   board: HTMLElement;
   squares: HTMLElement;
   pieces: HTMLElement;
-  promotion: HTMLElement;
-  squareOver: HTMLElement;
-  dragged: PieceNode;
+  dragged?: PieceNode;
+  promotion?: HTMLElement;
+  squareOver?: HTMLElement;
   svg?: SVGElement;
   customSvg?: SVGElement;
   freePieces?: HTMLElement;

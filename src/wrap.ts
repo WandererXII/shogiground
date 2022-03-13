@@ -9,9 +9,9 @@ export function renderWrap(wrapElements: WrapElements, s: HeadlessState, relativ
   //     sg-board
   //       sg-squares
   //       sg-pieces
+  //       piece dragging
   //       sg-promotion
   //       sg-square-over
-  //       piece dragging
   //       svg.sg-shapes
   //         defs
   //         g
@@ -42,16 +42,20 @@ export function renderWrap(wrapElements: WrapElements, s: HeadlessState, relativ
   const pieces = createEl('sg-pieces');
   board.appendChild(pieces);
 
-  const promotion = createEl('sg-promotion');
-  board.appendChild(promotion);
+  let dragged, promotion, squareOver;
+  if (!s.viewOnly) {
+    dragged = createEl('piece') as PieceNode;
+    setDisplay(dragged, !!s.draggable.current);
+    board.appendChild(dragged);
 
-  const squareOver = createEl('sg-square-over');
-  setDisplay(squareOver, !!s.draggable.current?.touch);
-  board.appendChild(squareOver);
+    promotion = createEl('sg-promotion');
+    setDisplay(promotion, s.promotion.active);
+    board.appendChild(promotion);
 
-  const dragged = createEl('piece') as PieceNode;
-  setDisplay(dragged, !!s.draggable.current);
-  board.appendChild(dragged);
+    squareOver = createEl('sg-square-over');
+    setDisplay(squareOver, !!s.draggable.current?.touch);
+    board.appendChild(squareOver);
+  }
 
   let handTop, handBottom;
   if (s.hands.inlined || wrapElements.handTop || wrapElements.handBottom) {
