@@ -8,6 +8,7 @@ import {
   translateRel,
   translateAbs,
   pieceNameOf,
+  samePiece,
 } from './util.js';
 import { sentePov } from './board.js';
 import { AnimCurrent, AnimVectors, AnimVector, AnimFadings } from './anim.js';
@@ -25,8 +26,8 @@ export function render(s: State): void {
     translate = s.dom.relative ? translateRel : translateAbs,
     squaresEl: HTMLElement = s.dom.elements.squares,
     piecesEl: HTMLElement = s.dom.elements.pieces,
-    draggedEl: sg.PieceNode = s.dom.elements.dragged,
-    squareOverEl: HTMLElement = s.dom.elements.squareOver,
+    draggedEl: sg.PieceNode | undefined = s.dom.elements.dragged,
+    squareOverEl: HTMLElement | undefined = s.dom.elements.squareOver,
     handTopEl: HTMLElement | undefined = s.dom.elements.handTop,
     handBotEl: HTMLElement | undefined = s.dom.elements.handBottom,
     pieces: sg.Pieces = s.pieces,
@@ -39,10 +40,10 @@ export function render(s: State): void {
     movedPieces: Map<PieceName, sg.PieceNode[]> = new Map();
 
   // if piece not being dragged anymore, hide it
-  if (!curDrag && draggedEl.sgDragging) {
+  if (!curDrag && draggedEl?.sgDragging) {
     draggedEl.sgDragging = false;
     setDisplay(draggedEl, false);
-    setDisplay(squareOverEl, false);
+    if (squareOverEl) setDisplay(squareOverEl, false);
   }
 
   let k: sg.Key,
@@ -65,10 +66,10 @@ export function render(s: State): void {
       elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
 
       // if piece dragged add or remove ghost class
-      if (curDrag?.started && curDrag.orig === k) {
+      if (curDrag?.started && curDrag.fromBoard?.orig === k) {
         el.classList.add('ghost');
         el.sgGhost = true;
-      } else if (el.sgGhost && (!curDrag || curDrag.orig !== k)) {
+      } else if (el.sgGhost && (!curDrag || curDrag.fromBoard?.orig !== k)) {
         el.classList.remove('ghost');
         el.sgDragging = false;
       }
@@ -210,16 +211,15 @@ function computeSquareClasses(s: State): SquareClasses {
           addSquare(squares, k, 'premove-dest' + (s.pieces.has(k) ? ' oc' : ''));
         }
     }
-  } else if (s.dropmode.active || s.draggable.current?.newPiece) {
-    const piece = s.dropmode.active ? s.dropmode.piece : s.draggable.current?.piece;
-    if (piece && s.droppable.showDests) {
-      const dests = s.droppable.dests?.get(piece.role);
+  } else if (s.selectedPiece) {
+    if (s.droppable.showDests) {
+      const dests = s.droppable.dests?.get(s.selectedPiece.role);
       if (dests)
         for (const k of dests) {
           addSquare(squares, k, 'move-dest');
         }
       const pDests = s.predroppable.dests;
-      if (pDests && s.turnColor !== piece.color)
+      if (pDests)
         for (const k of pDests) {
           addSquare(squares, k, 'premove-dest' + (s.pieces.has(k) ? ' oc' : ''));
         }
@@ -241,20 +241,12 @@ function addSquare(squares: SquareClasses, key: sg.Key, klass: string): void {
 function updateHand(s: State, handEl: HTMLElement): void {
   let pieceEl = handEl.firstElementChild as sg.PieceNode | undefined;
   while (pieceEl) {
-    const role = pieceEl.sgRole;
-    const color = pieceEl.sgColor;
-    const num = s.hands.handMap.get(color)?.get(role) || 0;
+    const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
+    const num = s.hands.handMap.get(piece.color)?.get(piece.role) || 0;
+    const isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece);
 
-    pieceEl.classList.toggle(
-      'selected',
-      (s.dropmode.active &&
-        s.dropmode.fromHand &&
-        s.dropmode.piece?.color === color &&
-        s.dropmode.piece.role === role) ||
-        (!!s.draggable.current?.fromHand &&
-          s.draggable.current.piece.color === color &&
-          s.draggable.current.piece.role === role)
-    );
+    pieceEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
+    pieceEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
     pieceEl.dataset.nb = num.toString();
     pieceEl = pieceEl.nextElementSibling as sg.PieceNode | undefined;
   }

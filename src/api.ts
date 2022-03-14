@@ -49,6 +49,9 @@ export interface Api {
   // click a square programmatically
   selectSquare(key: sg.Key | null, force?: boolean): void;
 
+  // select a piece from hand to drop programatically
+  selectPiece(piece: sg.Piece | null): void;
+
   // play the current premove, if any; returns true if premove was played
   playPremove(): boolean;
 
@@ -80,7 +83,7 @@ export interface Api {
   redrawAll: sg.Redraw;
 
   // for piece dropping and board editors
-  dragNewPiece(piece: sg.Piece, event: sg.MouchEvent, hand: boolean, force: boolean): void;
+  dragNewPiece(piece: sg.Piece, event: sg.MouchEvent): void;
 
   // unbinds all events
   // (important for document-wide events like scroll and mousemove)
@@ -166,6 +169,14 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       }
     },
 
+    selectPiece(piece): void {
+      if (piece) render(state => board.selectPiece(state, piece), state);
+      else if (state.selectedPiece) {
+        board.unselect(state);
+        state.dom.redraw();
+      }
+    },
+
     playPremove(): boolean {
       if (state.premovable.current) {
         if (anim(board.playPremove, state)) return true;
@@ -220,8 +231,8 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     redrawAll,
 
-    dragNewPiece(piece, event, hand, force): void {
-      dragNewPiece(state, piece, event, hand, force);
+    dragNewPiece(piece, event): void {
+      dragNewPiece(state, piece, event);
     },
 
     destroy(): void {

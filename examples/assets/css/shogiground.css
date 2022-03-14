@@ -165,7 +165,7 @@ sg-pieces piece.ghost {
   opacity: 0.3;
 }
 piece.dragging {
-  will-change: transform;
+  /* will-change: transform; */
   z-index: 10;
 }
 piece.dragging.touch {

@@ -1,5 +1,5 @@
 import { HeadlessState } from './state.js';
-import { setCheck, setSelected } from './board.js';
+import { setCheck, setSelected, setSelectedPiece } from './board.js';
 import { inferDimensions, readBoard as sfenRead, readHands } from './sfen.js';
 import { DrawShape, DrawBrushes } from './draw.js';
 import * as sg from './types.js';
@@ -15,6 +15,7 @@ export interface Config {
   check?: sg.Color | boolean; // true for current color, false to unset
   lastMove?: sg.Key[]; // squares part of the last move ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
+  selectedPiece?: sg.Piece; // piece in hand currently selected
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu?: boolean; // because who needs a context menu on a board, only without viewOnly
   blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
@@ -89,11 +90,6 @@ export interface Config {
     select?: (key: sg.Key) => void; // called when a square is selected
     insert?: (elements: sg.Elements) => void; // when the board DOM has been (re)inserted
   };
-  dropmode?: {
-    active?: boolean;
-    piece?: sg.Piece;
-    fromHand?: boolean; // deactivates dropmode after the drop and removes piece from hand if allowed
-  };
   drawable?: {
     enabled?: boolean; // can draw
     visible?: boolean; // can view
@@ -152,6 +148,7 @@ export function configure(state: HeadlessState, config: Config): void {
 
   // fix move/premove dests
   if (state.selected) setSelected(state, state.selected);
+  if (state.selectedPiece) setSelectedPiece(state, state.selectedPiece);
 
   applyAnimation(state, config);
 }

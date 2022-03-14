@@ -13,6 +13,7 @@ export interface HeadlessState {
   check?: sg.Key; // square currently in check "5a"
   lastMove?: sg.Key[]; // squares part of the last move ["2b"; "8h"]
   selected?: sg.Key; // square currently selected "1a"
+  selectedPiece?: sg.Piece; // piece in hand currently selected
   viewOnly: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu: boolean; // because who needs a context menu on a shogi board
   resizable: boolean; // listens to shogiground.resize on document.body to clear bounds cache
@@ -85,11 +86,6 @@ export interface HeadlessState {
     lastDropOff?: DragCurrent; // last piece that was dropped off
     current?: DragCurrent;
   };
-  dropmode: {
-    active: boolean;
-    fromHand: boolean;
-    piece?: sg.Piece;
-  };
   selectable: {
     // disable to enforce dragging over click-click move
     enabled: boolean;
@@ -106,6 +102,7 @@ export interface HeadlessState {
     move?: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => void;
     drop?: (piece: sg.Piece, key: sg.Key) => void;
     select?: (key: sg.Key) => void; // called when a square is selected
+    pieceSelect?: (piece: sg.Piece) => void; // called when a piece in hand is selected
     insert?: (elements: sg.Elements) => void; // when the board DOM has been (re)inserted
   };
   drawable: Drawable;
@@ -170,10 +167,6 @@ export function defaults(): HeadlessState {
       showGhost: true,
       showTouchSquareOverlay: true,
       deleteOnDropOff: false,
-    },
-    dropmode: {
-      active: false,
-      fromHand: true,
     },
     selectable: {
       enabled: true,

@@ -23,12 +23,8 @@ sg-hand.hand-bottom piece::after {
 piece[data-nb='0'] {
   opacity: 0.3;
 }
-piece[data-nb='0']::after {
+piece[data-nb='0']:not(.selected)::after {
   content: none;
-}
-
-.sg-wrap sg-hand piece.selected {
-  border: 2px solid green;
 }
 
 .wrap {
@@ -78,5 +74,11 @@ sg-hand piece {
 }
 
 sg-hand piece.selected {
+  opacity: 1;
   background-color: rgba(20, 85, 30, 0.5);
+}
+
+sg-hand piece.preselected {
+  opacity: 1;
+  background-color: rgba(20, 30, 85, 0.5);
 }

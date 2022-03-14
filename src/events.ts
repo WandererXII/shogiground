@@ -1,10 +1,8 @@
 import { State } from './state.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
-import { drop } from './drop.js';
-import { eventPosition, isRightButton } from './util.js';
+import { isRightButton } from './util.js';
 import * as sg from './types.js';
-import { cancelDropMode, getKeyAtDomPos, sentePov } from './board.js';
 import { promote } from './promotion.js';
 
 type MouchBind = (e: sg.MouchEvent) => void;
@@ -26,15 +24,14 @@ export function bindBoard(s: State, boundsUpdated: () => void): void {
   piecesEl.addEventListener('mousedown', onStart as EventListener, {
     passive: false,
   });
+  if (s.disableContextMenu || s.drawable.enabled) piecesEl.addEventListener('contextmenu', e => e.preventDefault());
 
-  const pieceSelection = (e: sg.MouchEvent) => promote(s, e);
-  promotionEl.addEventListener('click', pieceSelection as EventListener, {
-    passive: false,
-  });
-
-  if (s.disableContextMenu || s.drawable.enabled) {
-    piecesEl.addEventListener('contextmenu', e => e.preventDefault());
-    promotionEl.addEventListener('contextmenu', e => e.preventDefault());
+  if (promotionEl) {
+    const pieceSelection = (e: sg.MouchEvent) => promote(s, e);
+    promotionEl.addEventListener('click', pieceSelection as EventListener, {
+      passive: false,
+    });
+    if (s.disableContextMenu) promotionEl.addEventListener('contextmenu', e => e.preventDefault());
   }
 }
 
@@ -94,13 +91,7 @@ function startDragOrDraw(s: State): MouchBind {
     else if (s.drawable.current) draw.cancel(s);
     else if (e.shiftKey || isRightButton(e)) {
       if (s.drawable.enabled) draw.start(s, e);
-    } else if (!s.viewOnly) {
-      if (s.dropmode.active && !squareOccupied(s, e)) drop(s, e);
-      else {
-        cancelDropMode(s);
-        drag.start(s, e);
-      }
-    }
+    } else if (!s.viewOnly && !drag.unwantedEvent(e)) drag.start(s, e);
   };
 }
 
@@ -112,24 +103,17 @@ function dragOrDraw(s: State, withDrag: StateMouchBind, withDraw: StateMouchBind
   };
 }
 
-function squareOccupied(s: State, e: sg.MouchEvent): boolean {
-  const position = eventPosition(e);
-  const dest = position && getKeyAtDomPos(position, sentePov(s), s.dimensions, s.dom.bounds());
-  if (dest && s.pieces.has(dest)) return true;
-  return false;
-}
-
 function startDragFromHand(s: State): MouchBind {
   return e => {
     const target = e.target as HTMLElement;
-    if (sg.isPieceNode(target)) {
+    if (!drag.unwantedEvent(e) && sg.isPieceNode(target)) {
       const piece = { color: target.sgColor, role: target.sgRole };
       if (
         (s.activeColor === 'both' || s.activeColor === piece.color) &&
         s.hands.handMap.get(piece.color)?.get(piece.role)
       ) {
-        e.preventDefault();
-        drag.dragNewPiece(s, piece, e, true, false);
+        if (e.cancelable !== false) e.preventDefault();
+        drag.dragNewPiece(s, piece, e);
       }
     }
   };

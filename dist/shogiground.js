@@ -185,7 +185,7 @@ var Shogiground = (function () {
     }
     function toggleOrientation(state) {
         state.orientation = opposite(state.orientation);
-        state.animation.current = state.draggable.current = state.selected = undefined;
+        state.animation.current = state.draggable.current = state.selected = state.selectedPiece = undefined;
     }
     function reset(state) {
         state.lastMove = undefined;
@@ -230,10 +230,9 @@ var Shogiground = (function () {
         callUserFunction(state.predroppable.events.set, piece, key);
     }
     function unsetPredrop(state) {
-        const pd = state.predroppable;
-        if (pd.current) {
-            pd.current = undefined;
-            callUserFunction(pd.events.unset);
+        if (state.predroppable.current) {
+            state.predroppable.current = undefined;
+            callUserFunction(state.predroppable.events.unset);
         }
     }
     function baseMove(state, orig, dest) {
@@ -251,16 +250,13 @@ var Shogiground = (function () {
         callUserFunction(state.events.change);
         return captured || true;
     }
-    function baseDrop(state, piece, key, force) {
-        if (state.pieces.has(key)) {
-            if (force)
-                state.pieces.delete(key);
-            else
-                return false;
-        }
+    function baseDrop(state, piece, key) {
+        if (state.pieces.has(key) && !state.droppable.free)
+            return false;
         callUserFunction(state.events.drop, piece, key);
         state.pieces.set(key, piece);
         state.lastMove = [key];
+        removeFromHand(state, piece); // todo - don't when dropping a spare piece
         state.check = undefined;
         callUserFunction(state.events.change);
         return true;
@@ -275,8 +271,8 @@ var Shogiground = (function () {
         }
         return result;
     }
-    function baseUserDrop(state, piece, key, force) {
-        const result = baseDrop(state, piece, key, force);
+    function baseUserDrop(state, piece, key) {
+        const result = baseDrop(state, piece, key);
         if (result) {
             state.movable.dests = undefined;
             state.droppable.dests = undefined;
@@ -285,25 +281,25 @@ var Shogiground = (function () {
         }
         return result;
     }
-    function userDrop(state, piece, dest, force, fromHand) {
-        if (canDrop(state, piece, dest) || force) {
-            if (baseUserDrop(state, piece, dest, force) && fromHand) {
-                removeFromHand(state, piece);
-                cancelDropMode(state);
+    function userDrop(state, piece, dest) {
+        if (canDrop(state, piece, dest)) {
+            const result = baseUserDrop(state, piece, dest);
+            if (result) {
+                unselect(state);
+                callUserFunction(state.droppable.events.after, piece, dest, {
+                    premove: false,
+                    predrop: false,
+                });
+                return true;
             }
-            callUserFunction(state.droppable.events.after, piece, dest, {
-                premove: false,
-                predrop: false,
-            });
         }
         else if (canPredrop(state, piece, dest)) {
             setPredrop(state, piece, dest);
-        }
-        else {
-            unsetPremove(state);
-            unsetPredrop(state);
+            unselect(state);
+            return true;
         }
         unselect(state);
+        return false;
     }
     function userMove(state, orig, dest) {
         if (canMove(state, orig, dest)) {
@@ -341,7 +337,11 @@ var Shogiground = (function () {
     }
     function selectSquare(state, key, force) {
         callUserFunction(state.events.select, key);
-        if (state.selected) {
+        if (state.selectedPiece) {
+            if (userDrop(state, state.selectedPiece, key))
+                return;
+        }
+        else if (state.selected) {
             if (state.selected === key && !state.draggable.enabled) {
                 unselect(state);
                 return;
@@ -356,28 +356,40 @@ var Shogiground = (function () {
             setSelected(state, key);
         }
     }
+    function selectPiece(state, piece) {
+        callUserFunction(state.events.pieceSelect, piece);
+        if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece))
+            unselect(state);
+        else if (isDroppable(state, piece) || isPredroppable(state, piece)) {
+            setSelectedPiece(state, piece);
+        }
+    }
     function setSelected(state, key) {
+        unselect(state);
         state.selected = key;
         if (isPremovable(state, key)) {
             state.premovable.dests = premove(state.pieces, key, state.dimensions);
         }
-        else {
-            state.premovable.dests = undefined;
-            state.predroppable.dests = undefined;
+    }
+    function setSelectedPiece(state, piece) {
+        unselect(state);
+        state.selectedPiece = piece;
+        if (isPredroppable(state, piece)) {
+            state.predroppable.dests = predrop(state.pieces, piece, state.dimensions);
         }
     }
     function unselect(state) {
         state.selected = undefined;
+        state.selectedPiece = undefined;
         state.premovable.dests = undefined;
         state.predroppable.dests = undefined;
-    }
-    function cancelDropMode(state) {
-        state.dropmode.active = false;
-        state.dropmode.piece = undefined;
     }
     function isMovable(state, orig) {
         const piece = state.pieces.get(orig);
         return (!!piece && (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color)));
+    }
+    function isDroppable(state, piece) {
+        return state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color);
     }
     function canMove(state, orig, dest) {
         var _a, _b;
@@ -385,20 +397,14 @@ var Shogiground = (function () {
     }
     function canDrop(state, piece, dest) {
         var _a, _b;
-        return (!state.pieces.has(dest) &&
-            (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color)) &&
-            (state.droppable.free || !!((_b = (_a = state.droppable.dests) === null || _a === void 0 ? void 0 : _a.get(piece.role)) === null || _b === void 0 ? void 0 : _b.includes(dest))));
+        return (isDroppable(state, piece) && (state.droppable.free || !!((_b = (_a = state.droppable.dests) === null || _a === void 0 ? void 0 : _a.get(piece.role)) === null || _b === void 0 ? void 0 : _b.includes(dest))));
     }
     function isPremovable(state, orig) {
         const piece = state.pieces.get(orig);
         return !!piece && state.premovable.enabled && state.activeColor === piece.color && state.turnColor !== piece.color;
     }
     function isPredroppable(state, piece) {
-        var _a;
-        return ((state.dropmode.active || !!((_a = state.draggable.current) === null || _a === void 0 ? void 0 : _a.newPiece)) &&
-            state.predroppable.enabled &&
-            state.activeColor === piece.color &&
-            state.turnColor !== piece.color);
+        return state.predroppable.enabled && state.activeColor === piece.color && state.turnColor !== piece.color;
     }
     function canPremove(state, orig, dest) {
         return orig !== dest && isPremovable(state, orig) && premove(state.pieces, orig, state.dimensions).includes(dest);
@@ -409,10 +415,8 @@ var Shogiground = (function () {
             (!destPiece || destPiece.color !== state.activeColor) &&
             predrop(state.pieces, piece, state.dimensions).includes(dest));
     }
-    function isDraggable(state, orig) {
-        const piece = state.pieces.get(orig);
-        return (!!piece &&
-            state.draggable.enabled &&
+    function isDraggable(state, piece) {
+        return (state.draggable.enabled &&
             (state.activeColor === 'both' ||
                 (state.activeColor === piece.color && (state.turnColor === piece.color || state.premovable.enabled))));
     }
@@ -456,10 +460,14 @@ var Shogiground = (function () {
         unsetPremove(state);
         unsetPredrop(state);
         unselect(state);
-        cancelDropMode(state);
     }
     function stop(state) {
-        state.activeColor = state.movable.dests = state.droppable.dests = state.animation.current = undefined;
+        state.activeColor =
+            state.movable.dests =
+                state.droppable.dests =
+                    state.draggable.current =
+                        state.animation.current =
+                            undefined;
         cancelMoveOrDrop(state);
     }
     function getKeyAtDomPos(pos, asSente, dims, bounds) {
@@ -682,6 +690,8 @@ var Shogiground = (function () {
         // fix move/premove dests
         if (state.selected)
             setSelected(state, state.selected);
+        if (state.selectedPiece)
+            setSelectedPiece(state, state.selectedPiece);
         applyAnimation(state, config);
     }
     function deepMerge(base, extend) {
@@ -895,10 +905,6 @@ var Shogiground = (function () {
     }
 
     function start$1(s, e) {
-        if (!e.isTrusted || (e.button !== undefined && e.button !== 0))
-            return; // only touch or left click
-        if (e.touches && e.touches.length > 1)
-            return; // support one finger touch only
         const bounds = s.dom.bounds(), position = eventPosition(e), orig = position && getKeyAtDomPos(position, sentePov(s), s.dimensions, bounds);
         if (!orig)
             return;
@@ -908,29 +914,32 @@ var Shogiground = (function () {
         // Prevent touch scroll and create no corresponding mouse event, if there
         // is an intent to interact with the board.
         if (e.cancelable !== false &&
-            (!e.touches || s.blockTouchScroll || piece || previouslySelected || pieceCloseTo(s, position)))
+            (!e.touches || s.blockTouchScroll || s.selectedPiece || piece || previouslySelected || pieceCloseTo(s, position)))
             e.preventDefault();
         const hadPremove = !!s.premovable.current;
-        const hadPredrop = !!s.predroppable.current || !!s.predroppable.dests;
-        if (s.selected && canMove(s, s.selected, orig)) {
+        const hadPredrop = !!s.predroppable.current;
+        if ((s.selectedPiece && canDrop(s, s.selectedPiece, orig)) ||
+            (s.selected && canMove(s, s.selected, orig))) {
             anim(state => selectSquare(state, orig), s);
         }
         else {
             selectSquare(s, orig);
         }
-        const stillSelected = s.selected === orig;
-        if (piece && stillSelected && isDraggable(s, orig)) {
-            const touch = e.type === 'touchstart', draggedEl = s.dom.elements.dragged;
+        const stillSelected = s.selected === orig, draggedEl = s.dom.elements.dragged;
+        if (piece && draggedEl && stillSelected && isDraggable(s, piece)) {
+            const touch = e.type === 'touchstart';
             s.draggable.current = {
                 piece,
-                orig,
-                touch,
-                origPos: position,
                 pos: position,
+                origPos: position,
                 started: s.draggable.autoDistance && !touch,
-                previouslySelected,
+                touch,
                 originTarget: e.target,
-                keyHasChanged: false,
+                fromBoard: {
+                    orig,
+                    previouslySelected,
+                    keyHasChanged: false,
+                },
             };
             draggedEl.sgColor = piece.color;
             draggedEl.sgRole = piece.role;
@@ -955,46 +964,53 @@ var Shogiground = (function () {
         }
         return false;
     }
-    function dragNewPiece(s, piece, e, hand, force) {
+    function dragNewPiece(s, piece, e) {
         var _a;
-        unselect(s);
-        const position = eventPosition(e), touch = e.type === 'touchstart', draggedEl = s.dom.elements.dragged;
-        s.draggable.current = {
-            piece,
-            touch,
-            origPos: position,
-            pos: position,
-            started: true,
-            originTarget: e.target,
-            newPiece: true,
-            fromHand: hand,
-            force: force,
-            keyHasChanged: s.dropmode.active && ((_a = s.dropmode.piece) === null || _a === void 0 ? void 0 : _a.role) === piece.role && s.dropmode.piece.color === piece.color,
-        };
-        draggedEl.sgColor = piece.color;
-        draggedEl.sgRole = piece.role;
-        draggedEl.className = `dragging ${pieceNameOf(piece)}`;
-        draggedEl.classList.toggle('touch', touch);
-        if (isPredroppable(s, piece))
-            s.predroppable.dests = predrop(s.pieces, piece, s.dimensions);
-        if (hand) {
-            s.dropmode.active = true;
-            s.dropmode.piece = piece;
-        }
+        const previouslySelectedPiece = s.selectedPiece, draggedEl = s.dom.elements.dragged, position = eventPosition(e), touch = e.type === 'touchstart';
+        if (!draggedEl)
+            return;
+        selectPiece(s, piece);
         s.dom.redraw();
-        processDrag(s);
+        const hadPremove = !!s.premovable.current;
+        const hadPredrop = !!s.predroppable.current;
+        if (isDraggable(s, piece)) {
+            s.draggable.current = {
+                piece,
+                pos: position,
+                origPos: position,
+                touch,
+                started: s.draggable.autoDistance && !touch,
+                originTarget: e.target,
+                fromOutside: {
+                    originBounds: (_a = e.target) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect(),
+                    leftOrigin: false,
+                    previouslySelectedPiece,
+                },
+            };
+            draggedEl.sgColor = piece.color;
+            draggedEl.sgRole = piece.role;
+            draggedEl.className = `dragging ${pieceNameOf(piece)}`;
+            draggedEl.classList.toggle('touch', touch);
+            processDrag(s);
+        }
+        else {
+            if (hadPremove)
+                unsetPremove(s);
+            if (hadPredrop)
+                unsetPredrop(s);
+        }
     }
     function processDrag(s) {
         requestAnimationFrame(() => {
-            var _a;
-            const cur = s.draggable.current;
-            if (!cur)
+            var _a, _b;
+            const cur = s.draggable.current, draggedEl = s.dom.elements.dragged;
+            if (!cur || !draggedEl)
                 return;
             // cancel animations while dragging
-            if (cur.orig && ((_a = s.animation.current) === null || _a === void 0 ? void 0 : _a.plan.anims.has(cur.orig)))
+            if (((_a = cur.fromBoard) === null || _a === void 0 ? void 0 : _a.orig) && ((_b = s.animation.current) === null || _b === void 0 ? void 0 : _b.plan.anims.has(cur.fromBoard.orig)))
                 s.animation.current = undefined;
             // if moving piece is gone, cancel
-            const origPiece = cur.orig ? s.pieces.get(cur.orig) : cur.piece;
+            const origPiece = cur.fromBoard ? s.pieces.get(cur.fromBoard.orig) : cur.piece;
             if (!origPiece || !samePiece(origPiece, cur.piece))
                 cancel(s);
             else {
@@ -1003,7 +1019,7 @@ var Shogiground = (function () {
                     s.dom.redraw();
                 }
                 if (cur.started) {
-                    const draggedEl = s.dom.elements.dragged, bounds = s.dom.bounds();
+                    const bounds = s.dom.bounds();
                     translateAbs(draggedEl, [
                         cur.pos[0] - bounds.left - bounds.width / (s.dimensions.files * 2),
                         cur.pos[1] - bounds.top - bounds.height / (s.dimensions.ranks * 2),
@@ -1013,18 +1029,25 @@ var Shogiground = (function () {
                         setDisplay(draggedEl, true);
                     }
                     const hover = getKeyAtDomPos(cur.pos, sentePov(s), s.dimensions, bounds);
-                    cur.keyHasChanged = cur.keyHasChanged || (!cur.newPiece && cur.orig !== hover);
+                    if (cur.fromBoard)
+                        cur.fromBoard.keyHasChanged = cur.fromBoard.keyHasChanged || cur.fromBoard.orig !== hover;
+                    else if (cur.fromOutside)
+                        cur.fromOutside.leftOrigin =
+                            cur.fromOutside.leftOrigin ||
+                                (!!cur.fromOutside.originBounds && !isInsideSquare(cur.fromOutside.originBounds, cur.pos));
                     // if the hovered square changed
                     if (hover !== cur.hovering) {
                         const prevHover = cur.hovering;
                         cur.hovering = hover;
                         updateHovers(s, prevHover);
-                        if (hover && cur.touch && s.draggable.showTouchSquareOverlay) {
-                            translateAbs(s.dom.elements.squareOver, posToTranslateAbs(s.dimensions, bounds)(key2pos(hover), sentePov(s)), 1);
-                            setDisplay(s.dom.elements.squareOver, true);
-                        }
-                        else if (cur.touch) {
-                            setDisplay(s.dom.elements.squareOver, false);
+                        if (cur.touch && s.dom.elements.squareOver) {
+                            if (hover && s.draggable.showTouchSquareOverlay) {
+                                translateAbs(s.dom.elements.squareOver, posToTranslateAbs(s.dimensions, bounds)(key2pos(hover), sentePov(s)), 1);
+                                setDisplay(s.dom.elements.squareOver, true);
+                            }
+                            else {
+                                setDisplay(s.dom.elements.squareOver, false);
+                            }
                         }
                     }
                 }
@@ -1039,6 +1062,7 @@ var Shogiground = (function () {
         }
     }
     function end(s, e) {
+        var _a, _b, _c, _d;
         const cur = s.draggable.current;
         if (!cur)
             return;
@@ -1047,7 +1071,7 @@ var Shogiground = (function () {
             e.preventDefault();
         // comparing with the origin target is an easy way to test that the end event
         // has the same touch origin
-        if (e.type === 'touchend' && cur.originTarget !== e.target && !cur.newPiece) {
+        if (e.type === 'touchend' && cur.originTarget !== e.target && !cur.fromOutside) {
             s.draggable.current = undefined;
             return;
         }
@@ -1056,25 +1080,29 @@ var Shogiground = (function () {
         // touchend has no position; so use the last touchmove position instead
         const eventPos = eventPosition(e) || cur.pos;
         const dest = getKeyAtDomPos(eventPos, sentePov(s), s.dimensions, s.dom.bounds());
-        if (dest && cur.started && cur.orig !== dest) {
-            if (cur.newPiece) {
-                userDrop(s, cur.piece, dest, cur.force, cur.fromHand);
-            }
-            else if (cur.orig) {
-                userMove(s, cur.orig, dest);
-            }
+        if (dest && cur.started && ((_a = cur.fromBoard) === null || _a === void 0 ? void 0 : _a.orig) !== dest) {
+            if (cur.fromOutside)
+                userDrop(s, cur.piece, dest);
+            else if (cur.fromBoard)
+                userMove(s, cur.fromBoard.orig, dest);
         }
-        else if (cur.newPiece) {
-            if (cur.fromHand && distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 4)) {
-                cancelDropMode(s);
-            }
-        }
-        else if (cur.orig && s.draggable.deleteOnDropOff && !dest) {
+        else if (s.draggable.deleteOnDropOff && !dest) {
             s.draggable.lastDropOff = cur;
-            s.pieces.delete(cur.orig);
+            if ((_b = cur.fromBoard) === null || _b === void 0 ? void 0 : _b.orig)
+                s.pieces.delete(cur.fromBoard.orig);
+            else if (cur.fromOutside)
+                removeFromHand(s, cur.piece);
             callUserFunction(s.events.change);
         }
-        if ((cur.orig === cur.previouslySelected || cur.keyHasChanged) && (cur.orig === dest || !dest))
+        if (cur.fromBoard &&
+            (cur.fromBoard.orig === cur.fromBoard.previouslySelected || cur.fromBoard.keyHasChanged) &&
+            (cur.fromBoard.orig === dest || !dest))
+            unselect(s);
+        else if (((_c = cur.fromOutside) === null || _c === void 0 ? void 0 : _c.leftOrigin) ||
+            (((_d = cur.fromOutside) === null || _d === void 0 ? void 0 : _d.originBounds) &&
+                isInsideSquare(cur.fromOutside.originBounds, cur.pos) &&
+                cur.fromOutside.previouslySelectedPiece &&
+                samePiece(cur.fromOutside.previouslySelectedPiece, cur.piece)))
             unselect(s);
         else if (!s.selectable.enabled)
             unselect(s);
@@ -1082,17 +1110,23 @@ var Shogiground = (function () {
         s.dom.redraw();
     }
     function cancel(s) {
-        const cur = s.draggable.current;
-        if (cur) {
+        if (s.draggable.current) {
             s.draggable.current = undefined;
             unselect(s);
             s.dom.redraw();
         }
     }
+    // support one finger touch only or left click
+    function unwantedEvent(e) {
+        return !e.isTrusted || (e.button !== undefined && e.button !== 0) || (!!e.touches && e.touches.length > 1);
+    }
+    function isInsideSquare(rect, pos) {
+        return (rect.left <= pos[0] && rect.top <= pos[1] && rect.left + rect.width > pos[0] && rect.top + rect.height > pos[1]);
+    }
     function updateHovers(s, prevHover) {
-        var _a, _b;
+        var _a;
         const asSente = sentePov(s), sqaureEls = s.dom.elements.squares.children;
-        const curIndex = ((_a = s.draggable.current) === null || _a === void 0 ? void 0 : _a.hovering) && domSquareIndexOfKey((_b = s.draggable.current) === null || _b === void 0 ? void 0 : _b.hovering, asSente, s.dimensions), curHoverEl = curIndex && sqaureEls[curIndex];
+        const curIndex = ((_a = s.draggable.current) === null || _a === void 0 ? void 0 : _a.hovering) && domSquareIndexOfKey(s.draggable.current.hovering, asSente, s.dimensions), curHoverEl = curIndex && sqaureEls[curIndex];
         if (curHoverEl)
             curHoverEl.classList.add('hover');
         const prevIndex = prevHover && domSquareIndexOfKey(prevHover, asSente, s.dimensions), prevHoverEl = prevIndex && sqaureEls[prevIndex];
@@ -1111,26 +1145,26 @@ var Shogiground = (function () {
         s.promotion.pieces = undefined;
     }
     function renderPromotions(s) {
-        if (!s.promotion.active || !s.promotion.key || !s.promotion.pieces || s.viewOnly)
-            return;
         const promotionEl = s.dom.elements.promotion;
-        setDisplay(promotionEl, s.promotion.active);
+        if (!s.promotion.active || !s.promotion.key || !s.promotion.pieces || !promotionEl)
+            return;
         const asSente = sentePov(s), initPos = key2pos(s.promotion.key);
-        const promotionNode = createEl('promotion');
-        translateAbs(promotionNode, posToTranslateAbs(s.dimensions, s.dom.bounds())(initPos, asSente), 1);
+        const promotionChoice = createEl('promotion');
+        translateAbs(promotionChoice, posToTranslateAbs(s.dimensions, s.dom.bounds())(initPos, asSente), 1);
         s.promotion.pieces.forEach(p => {
             const pieceNode = createEl('piece', pieceNameOf(p));
             pieceNode.sgColor = p.color;
             pieceNode.sgRole = p.role;
-            promotionNode.appendChild(pieceNode);
+            promotionChoice.appendChild(pieceNode);
         });
         promotionEl.innerHTML = '';
-        promotionEl.appendChild(promotionNode);
+        promotionEl.appendChild(promotionChoice);
+        setDisplay(promotionEl, s.promotion.active);
     }
     function promote(s, e) {
         e.preventDefault();
         const key = s.promotion.key, target = e.target;
-        if (s.promotion.active && key && isPieceNode(target)) {
+        if (s.promotion.active && key && target && isPieceNode(target)) {
             const piece = { color: target.sgColor, role: target.sgRole };
             s.pieces.set(key, piece);
             callUserFunction(s.promotion.after, piece);
@@ -1208,6 +1242,14 @@ var Shogiground = (function () {
                     state.dom.redraw();
                 }
             },
+            selectPiece(piece) {
+                if (piece)
+                    render$1(state => selectPiece(state, piece), state);
+                else if (state.selectedPiece) {
+                    unselect(state);
+                    state.dom.redraw();
+                }
+            },
             playPremove() {
                 if (state.premovable.current) {
                     if (anim(playPremove, state))
@@ -1253,8 +1295,8 @@ var Shogiground = (function () {
                 return getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.bounds());
             },
             redrawAll,
-            dragNewPiece(piece, event, hand, force) {
-                dragNewPiece(state, piece, event, hand, force);
+            dragNewPiece(piece, event) {
+                dragNewPiece(state, piece, event);
             },
             destroy() {
                 stop(state);
@@ -1320,10 +1362,6 @@ var Shogiground = (function () {
                 showGhost: true,
                 showTouchSquareOverlay: true,
                 deleteOnDropOff: false,
-            },
-            dropmode: {
-                active: false,
-                fromHand: true,
             },
             selectable: {
                 enabled: true,
@@ -1617,9 +1655,9 @@ var Shogiground = (function () {
         //     sg-board
         //       sg-squares
         //       sg-pieces
+        //       piece dragging
         //       sg-promotion
         //       sg-square-over
-        //       piece dragging
         //       svg.sg-shapes
         //         defs
         //         g
@@ -1645,14 +1683,18 @@ var Shogiground = (function () {
         board.appendChild(squares);
         const pieces = createEl('sg-pieces');
         board.appendChild(pieces);
-        const promotion = createEl('sg-promotion');
-        board.appendChild(promotion);
-        const squareOver = createEl('sg-square-over');
-        setDisplay(squareOver, !!((_a = s.draggable.current) === null || _a === void 0 ? void 0 : _a.touch));
-        board.appendChild(squareOver);
-        const dragged = createEl('piece');
-        setDisplay(dragged, !!s.draggable.current);
-        board.appendChild(dragged);
+        let dragged, promotion, squareOver;
+        if (!s.viewOnly) {
+            dragged = createEl('piece');
+            setDisplay(dragged, !!s.draggable.current);
+            board.appendChild(dragged);
+            promotion = createEl('sg-promotion');
+            setDisplay(promotion, s.promotion.active);
+            board.appendChild(promotion);
+            squareOver = createEl('sg-square-over');
+            setDisplay(squareOver, !!((_a = s.draggable.current) === null || _a === void 0 ? void 0 : _a.touch));
+            board.appendChild(squareOver);
+        }
         let handTop, handBottom;
         if (s.hands.inlined || wrapElements.handTop || wrapElements.handBottom) {
             handTop = renderHand(opposite(s.orientation), s.hands.roles, 'top');
@@ -1749,26 +1791,6 @@ var Shogiground = (function () {
         return hand;
     }
 
-    function drop(s, e) {
-        if (!s.dropmode.active)
-            return;
-        if (e.cancelable)
-            e.preventDefault();
-        unsetPremove(s);
-        unsetPredrop(s);
-        const piece = s.dropmode.piece;
-        if (piece) {
-            const position = eventPosition(e);
-            const dest = position && getKeyAtDomPos(position, sentePov(s), s.dimensions, s.dom.bounds());
-            if (dest) {
-                userDrop(s, piece, dest, false, true);
-                if (s.dropmode.fromHand)
-                    cancelDropMode(s);
-            }
-        }
-        s.dom.redraw();
-    }
-
     function bindBoard(s, boundsUpdated) {
         const piecesEl = s.dom.elements.pieces;
         const promotionEl = s.dom.elements.promotion;
@@ -1784,13 +1806,15 @@ var Shogiground = (function () {
         piecesEl.addEventListener('mousedown', onStart, {
             passive: false,
         });
-        const pieceSelection = (e) => promote(s, e);
-        promotionEl.addEventListener('click', pieceSelection, {
-            passive: false,
-        });
-        if (s.disableContextMenu || s.drawable.enabled) {
+        if (s.disableContextMenu || s.drawable.enabled)
             piecesEl.addEventListener('contextmenu', e => e.preventDefault());
-            promotionEl.addEventListener('contextmenu', e => e.preventDefault());
+        if (promotionEl) {
+            const pieceSelection = (e) => promote(s, e);
+            promotionEl.addEventListener('click', pieceSelection, {
+                passive: false,
+            });
+            if (s.disableContextMenu)
+                promotionEl.addEventListener('contextmenu', e => e.preventDefault());
         }
     }
     function bindHands(s) {
@@ -1842,14 +1866,8 @@ var Shogiground = (function () {
                 if (s.drawable.enabled)
                     start$2(s, e);
             }
-            else if (!s.viewOnly) {
-                if (s.dropmode.active && !squareOccupied(s, e))
-                    drop(s, e);
-                else {
-                    cancelDropMode(s);
-                    start$1(s, e);
-                }
-            }
+            else if (!s.viewOnly && !unwantedEvent(e))
+                start$1(s, e);
         };
     }
     function dragOrDraw(s, withDrag, withDraw) {
@@ -1862,35 +1880,31 @@ var Shogiground = (function () {
                 withDrag(s, e);
         };
     }
-    function squareOccupied(s, e) {
-        const position = eventPosition(e);
-        const dest = position && getKeyAtDomPos(position, sentePov(s), s.dimensions, s.dom.bounds());
-        if (dest && s.pieces.has(dest))
-            return true;
-        return false;
-    }
     function startDragFromHand(s) {
         return e => {
             var _a;
             const target = e.target;
-            if (isPieceNode(target)) {
+            if (!unwantedEvent(e) && isPieceNode(target)) {
                 const piece = { color: target.sgColor, role: target.sgRole };
                 if ((s.activeColor === 'both' || s.activeColor === piece.color) &&
                     ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role))) {
-                    e.preventDefault();
-                    dragNewPiece(s, piece, e, true, false);
+                    if (e.cancelable !== false)
+                        e.preventDefault();
+                    dragNewPiece(s, piece, e);
                 }
             }
         };
     }
 
     function render(s) {
+        var _a, _b;
         const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()), translate = s.dom.relative ? translateRel : translateAbs, squaresEl = s.dom.elements.squares, piecesEl = s.dom.elements.pieces, draggedEl = s.dom.elements.dragged, squareOverEl = s.dom.elements.squareOver, handTopEl = s.dom.elements.handTop, handBotEl = s.dom.elements.handBottom, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), curDrag = s.draggable.current, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
         // if piece not being dragged anymore, hide it
-        if (!curDrag && draggedEl.sgDragging) {
+        if (!curDrag && (draggedEl === null || draggedEl === void 0 ? void 0 : draggedEl.sgDragging)) {
             draggedEl.sgDragging = false;
             setDisplay(draggedEl, false);
-            setDisplay(squareOverEl, false);
+            if (squareOverEl)
+                setDisplay(squareOverEl, false);
         }
         let k, el, pieceAtKey, elPieceName, anim, fading, pMvdset, pMvd;
         // walk over all board dom elements, apply animations and flag moved pieces
@@ -1903,11 +1917,11 @@ var Shogiground = (function () {
                 fading = fadings.get(k);
                 elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
                 // if piece dragged add or remove ghost class
-                if ((curDrag === null || curDrag === void 0 ? void 0 : curDrag.started) && curDrag.orig === k) {
+                if ((curDrag === null || curDrag === void 0 ? void 0 : curDrag.started) && ((_a = curDrag.fromBoard) === null || _a === void 0 ? void 0 : _a.orig) === k) {
                     el.classList.add('ghost');
                     el.sgGhost = true;
                 }
-                else if (el.sgGhost && (!curDrag || curDrag.orig !== k)) {
+                else if (el.sgGhost && (!curDrag || ((_b = curDrag.fromBoard) === null || _b === void 0 ? void 0 : _b.orig) !== k)) {
                     el.classList.remove('ghost');
                     el.sgDragging = false;
                 }
@@ -2026,7 +2040,7 @@ var Shogiground = (function () {
             s.dom.elements.pieces.removeChild(node);
     }
     function computeSquareClasses(s) {
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c;
         const squares = new Map();
         if (s.lastMove && s.highlight.lastMove)
             for (const k of s.lastMove)
@@ -2053,16 +2067,15 @@ var Shogiground = (function () {
                     }
             }
         }
-        else if (s.dropmode.active || ((_c = s.draggable.current) === null || _c === void 0 ? void 0 : _c.newPiece)) {
-            const piece = s.dropmode.active ? s.dropmode.piece : (_d = s.draggable.current) === null || _d === void 0 ? void 0 : _d.piece;
-            if (piece && s.droppable.showDests) {
-                const dests = (_e = s.droppable.dests) === null || _e === void 0 ? void 0 : _e.get(piece.role);
+        else if (s.selectedPiece) {
+            if (s.droppable.showDests) {
+                const dests = (_c = s.droppable.dests) === null || _c === void 0 ? void 0 : _c.get(s.selectedPiece.role);
                 if (dests)
                     for (const k of dests) {
                         addSquare(squares, k, 'move-dest');
                     }
                 const pDests = s.predroppable.dests;
-                if (pDests && s.turnColor !== piece.color)
+                if (pDests)
                     for (const k of pDests) {
                         addSquare(squares, k, 'premove-dest' + (s.pieces.has(k) ? ' oc' : ''));
                     }
@@ -2084,19 +2097,14 @@ var Shogiground = (function () {
             squares.set(key, klass);
     }
     function updateHand(s, handEl) {
-        var _a, _b, _c;
+        var _a;
         let pieceEl = handEl.firstElementChild;
         while (pieceEl) {
-            const role = pieceEl.sgRole;
-            const color = pieceEl.sgColor;
-            const num = ((_a = s.hands.handMap.get(color)) === null || _a === void 0 ? void 0 : _a.get(role)) || 0;
-            pieceEl.classList.toggle('selected', (s.dropmode.active &&
-                s.dropmode.fromHand &&
-                ((_b = s.dropmode.piece) === null || _b === void 0 ? void 0 : _b.color) === color &&
-                s.dropmode.piece.role === role) ||
-                (!!((_c = s.draggable.current) === null || _c === void 0 ? void 0 : _c.fromHand) &&
-                    s.draggable.current.piece.color === color &&
-                    s.draggable.current.piece.role === role));
+            const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
+            const num = ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role)) || 0;
+            const isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece);
+            pieceEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
+            pieceEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
             pieceEl.dataset.nb = num.toString();
             pieceEl = pieceEl.nextElementSibling;
         }

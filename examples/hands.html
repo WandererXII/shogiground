@@ -26,19 +26,21 @@
       </div>
     </div>
     <button onclick="flip()">flip</button>
+    <button onclick="sp()">sp</button>
+    <button onclick="sq()">sq</button>
     <script src="../dist/shogiground.js"></script>
     <script>
       const config = {
         sfen: {
           board: 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL',
-          hands: 'Pp',
+          hands: '2PR11Bp3n',
         },
         activeColor: 'sente',
         resizable: true,
         orientation: 'sente',
-        hands: {
+        draggable: {
           enabled: true,
-          //inlined: true,
+          deleteOnDropOff: false,
         },
       };
       const sg = Shogiground(
@@ -51,6 +53,12 @@
       );
       function flip() {
         sg.toggleOrientation();
+      }
+      function sp() {
+        sg.selectPiece({ role: 'pawn', color: 'sente' });
+      }
+      function sq() {
+        sg.selectSquare('5e');
       }
     </script>
   </body>

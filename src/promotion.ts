@@ -17,40 +17,39 @@ export function cancelPromotion(s: State): void {
 
 export function renderPromotions(s: State): void {
   const promotionEl = s.dom.elements.promotion;
-  setDisplay(promotionEl, s.promotion.active);
-
-  if (!s.promotion.active || !s.promotion.key || !s.promotion.pieces || s.viewOnly) return;
+  if (!s.promotion.active || !s.promotion.key || !s.promotion.pieces || !promotionEl) return;
 
   const asSente = board.sentePov(s),
     initPos = key2pos(s.promotion.key);
-  const promotionNode = createEl('promotion');
-  translateAbs(promotionNode, posToTranslateAbs(s.dimensions, s.dom.bounds())(initPos, asSente), 1);
+  const promotionChoice = createEl('promotion');
+  translateAbs(promotionChoice, posToTranslateAbs(s.dimensions, s.dom.bounds())(initPos, asSente), 1);
 
   s.promotion.pieces.forEach(p => {
     const pieceNode = createEl('piece', pieceNameOf(p)) as sg.PieceNode;
     pieceNode.sgColor = p.color;
     pieceNode.sgRole = p.role;
-    promotionNode.appendChild(pieceNode);
+    promotionChoice.appendChild(pieceNode);
   });
 
   promotionEl.innerHTML = '';
-  promotionEl.appendChild(promotionNode);
+  promotionEl.appendChild(promotionChoice);
+  setDisplay(promotionEl, s.promotion.active);
 }
 
 export function promote(s: State, e: sg.MouchEvent): void {
   e.preventDefault();
 
   const key = s.promotion.key,
-    target = e.target as HTMLElement;
+    target = e.target as HTMLElement | null;
 
-  if (s.promotion.active && key && sg.isPieceNode(target)) {
+  if (s.promotion.active && key && target && sg.isPieceNode(target)) {
     const piece = { color: target.sgColor, role: target.sgRole };
     s.pieces.set(key, piece);
     board.callUserFunction(s.promotion.after, piece);
   } else board.callUserFunction(s.promotion.cancel);
 
   cancelPromotion(s);
-  setDisplay(s.dom.elements.promotion, false);
+  setDisplay(s.dom.elements.promotion!, false);
 
   s.dom.redraw();
 }
