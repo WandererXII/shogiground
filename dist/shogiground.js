@@ -822,7 +822,7 @@ var Shogiground = (function () {
         e.stopPropagation();
         e.preventDefault();
         e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
-        const pos = eventPosition(e), orig = getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.bounds()), piece = state.drawable.piece;
+        const pos = eventPosition(e), orig = getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.boardBounds()), piece = state.drawable.piece;
         if (!orig)
             return;
         state.drawable.current = {
@@ -837,7 +837,7 @@ var Shogiground = (function () {
         requestAnimationFrame(() => {
             const cur = state.drawable.current;
             if (cur) {
-                const mouseSq = getKeyAtDomPos(cur.pos, sentePov(state), state.dimensions, state.dom.bounds());
+                const mouseSq = getKeyAtDomPos(cur.pos, sentePov(state), state.dimensions, state.dom.boardBounds());
                 if (mouseSq !== cur.mouseSq) {
                     cur.mouseSq = mouseSq;
                     cur.dest = mouseSq !== cur.orig ? mouseSq : undefined;
@@ -905,7 +905,7 @@ var Shogiground = (function () {
     }
 
     function start$1(s, e) {
-        const bounds = s.dom.bounds(), position = eventPosition(e), orig = position && getKeyAtDomPos(position, sentePov(s), s.dimensions, bounds);
+        const bounds = s.dom.boardBounds(), position = eventPosition(e), orig = position && getKeyAtDomPos(position, sentePov(s), s.dimensions, bounds);
         if (!orig)
             return;
         const piece = s.pieces.get(orig), previouslySelected = s.selected;
@@ -956,7 +956,7 @@ var Shogiground = (function () {
         s.dom.redraw();
     }
     function pieceCloseTo(s, pos) {
-        const asSente = sentePov(s), bounds = s.dom.bounds(), radiusSq = Math.pow(bounds.width / s.dimensions.files, 2);
+        const asSente = sentePov(s), bounds = s.dom.boardBounds(), radiusSq = Math.pow(bounds.width / s.dimensions.files, 2);
         for (const key of s.pieces.keys()) {
             const center = computeSquareCenter(key, asSente, s.dimensions, bounds);
             if (distanceSq(center, pos) <= radiusSq)
@@ -1019,7 +1019,7 @@ var Shogiground = (function () {
                     s.dom.redraw();
                 }
                 if (cur.started) {
-                    const bounds = s.dom.bounds();
+                    const bounds = s.dom.boardBounds();
                     translateAbs(draggedEl, [
                         cur.pos[0] - bounds.left - bounds.width / (s.dimensions.files * 2),
                         cur.pos[1] - bounds.top - bounds.height / (s.dimensions.ranks * 2),
@@ -1079,7 +1079,7 @@ var Shogiground = (function () {
         unsetPredrop(s);
         // touchend has no position; so use the last touchmove position instead
         const eventPos = eventPosition(e) || cur.pos;
-        const dest = getKeyAtDomPos(eventPos, sentePov(s), s.dimensions, s.dom.bounds());
+        const dest = getKeyAtDomPos(eventPos, sentePov(s), s.dimensions, s.dom.boardBounds());
         if (dest && cur.started && ((_a = cur.fromBoard) === null || _a === void 0 ? void 0 : _a.orig) !== dest) {
             if (cur.fromOutside)
                 userDrop(s, cur.piece, dest);
@@ -1150,7 +1150,7 @@ var Shogiground = (function () {
             return;
         const asSente = sentePov(s), initPos = key2pos(s.promotion.key);
         const promotionChoice = createEl('promotion');
-        translateAbs(promotionChoice, posToTranslateAbs(s.dimensions, s.dom.bounds())(initPos, asSente), 1);
+        translateAbs(promotionChoice, posToTranslateAbs(s.dimensions, s.dom.boardBounds())(initPos, asSente), 1);
         s.promotion.pieces.forEach(p => {
             const pieceNode = createEl('piece', pieceNameOf(p));
             pieceNode.sgColor = p.color;
@@ -1292,7 +1292,7 @@ var Shogiground = (function () {
                 render$1(state => (state.drawable.shapes = shapes), state);
             },
             getKeyAtDomPos(pos) {
-                return getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.bounds());
+                return getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.boardBounds());
             },
             redrawAll,
             dragNewPiece(piece, event) {
@@ -1400,7 +1400,7 @@ var Shogiground = (function () {
         return document.createElementNS('http://www.w3.org/2000/svg', tagName);
     }
     function renderShapes(state, svg, customSvg, freePieces) {
-        const d = state.drawable, curD = d.current, cur = curD && curD.mouseSq ? curD : undefined, arrowDests = new Map(), bounds = state.dom.bounds();
+        const d = state.drawable, curD = d.current, cur = curD && curD.mouseSq ? curD : undefined, arrowDests = new Map(), bounds = state.dom.boardBounds();
         for (const s of d.shapes.concat(d.autoShapes).concat(cur ? [cur] : [])) {
             if (s.dest)
                 arrowDests.set(s.dest, (arrowDests.get(s.dest) || 0) + 1);
@@ -1846,7 +1846,7 @@ var Shogiground = (function () {
                 unbinds.push(unbindable(document, ev, onmove));
             for (const ev of ['touchend', 'mouseup'])
                 unbinds.push(unbindable(document, ev, onend));
-            const onScroll = () => s.dom.bounds.clear();
+            const onScroll = () => s.dom.boardBounds.clear();
             unbinds.push(unbindable(document, 'scroll', onScroll, { capture: true, passive: true }));
             unbinds.push(unbindable(window, 'resize', onScroll, { passive: true }));
         }
@@ -1898,7 +1898,9 @@ var Shogiground = (function () {
 
     function render(s) {
         var _a, _b;
-        const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()), translate = s.dom.relative ? translateRel : translateAbs, squaresEl = s.dom.elements.squares, piecesEl = s.dom.elements.pieces, draggedEl = s.dom.elements.dragged, squareOverEl = s.dom.elements.squareOver, handTopEl = s.dom.elements.handTop, handBotEl = s.dom.elements.handBottom, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), curDrag = s.draggable.current, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
+        const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = s.dom.relative
+            ? posToTranslateRel(s.dimensions)
+            : posToTranslateAbs(s.dimensions, s.dom.boardBounds()), translate = s.dom.relative ? translateRel : translateAbs, squaresEl = s.dom.elements.squares, piecesEl = s.dom.elements.pieces, draggedEl = s.dom.elements.dragged, squareOverEl = s.dom.elements.squareOver, handTopEl = s.dom.elements.handTop, handBotEl = s.dom.elements.handBottom, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), curDrag = s.draggable.current, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
         // if piece not being dragged anymore, hide it
         if (!curDrag && (draggedEl === null || draggedEl === void 0 ? void 0 : draggedEl.sgDragging)) {
             draggedEl.sgDragging = false;
@@ -2027,7 +2029,7 @@ var Shogiground = (function () {
     function updateBounds(s) {
         if (s.dom.relative)
             return;
-        const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = posToTranslateAbs(s.dimensions, s.dom.bounds());
+        const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = posToTranslateAbs(s.dimensions, s.dom.boardBounds());
         let el = s.dom.elements.pieces.firstElementChild;
         while (el) {
             if (isPieceNode(el) && !el.sgAnimating)
@@ -2122,13 +2124,13 @@ var Shogiground = (function () {
         configure(maybeState, config || {});
         function redrawAll() {
             const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
-            const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(wrapElements, maybeState, relative), bounds = memo(() => elements.pieces.getBoundingClientRect()), redrawNow = (skipShapes) => {
+            const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(wrapElements, maybeState, relative), boardBounds = memo(() => elements.pieces.getBoundingClientRect()), redrawNow = (skipShapes) => {
                 render(state);
                 renderPromotions(state);
                 if (!skipShapes && elements.svg && elements.customSvg && elements.freePieces)
                     renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
             }, boundsUpdated = () => {
-                bounds.clear();
+                boardBounds.clear();
                 updateBounds(state);
                 renderPromotions(state);
                 if (elements.svg && elements.customSvg && elements.freePieces)
@@ -2137,7 +2139,7 @@ var Shogiground = (function () {
             const state = maybeState;
             state.dom = {
                 elements,
-                bounds,
+                boardBounds,
                 redraw: debounceRedraw(redrawNow),
                 redrawNow,
                 unbind: prevUnbind,

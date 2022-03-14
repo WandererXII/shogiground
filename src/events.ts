@@ -67,7 +67,7 @@ export function bindDocument(s: State, boundsUpdated: () => void): sg.Unbind {
     for (const ev of ['touchmove', 'mousemove']) unbinds.push(unbindable(document, ev, onmove as EventListener));
     for (const ev of ['touchend', 'mouseup']) unbinds.push(unbindable(document, ev, onend as EventListener));
 
-    const onScroll = () => s.dom.bounds.clear();
+    const onScroll = () => s.dom.boardBounds.clear();
     unbinds.push(unbindable(document, 'scroll', onScroll, { capture: true, passive: true }));
     unbinds.push(unbindable(window, 'resize', onScroll, { passive: true }));
   }

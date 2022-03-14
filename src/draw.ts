@@ -64,7 +64,7 @@ export function start(state: State, e: sg.MouchEvent): void {
   e.preventDefault();
   e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
   const pos = eventPosition(e)!,
-    orig = getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.bounds()),
+    orig = getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.boardBounds()),
     piece = state.drawable.piece;
   if (!orig) return;
   state.drawable.current = {
@@ -80,7 +80,7 @@ export function processDraw(state: State): void {
   requestAnimationFrame(() => {
     const cur = state.drawable.current;
     if (cur) {
-      const mouseSq = getKeyAtDomPos(cur.pos, sentePov(state), state.dimensions, state.dom.bounds());
+      const mouseSq = getKeyAtDomPos(cur.pos, sentePov(state), state.dimensions, state.dom.boardBounds());
       if (mouseSq !== cur.mouseSq) {
         cur.mouseSq = mouseSq;
         cur.dest = mouseSq !== cur.orig ? mouseSq : undefined;

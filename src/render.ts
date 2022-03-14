@@ -22,7 +22,9 @@ type SquareClasses = Map<sg.Key, string>;
 export function render(s: State): void {
   const asSente: boolean = sentePov(s),
     scaleDown = s.scaleDownPieces ? 0.5 : 1,
-    posToTranslate = s.dom.relative ? posToTranslateRel(s.dimensions) : posToTranslateAbs(s.dimensions, s.dom.bounds()),
+    posToTranslate = s.dom.relative
+      ? posToTranslateRel(s.dimensions)
+      : posToTranslateAbs(s.dimensions, s.dom.boardBounds()),
     translate = s.dom.relative ? translateRel : translateAbs,
     squaresEl: HTMLElement = s.dom.elements.squares,
     piecesEl: HTMLElement = s.dom.elements.pieces,
@@ -179,7 +181,7 @@ export function updateBounds(s: State): void {
   if (s.dom.relative) return;
   const asSente: boolean = sentePov(s),
     scaleDown = s.scaleDownPieces ? 0.5 : 1,
-    posToTranslate = posToTranslateAbs(s.dimensions, s.dom.bounds());
+    posToTranslate = posToTranslateAbs(s.dimensions, s.dom.boardBounds());
   let el = s.dom.elements.pieces.firstElementChild as HTMLElement | undefined;
   while (el) {
     if (sg.isPieceNode(el) && !el.sgAnimating) translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente), scaleDown);

@@ -18,7 +18,7 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
     const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
     const relative = maybeState.viewOnly && !maybeState.drawable.visible,
       elements = renderWrap(wrapElements, maybeState, relative),
-      bounds = util.memo(() => elements.pieces.getBoundingClientRect()),
+      boardBounds = util.memo(() => elements.pieces.getBoundingClientRect()),
       redrawNow = (skipShapes?: boolean): void => {
         render(state);
         renderPromotions(state);
@@ -26,7 +26,7 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
           shapes.renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
       },
       boundsUpdated = (): void => {
-        bounds.clear();
+        boardBounds.clear();
         updateBounds(state);
         renderPromotions(state);
         if (elements.svg && elements.customSvg && elements.freePieces)
@@ -35,7 +35,7 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
     const state = maybeState as State;
     state.dom = {
       elements,
-      bounds,
+      boardBounds,
       redraw: debounceRedraw(redrawNow),
       redrawNow,
       unbind: prevUnbind,

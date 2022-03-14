@@ -55,7 +55,7 @@ export interface Elements {
 }
 export interface Dom {
   elements: Elements;
-  bounds: Memo<DOMRect>;
+  boardBounds: Memo<DOMRect>;
   redraw: () => void;
   redrawNow: (skipSvg?: boolean) => void;
   unbind?: Unbind;

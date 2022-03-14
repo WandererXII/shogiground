@@ -226,7 +226,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
     },
 
     getKeyAtDomPos(pos): sg.Key | undefined {
-      return board.getKeyAtDomPos(pos, board.sentePov(state), state.dimensions, state.dom.bounds());
+      return board.getKeyAtDomPos(pos, board.sentePov(state), state.dimensions, state.dom.boardBounds());
     },
 
     redrawAll,

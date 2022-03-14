@@ -25,7 +25,7 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
     curD = d.current,
     cur = curD && curD.mouseSq ? (curD as DrawShape) : undefined,
     arrowDests: ArrowDests = new Map(),
-    bounds = state.dom.bounds();
+    bounds = state.dom.boardBounds();
 
   for (const s of d.shapes.concat(d.autoShapes).concat(cur ? [cur] : [])) {
     if (s.dest) arrowDests.set(s.dest, (arrowDests.get(s.dest) || 0) + 1);

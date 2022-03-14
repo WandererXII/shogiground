@@ -26,7 +26,7 @@ export interface DragCurrent {
 }
 
 export function start(s: State, e: sg.MouchEvent): void {
-  const bounds = s.dom.bounds(),
+  const bounds = s.dom.boardBounds(),
     position = util.eventPosition(e),
     orig = position && board.getKeyAtDomPos(position, board.sentePov(s), s.dimensions, bounds);
 
@@ -90,7 +90,7 @@ export function start(s: State, e: sg.MouchEvent): void {
 
 function pieceCloseTo(s: State, pos: sg.NumberPair): boolean {
   const asSente = board.sentePov(s),
-    bounds = s.dom.bounds(),
+    bounds = s.dom.boardBounds(),
     radiusSq = Math.pow(bounds.width / s.dimensions.files, 2);
   for (const key of s.pieces.keys()) {
     const center = util.computeSquareCenter(key, asSente, s.dimensions, bounds);
@@ -156,7 +156,7 @@ function processDrag(s: State): void {
         s.dom.redraw();
       }
       if (cur.started) {
-        const bounds = s.dom.bounds();
+        const bounds = s.dom.boardBounds();
 
         util.translateAbs(
           draggedEl,
@@ -225,7 +225,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   board.unsetPredrop(s);
   // touchend has no position; so use the last touchmove position instead
   const eventPos = util.eventPosition(e) || cur.pos;
-  const dest = board.getKeyAtDomPos(eventPos, board.sentePov(s), s.dimensions, s.dom.bounds());
+  const dest = board.getKeyAtDomPos(eventPos, board.sentePov(s), s.dimensions, s.dom.boardBounds());
   if (dest && cur.started && cur.fromBoard?.orig !== dest) {
     if (cur.fromOutside) board.userDrop(s, cur.piece, dest);
     else if (cur.fromBoard) board.userMove(s, cur.fromBoard.orig, dest);
