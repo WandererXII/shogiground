@@ -169,7 +169,7 @@ piece.dragging {
   z-index: 10;
 }
 piece.dragging.touch {
-  top: -10%;
+  top: -50px;
 }
 
 sg-square-over {
