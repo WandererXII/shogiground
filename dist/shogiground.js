@@ -726,15 +726,23 @@ var Shogiground = (function () {
             return distanceSq(piece.pos, p1.pos) - distanceSq(piece.pos, p2.pos);
         })[0];
     }
-    function computePlan(prevPieces, current) {
+    function posOfOutsideEl(elRect, asSente, dims, boardBounds) {
+        const sqW = boardBounds.width / dims.files, sqH = boardBounds.height / dims.ranks;
+        let xOff = (elRect.left - boardBounds.left) / sqW;
+        if (asSente)
+            xOff = dims.files - 1 - xOff;
+        let yOff = (elRect.top - boardBounds.top) / sqH;
+        if (!asSente)
+            yOff = dims.ranks - 1 - yOff;
+        return [xOff, yOff];
+    }
+    function computePlan(prevPieces, prevHands, current) {
         const anims = new Map(), animedOrigs = [], fadings = new Map(), missings = [], news = [], prePieces = new Map();
-        let curP, preP, vector;
         for (const [k, p] of prevPieces) {
             prePieces.set(k, makePiece(k, p));
         }
         for (const key of allKeys) {
-            curP = current.pieces.get(key);
-            preP = prePieces.get(key);
+            const curP = current.pieces.get(key), preP = prePieces.get(key);
             if (curP) {
                 if (preP) {
                     if (!samePiece(curP, preP.piece)) {
@@ -748,16 +756,34 @@ var Shogiground = (function () {
             else if (preP)
                 missings.push(preP);
         }
+        if (current.animation.hands) {
+            const boardBounds = current.dom.boardBounds(), handPiecesBounds = current.dom.handPiecesBounds();
+            for (const color of colors) {
+                const curH = current.hands.handMap.get(color), preH = prevHands.get(color);
+                if (preH && curH) {
+                    for (const [role, n] of curH) {
+                        const piece = { role, color }, handPieceOffset = handPiecesBounds.get(pieceNameOf(piece)), preN = preH.get(role);
+                        if (handPieceOffset && preN && preN > n) {
+                            missings.push({
+                                pos: posOfOutsideEl(handPieceOffset, sentePov(current), current.dimensions, boardBounds),
+                                piece: piece,
+                            });
+                        }
+                    }
+                }
+            }
+        }
         for (const newP of news) {
-            preP = closer(newP, missings.filter(p => samePiece(newP.piece, p.piece)));
+            const preP = closer(newP, missings.filter(p => samePiece(newP.piece, p.piece)));
             if (preP) {
-                vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];
+                const vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];
                 anims.set(newP.key, vector.concat(vector));
-                animedOrigs.push(preP.key);
+                if (preP.key)
+                    animedOrigs.push(preP.key);
             }
         }
         for (const p of missings) {
-            if (!animedOrigs.includes(p.key))
+            if (p.key && !animedOrigs.includes(p.key))
                 fadings.set(p.key, p.piece);
         }
         return {
@@ -790,9 +816,11 @@ var Shogiground = (function () {
     }
     function animate(mutation, state) {
         // clone state before mutating it
-        const prevPieces = new Map(state.pieces);
-        const result = mutation(state);
-        const plan = computePlan(prevPieces, state);
+        const prevPieces = new Map(state.pieces), prevHands = new Map([
+            ['sente', new Map(state.hands.handMap.get('sente') || new Map())],
+            ['gote', new Map(state.hands.handMap.get('gote') || new Map())],
+        ]);
+        const result = mutation(state), plan = computePlan(prevPieces, prevHands, state);
         if (plan.anims.size || plan.fadings.size) {
             const alreadyRunning = state.animation.current && state.animation.current.start;
             state.animation.current = {
@@ -1327,6 +1355,7 @@ var Shogiground = (function () {
             },
             animation: {
                 enabled: true,
+                hands: true,
                 duration: 250,
             },
             hands: {

@@ -1,6 +1,7 @@
 import { State } from './state.js';
 import * as util from './util.js';
 import * as sg from './types.js';
+import { sentePov } from './board.js';
 
 export type Mutation<A> = (state: State) => A;
 
@@ -34,7 +35,7 @@ export function render<A>(mutation: Mutation<A>, state: State): A {
 }
 
 interface AnimPiece {
-  key: sg.Key;
+  key?: sg.Key;
   pos: sg.Pos;
   piece: sg.Piece;
 }
@@ -54,20 +55,30 @@ function closer(piece: AnimPiece, pieces: AnimPiece[]): AnimPiece | undefined {
   })[0];
 }
 
-function computePlan(prevPieces: sg.Pieces, current: State): AnimPlan {
+function posOfOutsideEl(elRect: DOMRect, asSente: boolean, dims: sg.Dimensions, boardBounds: DOMRect): sg.Pos {
+  const sqW = boardBounds.width / dims.files,
+    sqH = boardBounds.height / dims.ranks;
+  let xOff = (elRect.left - boardBounds.left) / sqW;
+  if (asSente) xOff = dims.files - 1 - xOff;
+  let yOff = (elRect.top - boardBounds.top) / sqH;
+  if (!asSente) yOff = dims.ranks - 1 - yOff;
+  return [xOff, yOff];
+}
+
+function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State): AnimPlan {
   const anims: AnimVectors = new Map(),
     animedOrigs: sg.Key[] = [],
     fadings: AnimFadings = new Map(),
     missings: AnimPiece[] = [],
     news: AnimPiece[] = [],
     prePieces: AnimPieces = new Map();
-  let curP: sg.Piece | undefined, preP: AnimPiece | undefined, vector: sg.NumberPair;
+
   for (const [k, p] of prevPieces) {
     prePieces.set(k, makePiece(k, p));
   }
   for (const key of util.allKeys) {
-    curP = current.pieces.get(key);
-    preP = prePieces.get(key);
+    const curP = current.pieces.get(key),
+      preP = prePieces.get(key);
     if (curP) {
       if (preP) {
         if (!util.samePiece(curP, preP.piece)) {
@@ -77,19 +88,40 @@ function computePlan(prevPieces: sg.Pieces, current: State): AnimPlan {
       } else news.push(makePiece(key, curP));
     } else if (preP) missings.push(preP);
   }
+  if (current.animation.hands) {
+    const boardBounds = current.dom.boardBounds(),
+      handPiecesBounds = current.dom.handPiecesBounds();
+    for (const color of sg.colors) {
+      const curH = current.hands.handMap.get(color),
+        preH = prevHands.get(color);
+      if (preH && curH) {
+        for (const [role, n] of curH) {
+          const piece: sg.Piece = { role, color },
+            handPieceOffset = handPiecesBounds.get(util.pieceNameOf(piece)),
+            preN = preH.get(role);
+          if (handPieceOffset && preN && preN > n) {
+            missings.push({
+              pos: posOfOutsideEl(handPieceOffset, sentePov(current), current.dimensions, boardBounds),
+              piece: piece,
+            });
+          }
+        }
+      }
+    }
+  }
   for (const newP of news) {
-    preP = closer(
+    const preP = closer(
       newP,
       missings.filter(p => util.samePiece(newP.piece, p.piece))
     );
     if (preP) {
-      vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];
-      anims.set(newP.key, vector.concat(vector) as AnimVector);
-      animedOrigs.push(preP.key);
+      const vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];
+      anims.set(newP.key!, vector.concat(vector) as AnimVector);
+      if (preP.key) animedOrigs.push(preP.key);
     }
   }
   for (const p of missings) {
-    if (!animedOrigs.includes(p.key)) fadings.set(p.key, p.piece);
+    if (p.key && !animedOrigs.includes(p.key)) fadings.set(p.key, p.piece);
   }
 
   return {
@@ -122,10 +154,14 @@ function step(state: State, now: DOMHighResTimeStamp): void {
 
 function animate<A>(mutation: Mutation<A>, state: State): A {
   // clone state before mutating it
-  const prevPieces: sg.Pieces = new Map(state.pieces);
+  const prevPieces: sg.Pieces = new Map(state.pieces),
+    prevHands: sg.Hands = new Map([
+      ['sente', new Map(state.hands.handMap.get('sente') || new Map())],
+      ['gote', new Map(state.hands.handMap.get('gote') || new Map())],
+    ]);
 
-  const result = mutation(state);
-  const plan = computePlan(prevPieces, state);
+  const result = mutation(state),
+    plan = computePlan(prevPieces, prevHands, state);
   if (plan.anims.size || plan.fadings.size) {
     const alreadyRunning = state.animation.current && state.animation.current.start;
     state.animation.current = {

@@ -29,6 +29,7 @@ export interface HeadlessState {
   };
   animation: {
     enabled: boolean;
+    hands: boolean;
     duration: number;
     current?: AnimCurrent;
   };
@@ -133,6 +134,7 @@ export function defaults(): HeadlessState {
     },
     animation: {
       enabled: true,
+      hands: true,
       duration: 250,
     },
     hands: {

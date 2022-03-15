@@ -19,7 +19,7 @@
       </nav>
       <div class="wrap">
         <div id="hand-top" class="hand-wrap"></div>
-        <div style="width: 500px" class="main-board">
+        <div style="width: 500px" id="main-wrap" class="main-board">
           <div id="dirty" class="sg-wrap"></div>
         </div>
         <div id="hand-bottom" class="hand-wrap"></div>
@@ -28,6 +28,9 @@
     <button onclick="flip()">flip</button>
     <button onclick="sp()">sp</button>
     <button onclick="sq()">sq</button>
+    <div class="slidecontainer">
+      <input type="range" min="1" max="100" value="50" class="slider" id="myRange" />
+    </div>
     <script src="../dist/shogiground.js"></script>
     <script>
       const config = {
@@ -60,6 +63,16 @@
       function sq() {
         sg.selectSquare('5e');
       }
+    </script>
+    <script>
+      const slider = document.getElementById('myRange');
+      const board = document.getElementById('main-wrap');
+      // Update the current slider value (each time you drag the slider handle)
+      slider.oninput = function () {
+        board.style.width = (450 + parseInt(this.value)).toString() + 'px';
+        board.style.height = (450 + parseInt(this.value)).toString() + 'px';
+        //document.dispatchEvent(new Event('shogiground.resize'));
+      };
     </script>
   </body>
 </html>

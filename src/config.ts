@@ -31,6 +31,7 @@ export interface Config {
   };
   animation?: {
     enabled?: boolean;
+    hands?: boolean;
     duration?: number;
   };
   hands?: {
