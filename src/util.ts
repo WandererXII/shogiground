@@ -84,7 +84,7 @@ export const createEl = (tagName: string, className?: string): HTMLElement => {
   return el;
 };
 
-export function pieceNameOf(piece: sg.Piece): string {
+export function pieceNameOf(piece: sg.Piece): sg.PieceName {
   return `${piece.color} ${piece.role}`;
 }
 

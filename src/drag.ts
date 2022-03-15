@@ -122,7 +122,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent): void 
       started: s.draggable.autoDistance && !touch,
       originTarget: e.target,
       fromOutside: {
-        originBounds: (e.target as HTMLElement | undefined)?.getBoundingClientRect(),
+        originBounds: s.dom.handPiecesBounds().get(util.pieceNameOf(piece)),
         leftOrigin: false,
         previouslySelectedPiece,
       },

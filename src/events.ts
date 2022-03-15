@@ -42,6 +42,13 @@ export function bindHands(s: State): void {
 }
 
 function bindHand(s: State, handEl: HTMLElement): void {
+  if (!s.dom.relative && s.resizable && 'ResizeObserver' in window)
+    new ResizeObserver(() => {
+      s.dom.boardBounds.clear();
+      s.dom.handPiecesBounds.clear();
+      s.dom.handsBounds.clear();
+    }).observe(handEl);
+
   handEl.addEventListener('mousedown', startDragFromHand(s) as EventListener, { passive: false });
   handEl.addEventListener('touchstart', startDragFromHand(s) as EventListener, {
     passive: false,
@@ -67,7 +74,11 @@ export function bindDocument(s: State, boundsUpdated: () => void): sg.Unbind {
     for (const ev of ['touchmove', 'mousemove']) unbinds.push(unbindable(document, ev, onmove as EventListener));
     for (const ev of ['touchend', 'mouseup']) unbinds.push(unbindable(document, ev, onend as EventListener));
 
-    const onScroll = () => s.dom.boardBounds.clear();
+    const onScroll = () => {
+      s.dom.boardBounds.clear();
+      s.dom.handsBounds.clear();
+      s.dom.handPiecesBounds.clear();
+    };
     unbinds.push(unbindable(document, 'scroll', onScroll, { capture: true, passive: true }));
     unbinds.push(unbindable(window, 'resize', onScroll, { passive: true }));
   }

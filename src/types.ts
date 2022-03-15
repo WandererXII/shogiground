@@ -18,6 +18,7 @@ export interface Piece {
   color: Color;
   promoted?: boolean;
 }
+export type PieceName = string; // `$color $role`
 export type Pieces = Map<Key, Piece>;
 
 export type Hands = Map<Color, Hand>;
@@ -56,6 +57,8 @@ export interface Elements {
 export interface Dom {
   elements: Elements;
   boardBounds: Memo<DOMRect>;
+  handsBounds: Memo<Map<'top' | 'bottom', DOMRect>>;
+  handPiecesBounds: Memo<Map<PieceName, DOMRect>>;
   redraw: () => void;
   redrawNow: (skipSvg?: boolean) => void;
   unbind?: Unbind;

@@ -15,8 +15,6 @@ import { AnimCurrent, AnimVectors, AnimVector, AnimFadings } from './anim.js';
 import { DragCurrent } from './drag.js';
 import * as sg from './types.js';
 
-type PieceName = string; // `$color $role`
-
 type SquareClasses = Map<sg.Key, string>;
 
 export function render(s: State): void {
@@ -39,7 +37,7 @@ export function render(s: State): void {
     curDrag: DragCurrent | undefined = s.draggable.current,
     squares: SquareClasses = computeSquareClasses(s),
     samePieces: Set<sg.Key> = new Set(),
-    movedPieces: Map<PieceName, sg.PieceNode[]> = new Map();
+    movedPieces: Map<sg.PieceName, sg.PieceNode[]> = new Map();
 
   // if piece not being dragged anymore, hide it
   if (!curDrag && draggedEl?.sgDragging) {
@@ -51,7 +49,7 @@ export function render(s: State): void {
   let k: sg.Key,
     el: HTMLElement | undefined,
     pieceAtKey: sg.Piece | undefined,
-    elPieceName: PieceName,
+    elPieceName: sg.PieceName,
     anim: AnimVector | undefined,
     fading: sg.Piece | undefined,
     pMvdset: sg.PieceNode[] | undefined,

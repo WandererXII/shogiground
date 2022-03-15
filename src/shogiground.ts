@@ -7,7 +7,7 @@ import { render, updateBounds } from './render.js';
 import * as shapes from './shapes.js';
 import * as util from './util.js';
 import { renderPromotions } from './promotion.js';
-import { WrapElements } from './types.js';
+import { PieceNode, WrapElements } from './types.js';
 
 export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
   const maybeState: State | HeadlessState = defaults();
@@ -19,6 +19,36 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
     const relative = maybeState.viewOnly && !maybeState.drawable.visible,
       elements = renderWrap(wrapElements, maybeState, relative),
       boardBounds = util.memo(() => elements.pieces.getBoundingClientRect()),
+      handsBounds = util.memo(() => {
+        const handsRects = new Map();
+        if (elements.handTop) handsRects.set('top', elements.handTop.getBoundingClientRect());
+        if (elements.handBottom) handsRects.set('bottom', elements.handBottom.getBoundingClientRect());
+        return handsRects;
+      }),
+      handPiecesBounds = util.memo(() => {
+        const handPiecesRects = new Map();
+        if (elements.handTop) {
+          let el = elements.handTop.firstElementChild as PieceNode | undefined;
+          while (el) {
+            const role = el.sgRole;
+            const color = el.sgColor;
+            const piece = { role, color };
+            handPiecesRects.set(util.pieceNameOf(piece), el.getBoundingClientRect());
+            el = el.nextElementSibling as PieceNode | undefined;
+          }
+        }
+        if (elements.handBottom) {
+          let el = elements.handBottom.firstElementChild as PieceNode | undefined;
+          while (el) {
+            const role = el.sgRole;
+            const color = el.sgColor;
+            const piece = { role, color };
+            handPiecesRects.set(util.pieceNameOf(piece), el.getBoundingClientRect());
+            el = el.nextElementSibling as PieceNode | undefined;
+          }
+        }
+        return handPiecesRects;
+      }),
       redrawNow = (skipShapes?: boolean): void => {
         render(state);
         renderPromotions(state);
@@ -27,6 +57,8 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
       },
       boundsUpdated = (): void => {
         boardBounds.clear();
+        handsBounds.clear();
+        handPiecesBounds.clear();
         updateBounds(state);
         renderPromotions(state);
         if (elements.svg && elements.customSvg && elements.freePieces)
@@ -36,6 +68,8 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
     state.dom = {
       elements,
       boardBounds,
+      handsBounds,
+      handPiecesBounds,
       redraw: debounceRedraw(redrawNow),
       redrawNow,
       unbind: prevUnbind,
