@@ -1084,7 +1084,7 @@ var Shogiground = (function () {
         }
     }
     function end(s, e) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c;
         const cur = s.draggable.current;
         if (!cur)
             return;
@@ -1109,19 +1109,25 @@ var Shogiground = (function () {
                 userMove(s, cur.fromBoard.orig, dest);
         }
         else if (s.draggable.deleteOnDropOff && !dest) {
-            s.draggable.lastDropOff = cur;
-            if ((_b = cur.fromBoard) === null || _b === void 0 ? void 0 : _b.orig)
+            if (cur.fromBoard)
                 s.pieces.delete(cur.fromBoard.orig);
             else if (cur.fromOutside)
                 removeFromHand(s, cur.piece);
+            if (s.draggable.addToHandOnDropOff) {
+                const handBounds = s.dom.handsBounds(), handBoundsTop = handBounds.get('top'), handBoundsBottom = handBounds.get('bottom');
+                if (handBoundsTop && isInsideSquare(handBoundsTop, cur.pos))
+                    addToHand(s, { color: opposite(s.orientation), role: cur.piece.role });
+                else if (handBoundsBottom && isInsideSquare(handBoundsBottom, cur.pos))
+                    addToHand(s, { color: s.orientation, role: cur.piece.role });
+            }
             callUserFunction(s.events.change);
         }
         if (cur.fromBoard &&
             (cur.fromBoard.orig === cur.fromBoard.previouslySelected || cur.fromBoard.keyHasChanged) &&
             (cur.fromBoard.orig === dest || !dest))
             unselect(s);
-        else if (((_c = cur.fromOutside) === null || _c === void 0 ? void 0 : _c.leftOrigin) ||
-            (((_d = cur.fromOutside) === null || _d === void 0 ? void 0 : _d.originBounds) &&
+        else if (((_b = cur.fromOutside) === null || _b === void 0 ? void 0 : _b.leftOrigin) ||
+            (((_c = cur.fromOutside) === null || _c === void 0 ? void 0 : _c.originBounds) &&
                 isInsideSquare(cur.fromOutside.originBounds, cur.pos) &&
                 cur.fromOutside.previouslySelectedPiece &&
                 samePiece(cur.fromOutside.previouslySelectedPiece, cur.piece)))
@@ -1385,6 +1391,7 @@ var Shogiground = (function () {
                 showGhost: true,
                 showTouchSquareOverlay: true,
                 deleteOnDropOff: false,
+                addToHandOnDropOff: false,
             },
             selectable: {
                 enabled: true,

@@ -230,9 +230,18 @@ export function end(s: State, e: sg.MouchEvent): void {
     if (cur.fromOutside) board.userDrop(s, cur.piece, dest);
     else if (cur.fromBoard) board.userMove(s, cur.fromBoard.orig, dest);
   } else if (s.draggable.deleteOnDropOff && !dest) {
-    s.draggable.lastDropOff = cur;
-    if (cur.fromBoard?.orig) s.pieces.delete(cur.fromBoard.orig);
+    if (cur.fromBoard) s.pieces.delete(cur.fromBoard.orig);
     else if (cur.fromOutside) board.removeFromHand(s, cur.piece);
+
+    if (s.draggable.addToHandOnDropOff) {
+      const handBounds = s.dom.handsBounds(),
+        handBoundsTop = handBounds.get('top'),
+        handBoundsBottom = handBounds.get('bottom');
+      if (handBoundsTop && isInsideSquare(handBoundsTop, cur.pos))
+        board.addToHand(s, { color: util.opposite(s.orientation), role: cur.piece.role });
+      else if (handBoundsBottom && isInsideSquare(handBoundsBottom, cur.pos))
+        board.addToHand(s, { color: s.orientation, role: cur.piece.role });
+    }
     board.callUserFunction(s.events.change);
   }
 

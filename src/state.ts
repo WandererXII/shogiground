@@ -84,7 +84,7 @@ export interface HeadlessState {
     showGhost: boolean; // show ghost of piece being dragged
     showTouchSquareOverlay: boolean; // show square overlay on the square that is currently being hovered, touch only
     deleteOnDropOff: boolean; // delete a piece when it is dropped off the board
-    lastDropOff?: DragCurrent; // last piece that was dropped off
+    addToHandOnDropOff: boolean; // add a piece to hand when it is dropped on it, requires deleteOnDropOff
     current?: DragCurrent;
   };
   selectable: {
@@ -169,6 +169,7 @@ export function defaults(): HeadlessState {
       showGhost: true,
       showTouchSquareOverlay: true,
       deleteOnDropOff: false,
+      addToHandOnDropOff: false,
     },
     selectable: {
       enabled: true,

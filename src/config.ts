@@ -79,6 +79,7 @@ export interface Config {
     showGhost?: boolean; // show ghost of piece being dragged
     showTouchSquareOverlay?: boolean; // show square overlay on the square that is currently being hovered, touch only
     deleteOnDropOff?: boolean; // delete a piece when it is dropped off the board
+    addToHandOnDropOff: boolean; // add a piece to hand when it is dropped on it, requires deleteOnDropOff
   };
   selectable?: {
     // disable to enforce dragging over click-click move
