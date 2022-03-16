@@ -10,8 +10,8 @@ export function createSVGElement(tagName: string): SVGElement {
 
 interface Shape {
   shape: DrawShape;
-  current: boolean;
   hash: Hash;
+  current?: boolean;
 }
 
 type CustomBrushes = Map<string, DrawBrush>; // by hash
@@ -25,11 +25,22 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
     curD = d.current,
     cur = curD && curD.mouseSq ? (curD as DrawShape) : undefined,
     arrowDests: ArrowDests = new Map(),
+    pieceMap: Map<sg.Key, DrawShape> = new Map(),
     bounds = state.dom.boardBounds();
 
   for (const s of d.shapes.concat(d.autoShapes).concat(cur ? [cur] : [])) {
     if (s.dest) arrowDests.set(s.dest, (arrowDests.get(s.dest) || 0) + 1);
   }
+
+  for (const s of d.shapes.concat(cur ? [cur] : []).concat(d.autoShapes)) {
+    if (s.piece) pieceMap.set(s.orig, s);
+  }
+  const pieceShapes = [...pieceMap.values()].map(s => {
+    return {
+      shape: s,
+      hash: shapeHash(s, arrowDests, false, bounds),
+    };
+  });
 
   const shapes: Shape[] = d.shapes.concat(d.autoShapes).map((s: DrawShape) => {
     return {
@@ -74,7 +85,7 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
 
   syncDefs(d, shapes, defsEl);
   syncShapes(
-    shapes.filter(s => !s.shape.customSvg && !s.shape.piece),
+    shapes.filter(s => !s.shape.customSvg),
     shapesEl,
     shape => renderSVGShape(state, shape, d.brushes, arrowDests, bounds)
   );
@@ -83,11 +94,7 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
     customSvgsEl,
     shape => renderSVGShape(state, shape, d.brushes, arrowDests, bounds)
   );
-  syncShapes(
-    shapes.filter(s => s.shape.piece),
-    freePieces,
-    shape => renderPiece(state, shape, bounds)
-  );
+  syncShapes(pieceShapes, freePieces, shape => renderPiece(state, shape, bounds));
 }
 
 // append only. Don't try to update/remove.
@@ -116,7 +123,7 @@ function syncDefs(d: Drawable, shapes: Shape[], defsEl: SVGElement) {
 export function syncShapes(
   shapes: Shape[],
   root: HTMLElement | SVGElement,
-  renderShape: (shape: Shape) => HTMLElement | SVGElement
+  renderShape: (shape: Shape) => HTMLElement | SVGElement | undefined
 ): void {
   const hashesInDom = new Map(), // by hash
     toRemove: SVGElement[] = [];
@@ -135,7 +142,10 @@ export function syncShapes(
   for (const el of toRemove) root.removeChild(el);
   // insert shapes that are not yet in dom
   for (const sc of shapes) {
-    if (!hashesInDom.get(sc.hash)) root.appendChild(renderShape(sc));
+    if (!hashesInDom.get(sc.hash)) {
+      const shapeEl = renderShape(sc);
+      if (shapeEl) root.appendChild(shapeEl);
+    }
   }
 }
 
@@ -199,12 +209,12 @@ function renderSVGShape(
         brush,
         orig,
         orient(key2pos(shape.dest), state.orientation, dims),
-        current,
+        !!current,
         (arrowDests.get(shape.dest) || 0) > 1,
         dims,
         bounds
       );
-    } else el = renderCircle(brushes[shape.brush], orig, current, dims, bounds);
+    } else el = renderCircle(brushes[shape.brush], orig, !!current, dims, bounds);
   }
   el.setAttribute('sgHash', hash);
   return el;
@@ -280,11 +290,13 @@ function renderArrow(
   });
 }
 
-export function renderPiece(state: State, { shape, hash }: Shape, bounds: DOMRect): sg.PieceNode {
+export function renderPiece(state: State, { shape, hash }: Shape, bounds: DOMRect): sg.PieceNode | undefined {
+  if (!shape.piece) return;
+
   const orig = shape.orig;
   const scale = (shape.piece?.scale || 1) * (state.scaleDownPieces ? 0.5 : 1);
 
-  const pieceEl = createEl('piece', pieceNameOf(shape.piece!)) as sg.PieceNode;
+  const pieceEl = createEl('piece', pieceNameOf(shape.piece)) as sg.PieceNode;
   pieceEl.setAttribute('sgHash', hash);
   pieceEl.sgKey = orig;
   pieceEl.sgScale = scale;

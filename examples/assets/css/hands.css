@@ -20,10 +20,10 @@ sg-hand.hand-bottom piece::after {
   top: unset;
   bottom: 0;
 }
-piece[data-nb='0'] {
+piece[data-nb='0']:not(.drawing) {
   opacity: 0.3;
 }
-piece[data-nb='0']:not(.selected)::after {
+piece[data-nb='0']:not(.selected):not(.drawing)::after {
   content: none;
 }
 
@@ -81,4 +81,15 @@ sg-hand piece.selected {
 sg-hand piece.preselected {
   opacity: 1;
   background-color: rgba(20, 30, 85, 0.5);
+}
+
+sg-hand piece.drawing:before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  outline: 5px solid rgb(21, 120, 27);
+  outline-offset: -4px;
+  border-radius: 50%;
+  opacity: 0.6 !important;
 }

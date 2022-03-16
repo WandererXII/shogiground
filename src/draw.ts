@@ -1,6 +1,6 @@
 import { State } from './state.js';
 import { unselect, cancelMoveOrDrop, getKeyAtDomPos, sentePov } from './board.js';
-import { eventPosition, isRightButton } from './util.js';
+import { eventPosition, isRightButton, samePiece } from './util.js';
 import * as sg from './types.js';
 
 export interface DrawShape {
@@ -84,7 +84,6 @@ export function processDraw(state: State): void {
       if (mouseSq !== cur.mouseSq) {
         cur.mouseSq = mouseSq;
         cur.dest = mouseSq !== cur.orig ? mouseSq : undefined;
-        cur.piece = cur.dest ? undefined : state.drawable.piece;
         state.dom.redrawNow();
       }
       processDraw(state);
@@ -127,23 +126,16 @@ function eventBrush(e: sg.MouchEvent): string {
 
 function addShape(drawable: Drawable, cur: DrawCurrent): void {
   const similarShape = (s: DrawShape) => s.orig === cur.orig && s.dest === cur.dest;
-  // replacing the piece
-  const diffPieceSameSquare = (s: DrawShape) =>
-    s.orig === cur.orig &&
-    s.piece &&
-    cur.piece &&
-    (s.piece.color !== cur.piece.color || s.piece.role !== cur.piece.role);
 
+  // have arrows be independent of pieces
+  const piece = cur.piece;
+  if (cur.dest) cur.piece = undefined;
   const similar = drawable.shapes.find(similarShape);
-  const diffPiece = drawable.shapes.find(diffPieceSameSquare);
+  const diffPiece = drawable.shapes.find(s => s.orig === cur.orig && s.piece && piece && !samePiece(s.piece, piece));
 
-  // If we found something on the target square, first we remove everything on there
   if (similar) drawable.shapes = drawable.shapes.filter(s => !similarShape(s));
-  // We add the shape if we found no similar or if we are just replacing the piece
-  if (!similar || similar.brush !== cur.brush || diffPiece) drawable.shapes.push(cur);
-  // Adding circle around piece
-  if (cur.piece && (!similar || similar.brush !== cur.brush || diffPiece))
-    drawable.shapes.push({ orig: cur.orig, brush: cur.brush } as DrawShape);
+  if (!similar || similar.brush !== cur.brush) drawable.shapes.push(cur);
+  if (!!piece !== !!cur.piece || diffPiece) drawable.shapes.push({ orig: cur.orig, brush: cur.brush, piece: piece });
   onChange(drawable);
 }
 

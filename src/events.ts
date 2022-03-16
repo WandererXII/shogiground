@@ -1,7 +1,7 @@
 import { State } from './state.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
-import { isRightButton } from './util.js';
+import { isRightButton, samePiece } from './util.js';
 import * as sg from './types.js';
 import { promote } from './promotion.js';
 
@@ -9,12 +9,13 @@ type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
 
 export function bindBoard(s: State, boundsUpdated: () => void): void {
-  const piecesEl = s.dom.elements.pieces;
-  const promotionEl = s.dom.elements.promotion;
-
-  if (!s.dom.relative && s.resizable && 'ResizeObserver' in window) new ResizeObserver(boundsUpdated).observe(piecesEl);
+  if (!s.dom.relative && s.resizable && 'ResizeObserver' in window)
+    new ResizeObserver(boundsUpdated).observe(s.dom.elements.board);
 
   if (s.viewOnly) return;
+
+  const piecesEl = s.dom.elements.pieces;
+  const promotionEl = s.dom.elements.promotion;
 
   // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
   const onStart = startDragOrDraw(s);
@@ -117,9 +118,15 @@ function dragOrDraw(s: State, withDrag: StateMouchBind, withDraw: StateMouchBind
 function startDragFromHand(s: State): MouchBind {
   return e => {
     const target = e.target as HTMLElement;
-    if (!drag.unwantedEvent(e) && sg.isPieceNode(target)) {
+    if (sg.isPieceNode(target)) {
       const piece = { color: target.sgColor, role: target.sgRole };
-      if (
+      if (e.shiftKey || isRightButton(e)) {
+        if (s.drawable.piece && samePiece(s.drawable.piece, piece)) s.drawable.piece = undefined;
+        else s.drawable.piece = piece;
+        s.dom.redraw();
+      } else if (
+        !s.viewOnly &&
+        !drag.unwantedEvent(e) &&
         (s.activeColor === 'both' || s.activeColor === piece.color) &&
         s.hands.handMap.get(piece.color)?.get(piece.role)
       ) {

@@ -869,7 +869,6 @@ var Shogiground = (function () {
                 if (mouseSq !== cur.mouseSq) {
                     cur.mouseSq = mouseSq;
                     cur.dest = mouseSq !== cur.orig ? mouseSq : undefined;
-                    cur.piece = cur.dest ? undefined : state.drawable.piece;
                     state.dom.redrawNow();
                 }
                 processDraw(state);
@@ -909,22 +908,18 @@ var Shogiground = (function () {
     }
     function addShape(drawable, cur) {
         const similarShape = (s) => s.orig === cur.orig && s.dest === cur.dest;
-        // replacing the piece
-        const diffPieceSameSquare = (s) => s.orig === cur.orig &&
-            s.piece &&
-            cur.piece &&
-            (s.piece.color !== cur.piece.color || s.piece.role !== cur.piece.role);
+        // have arrows be independent of pieces
+        const piece = cur.piece;
+        if (cur.dest)
+            cur.piece = undefined;
         const similar = drawable.shapes.find(similarShape);
-        const diffPiece = drawable.shapes.find(diffPieceSameSquare);
-        // If we found something on the target square, first we remove everything on there
+        const diffPiece = drawable.shapes.find(s => s.orig === cur.orig && s.piece && piece && !samePiece(s.piece, piece));
         if (similar)
             drawable.shapes = drawable.shapes.filter(s => !similarShape(s));
-        // We add the shape if we found no similar or if we are just replacing the piece
-        if (!similar || similar.brush !== cur.brush || diffPiece)
+        if (!similar || similar.brush !== cur.brush)
             drawable.shapes.push(cur);
-        // Adding circle around piece
-        if (cur.piece && (!similar || similar.brush !== cur.brush || diffPiece))
-            drawable.shapes.push({ orig: cur.orig, brush: cur.brush });
+        if (!!piece !== !!cur.piece || diffPiece)
+            drawable.shapes.push({ orig: cur.orig, brush: cur.brush, piece: piece });
         onChange(drawable);
     }
     function onChange(drawable) {
@@ -1428,11 +1423,21 @@ var Shogiground = (function () {
         return document.createElementNS('http://www.w3.org/2000/svg', tagName);
     }
     function renderShapes(state, svg, customSvg, freePieces) {
-        const d = state.drawable, curD = d.current, cur = curD && curD.mouseSq ? curD : undefined, arrowDests = new Map(), bounds = state.dom.boardBounds();
+        const d = state.drawable, curD = d.current, cur = curD && curD.mouseSq ? curD : undefined, arrowDests = new Map(), pieceMap = new Map(), bounds = state.dom.boardBounds();
         for (const s of d.shapes.concat(d.autoShapes).concat(cur ? [cur] : [])) {
             if (s.dest)
                 arrowDests.set(s.dest, (arrowDests.get(s.dest) || 0) + 1);
         }
+        for (const s of d.shapes.concat(cur ? [cur] : []).concat(d.autoShapes)) {
+            if (s.piece)
+                pieceMap.set(s.orig, s);
+        }
+        const pieceShapes = [...pieceMap.values()].map(s => {
+            return {
+                shape: s,
+                hash: shapeHash(s, arrowDests, false, bounds),
+            };
+        });
         const shapes = d.shapes.concat(d.autoShapes).map((s) => {
             return {
                 shape: s,
@@ -1473,9 +1478,9 @@ var Shogiground = (function () {
         const shapesEl = svg.querySelector('g');
         const customSvgsEl = customSvg.querySelector('g');
         syncDefs(d, shapes, defsEl);
-        syncShapes(shapes.filter(s => !s.shape.customSvg && !s.shape.piece), shapesEl, shape => renderSVGShape(state, shape, d.brushes, arrowDests, bounds));
+        syncShapes(shapes.filter(s => !s.shape.customSvg), shapesEl, shape => renderSVGShape(state, shape, d.brushes, arrowDests, bounds));
         syncShapes(shapes.filter(s => s.shape.customSvg), customSvgsEl, shape => renderSVGShape(state, shape, d.brushes, arrowDests, bounds));
-        syncShapes(shapes.filter(s => s.shape.piece), freePieces, shape => renderPiece(state, shape, bounds));
+        syncShapes(pieceShapes, freePieces, shape => renderPiece(state, shape, bounds));
     }
     // append only. Don't try to update/remove.
     function syncDefs(d, shapes, defsEl) {
@@ -1522,8 +1527,11 @@ var Shogiground = (function () {
             root.removeChild(el);
         // insert shapes that are not yet in dom
         for (const sc of shapes) {
-            if (!hashesInDom.get(sc.hash))
-                root.appendChild(renderShape(sc));
+            if (!hashesInDom.get(sc.hash)) {
+                const shapeEl = renderShape(sc);
+                if (shapeEl)
+                    root.appendChild(shapeEl);
+            }
         }
     }
     function shapeHash({ orig, dest, brush, piece, modifiers, customSvg }, arrowDests, current, bounds) {
@@ -1569,10 +1577,10 @@ var Shogiground = (function () {
                 let brush = brushes[shape.brush];
                 if (shape.modifiers)
                     brush = makeCustomBrush(brush, shape.modifiers);
-                el = renderArrow(brush, orig, orient(key2pos(shape.dest), state.orientation, dims), current, (arrowDests.get(shape.dest) || 0) > 1, dims, bounds);
+                el = renderArrow(brush, orig, orient(key2pos(shape.dest), state.orientation, dims), !!current, (arrowDests.get(shape.dest) || 0) > 1, dims, bounds);
             }
             else
-                el = renderCircle(brushes[shape.brush], orig, current, dims, bounds);
+                el = renderCircle(brushes[shape.brush], orig, !!current, dims, bounds);
         }
         el.setAttribute('sgHash', hash);
         return el;
@@ -1619,6 +1627,8 @@ var Shogiground = (function () {
     }
     function renderPiece(state, { shape, hash }, bounds) {
         var _a;
+        if (!shape.piece)
+            return;
         const orig = shape.orig;
         const scale = (((_a = shape.piece) === null || _a === void 0 ? void 0 : _a.scale) || 1) * (state.scaleDownPieces ? 0.5 : 1);
         const pieceEl = createEl('piece', pieceNameOf(shape.piece));
@@ -1820,12 +1830,12 @@ var Shogiground = (function () {
     }
 
     function bindBoard(s, boundsUpdated) {
-        const piecesEl = s.dom.elements.pieces;
-        const promotionEl = s.dom.elements.promotion;
         if (!s.dom.relative && s.resizable && 'ResizeObserver' in window)
-            new ResizeObserver(boundsUpdated).observe(piecesEl);
+            new ResizeObserver(boundsUpdated).observe(s.dom.elements.board);
         if (s.viewOnly)
             return;
+        const piecesEl = s.dom.elements.pieces;
+        const promotionEl = s.dom.elements.promotion;
         // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
         const onStart = startDragOrDraw(s);
         piecesEl.addEventListener('touchstart', onStart, {
@@ -1922,9 +1932,18 @@ var Shogiground = (function () {
         return e => {
             var _a;
             const target = e.target;
-            if (!unwantedEvent(e) && isPieceNode(target)) {
+            if (isPieceNode(target)) {
                 const piece = { color: target.sgColor, role: target.sgRole };
-                if ((s.activeColor === 'both' || s.activeColor === piece.color) &&
+                if (e.shiftKey || isRightButton(e)) {
+                    if (s.drawable.piece && samePiece(s.drawable.piece, piece))
+                        s.drawable.piece = undefined;
+                    else
+                        s.drawable.piece = piece;
+                    s.dom.redraw();
+                }
+                else if (!s.viewOnly &&
+                    !unwantedEvent(e) &&
+                    (s.activeColor === 'both' || s.activeColor === piece.color) &&
                     ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role))) {
                     if (e.cancelable !== false)
                         e.preventDefault();
@@ -2145,6 +2164,7 @@ var Shogiground = (function () {
             const isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece);
             pieceEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
             pieceEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
+            pieceEl.classList.toggle('drawing', !!s.drawable.piece && samePiece(s.drawable.piece, piece));
             pieceEl.dataset.nb = num.toString();
             pieceEl = pieceEl.nextElementSibling;
         }
@@ -2162,7 +2182,10 @@ var Shogiground = (function () {
         configure(maybeState, config || {});
         function redrawAll() {
             const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
-            const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(wrapElements, maybeState, relative), boardBounds = memo(() => elements.pieces.getBoundingClientRect()), handsBounds = memo(() => {
+            const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(wrapElements, maybeState, relative), boardBounds = memo(() => {
+                console.log('getBoundingClientRect');
+                return elements.pieces.getBoundingClientRect();
+            }), handsBounds = memo(() => {
                 const handsRects = new Map();
                 if (elements.handTop)
                     handsRects.set('top', elements.handTop.getBoundingClientRect());
@@ -2198,6 +2221,7 @@ var Shogiground = (function () {
                 if (!skipShapes && elements.svg && elements.customSvg && elements.freePieces)
                     renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
             }, boundsUpdated = () => {
+                console.log('boundsUpdated');
                 boardBounds.clear();
                 handsBounds.clear();
                 handPiecesBounds.clear();

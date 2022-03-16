@@ -247,6 +247,7 @@ function updateHand(s: State, handEl: HTMLElement): void {
 
     pieceEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
     pieceEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
+    pieceEl.classList.toggle('drawing', !!s.drawable.piece && samePiece(s.drawable.piece, piece));
     pieceEl.dataset.nb = num.toString();
     pieceEl = pieceEl.nextElementSibling as sg.PieceNode | undefined;
   }
