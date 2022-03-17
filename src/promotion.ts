@@ -1,7 +1,7 @@
 import * as board from './board.js';
 import * as sg from './types.js';
 import { State } from './state.js';
-import { createEl, key2pos, pieceNameOf, posToTranslateAbs, setDisplay, translateAbs } from './util';
+import { createEl, key2pos, pieceNameOf, posToTranslateRel, setDisplay, translateRel } from './util';
 
 export function setPromotion(s: State, key: sg.Key, pieces: sg.Piece[]): void {
   s.promotion.active = true;
@@ -21,18 +21,20 @@ export function renderPromotions(s: State): void {
 
   const asSente = board.sentePov(s),
     initPos = key2pos(s.promotion.key);
-  const promotionChoice = createEl('promotion');
-  translateAbs(promotionChoice, posToTranslateAbs(s.dimensions, s.dom.boardBounds())(initPos, asSente), 1);
+  const promotionSquare = createEl('sg-promotion-square'),
+    promotionChoices = createEl('sg-promotion-choices');
+  translateRel(promotionSquare, posToTranslateRel(s.dimensions)(initPos, asSente), 1);
 
   s.promotion.pieces.forEach(p => {
     const pieceNode = createEl('piece', pieceNameOf(p)) as sg.PieceNode;
     pieceNode.sgColor = p.color;
     pieceNode.sgRole = p.role;
-    promotionChoice.appendChild(pieceNode);
+    promotionChoices.appendChild(pieceNode);
   });
 
   promotionEl.innerHTML = '';
-  promotionEl.appendChild(promotionChoice);
+  promotionSquare.appendChild(promotionChoices);
+  promotionEl.appendChild(promotionSquare);
   setDisplay(promotionEl, s.promotion.active);
 }
 
