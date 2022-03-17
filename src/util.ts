@@ -52,18 +52,14 @@ export const posToTranslateAbs = (
 export const posToTranslateRel =
   (dims: sg.Dimensions): ((pos: sg.Pos, asSente: boolean) => sg.NumberPair) =>
   (pos, asSente) =>
-    posToTranslateBase(pos, dims, asSente, 50, 50);
+    posToTranslateBase(pos, dims, asSente, 100, 100);
 
 export const translateAbs = (el: HTMLElement, pos: sg.NumberPair, scale: number): void => {
   el.style.transform = `translate(${pos[0]}px,${pos[1]}px) scale(${scale}`;
 };
 
 export const translateRel = (el: HTMLElement, percents: sg.NumberPair, scale: number): void => {
-  el.style.transform = `translate(${percents[0]}%,${percents[1]}%) scale(${scale})`;
-};
-
-export const setVisible = (el: HTMLElement, v: boolean): void => {
-  el.style.visibility = v ? 'visible' : 'hidden';
+  el.style.transform = `translate(${percents[0] * scale}%,${percents[1] * scale}%) scale(${scale})`;
 };
 
 export const setDisplay = (el: HTMLElement, v: boolean): void => {
