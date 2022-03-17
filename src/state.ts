@@ -38,6 +38,11 @@ export interface HeadlessState {
     handMap: sg.Hands;
     roles: sg.Role[]; // roles to render in sg-hand
   };
+  spares: {
+    roles: sg.Role[]; // roles to be rendered in sg-spares
+    deleteOnTouch: boolean; // clicking a piece will remove it
+    active: boolean; // activate spare drop mode - won't remove the piece from hand
+  };
   movable: {
     free: boolean; // all moves are valid - board editor
     dests?: sg.Dests; // valid moves. {"7g" ["7f"] "5i" ["4h" "5h" "6h"]}
@@ -141,6 +146,26 @@ export function defaults(): HeadlessState {
       inlined: false,
       handMap: new Map(),
       roles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
+    },
+    spares: {
+      roles: [
+        'king',
+        'rook',
+        'bishop',
+        'gold',
+        'silver',
+        'knight',
+        'lance',
+        'pawn',
+        'dragon',
+        'horse',
+        'promotedsilver',
+        'promotedknight',
+        'promotedlance',
+        'tokin',
+      ],
+      deleteOnTouch: false,
+      active: false,
     },
     movable: {
       free: true,

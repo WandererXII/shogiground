@@ -4,6 +4,7 @@ import * as draw from './draw.js';
 import { isRightButton, samePiece } from './util.js';
 import * as sg from './types.js';
 import { promote } from './promotion.js';
+import { removeFromHand } from './board.js';
 
 type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
@@ -124,14 +125,17 @@ function startDragFromHand(s: State): MouchBind {
         if (s.drawable.piece && samePiece(s.drawable.piece, piece)) s.drawable.piece = undefined;
         else s.drawable.piece = piece;
         s.dom.redraw();
-      } else if (
-        !s.viewOnly &&
-        !drag.unwantedEvent(e) &&
-        (s.activeColor === 'both' || s.activeColor === piece.color) &&
-        s.hands.handMap.get(piece.color)?.get(piece.role)
-      ) {
-        if (e.cancelable !== false) e.preventDefault();
-        drag.dragNewPiece(s, piece, e);
+      } else if (!s.viewOnly && !drag.unwantedEvent(e)) {
+        if (s.spares.deleteOnTouch) {
+          removeFromHand(s, piece);
+          s.dom.redraw();
+        } else if (
+          (s.activeColor === 'both' || s.activeColor === piece.color) &&
+          s.hands.handMap.get(piece.color)?.get(piece.role)
+        ) {
+          if (e.cancelable !== false) e.preventDefault();
+          drag.dragNewPiece(s, piece, e);
+        }
       }
     }
   };

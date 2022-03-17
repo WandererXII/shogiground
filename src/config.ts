@@ -38,6 +38,11 @@ export interface Config {
     inlined?: boolean; // attaches sg-hands directly to sg-wrap, ignores HTMLElements passed to Shogiground
     roles?: sg.Role[]; // roles to render in sg-hand
   };
+  spares?: {
+    roles?: sg.Role[]; // roles to be rendered in sg-spares
+    deleteOnTouch?: boolean; // clicking a piece will remove it
+    active?: boolean; // activate spare drop mode - won't remove the piece from hand
+  };
   movable?: {
     free?: boolean; // all moves are valid - board editor
     dests?: sg.Dests; // valid moves. {"2a" ["3a" "4a"] "1b" ["3a" "3c"]}
@@ -79,7 +84,7 @@ export interface Config {
     showGhost?: boolean; // show ghost of piece being dragged
     showTouchSquareOverlay?: boolean; // show square overlay on the square that is currently being hovered, touch only
     deleteOnDropOff?: boolean; // delete a piece when it is dropped off the board
-    addToHandOnDropOff: boolean; // add a piece to hand when it is dropped on it, requires deleteOnDropOff
+    addToHandOnDropOff?: boolean; // add a piece to hand when it is dropped on it, requires deleteOnDropOff
   };
   selectable?: {
     // disable to enforce dragging over click-click move

@@ -29,7 +29,7 @@ export interface Api {
   move(orig: sg.Key, dest: sg.Key): void;
 
   // perform a drop programmatically
-  drop(piece: sg.Piece, key: sg.Key): void;
+  drop(piece: sg.Piece, key: sg.Key, spare?: boolean): void;
 
   // add and/or remove arbitrary pieces on the board
   setPieces(pieces: sg.PiecesDiff): void;
@@ -47,7 +47,7 @@ export interface Api {
   stopPromotion(): void;
 
   // click a square programmatically
-  selectSquare(key: sg.Key | null, force?: boolean): void;
+  selectSquare(key: sg.Key | null, spare?: boolean, force?: boolean): void;
 
   // select a piece from hand to drop programatically
   selectPiece(piece: sg.Piece | null): void;
@@ -83,7 +83,7 @@ export interface Api {
   redrawAll: sg.Redraw;
 
   // for piece dropping and board editors
-  dragNewPiece(piece: sg.Piece, event: sg.MouchEvent): void;
+  dragNewPiece(piece: sg.Piece, event: sg.MouchEvent, spare?: boolean): void;
 
   // unbinds all events
   // (important for document-wide events like scroll and mousemove)
@@ -137,8 +137,8 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       anim(state => board.baseMove(state, orig, dest), state);
     },
 
-    drop(piece, key): void {
-      anim(state => board.baseDrop(state, piece, key), state);
+    drop(piece, key, spare): void {
+      anim(state => board.baseDrop(state, piece, key, spare), state);
     },
 
     setPieces(pieces): void {
@@ -161,8 +161,8 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       render(state => cancelPromotion(state), state);
     },
 
-    selectSquare(key, force): void {
-      if (key) anim(state => board.selectSquare(state, key, force), state);
+    selectSquare(key, spare, force): void {
+      if (key) anim(state => board.selectSquare(state, key, spare, force), state);
       else if (state.selected) {
         board.unselect(state);
         state.dom.redraw();
@@ -231,8 +231,8 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     redrawAll,
 
-    dragNewPiece(piece, event): void {
-      dragNewPiece(state, piece, event);
+    dragNewPiece(piece, event, spare): void {
+      dragNewPiece(state, piece, event, spare);
     },
 
     destroy(): void {

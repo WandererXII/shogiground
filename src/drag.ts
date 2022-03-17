@@ -22,6 +22,7 @@ export interface DragCurrent {
     originBounds: DOMRect | undefined; // bounds of the piece that initiated the drag
     leftOrigin: boolean; // have we ever left originBounds
     previouslySelectedPiece?: sg.Piece;
+    spare?: boolean; // piece not from hand - won't be removed from hand
   };
 }
 
@@ -46,13 +47,14 @@ export function start(s: State, e: sg.MouchEvent): void {
     e.preventDefault();
   const hadPremove = !!s.premovable.current;
   const hadPredrop = !!s.predroppable.current;
-  if (
+  if (s.spares.deleteOnTouch && piece) s.pieces.delete(orig);
+  else if (
     (s.selectedPiece && board.canDrop(s, s.selectedPiece, orig)) ||
     (s.selected && board.canMove(s, s.selected, orig))
   ) {
-    anim(state => board.selectSquare(state, orig), s);
+    anim(state => board.selectSquare(state, orig, s.spares.active), s);
   } else {
-    board.selectSquare(s, orig);
+    board.selectSquare(s, orig, s.spares.active);
   }
 
   const stillSelected = s.selected === orig,
@@ -99,7 +101,7 @@ function pieceCloseTo(s: State, pos: sg.NumberPair): boolean {
   return false;
 }
 
-export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent): void {
+export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?: boolean): void {
   const previouslySelectedPiece = s.selectedPiece,
     draggedEl = s.dom.elements.dragged,
     position = util.eventPosition(e)!,
@@ -125,6 +127,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent): void 
         originBounds: s.dom.handPiecesBounds().get(util.pieceNameOf(piece)),
         leftOrigin: false,
         previouslySelectedPiece,
+        spare,
       },
     };
 
@@ -227,7 +230,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   const eventPos = util.eventPosition(e) || cur.pos;
   const dest = board.getKeyAtDomPos(eventPos, board.sentePov(s), s.dimensions, s.dom.boardBounds());
   if (dest && cur.started && cur.fromBoard?.orig !== dest) {
-    if (cur.fromOutside) board.userDrop(s, cur.piece, dest);
+    if (cur.fromOutside) board.userDrop(s, cur.piece, dest, cur.fromOutside.spare);
     else if (cur.fromBoard) board.userMove(s, cur.fromBoard.orig, dest);
   } else if (s.draggable.deleteOnDropOff && !dest) {
     if (cur.fromBoard) s.pieces.delete(cur.fromBoard.orig);

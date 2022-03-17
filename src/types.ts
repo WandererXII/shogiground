@@ -39,6 +39,8 @@ export interface WrapElements {
   board: HTMLElement;
   handTop?: HTMLElement;
   handBottom?: HTMLElement;
+  sparesTop?: HTMLElement;
+  sparesBottom?: HTMLElement;
 }
 
 export interface Elements {
