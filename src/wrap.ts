@@ -81,11 +81,18 @@ export function renderWrap(wrapElements: WrapElements, s: HeadlessState, relativ
   let freePieces: HTMLElement | undefined;
 
   if (s.drawable.visible && !relative) {
-    svg = setAttributes(createSVGElement('svg'), { class: 'sg-shapes' });
+    svg = setAttributes(createSVGElement('svg'), {
+      class: 'sg-shapes',
+      viewBox: `-0.5 -0.5 ${s.dimensions.files} ${s.dimensions.ranks}`,
+      preserveAspectRatio: 'none',
+    });
     svg.appendChild(createSVGElement('defs'));
     svg.appendChild(createSVGElement('g'));
 
-    customSvg = setAttributes(createSVGElement('svg'), { class: 'sg-custom-svgs' });
+    customSvg = setAttributes(createSVGElement('svg'), {
+      class: 'sg-custom-svgs',
+      viewBox: `0 0 ${s.dimensions.files} ${s.dimensions.ranks}`,
+    });
     customSvg.appendChild(createSVGElement('g'));
 
     freePieces = createEl('sg-free-pieces');
