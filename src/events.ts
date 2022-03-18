@@ -37,16 +37,18 @@ export function bindBoard(s: State, onResize: () => void): void {
 }
 
 export function bindHands(s: State, onResize: () => void): void {
-  if (s.viewOnly || !s.dom.hands.elements.top || !s.dom.hands.elements.bottom) return;
-  bindHand(s, s.dom.hands.elements.top, onResize);
-  bindHand(s, s.dom.hands.elements.bottom, onResize);
+  if (s.dom.hands.elements.top) bindHand(s, s.dom.hands.elements.top, onResize);
+  if (s.dom.hands.elements.bottom) bindHand(s, s.dom.hands.elements.bottom, onResize);
 }
 
 function bindHand(s: State, handEl: HTMLElement, onResize: () => void): void {
   if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(handEl);
 
-  handEl.addEventListener('mousedown', startDragFromHand(s) as EventListener, { passive: false });
-  handEl.addEventListener('touchstart', startDragFromHand(s) as EventListener, {
+  if (s.viewOnly) return;
+
+  const onStart = startDragFromHand(s);
+  handEl.addEventListener('mousedown', onStart as EventListener, { passive: false });
+  handEl.addEventListener('touchstart', onStart as EventListener, {
     passive: false,
   });
 

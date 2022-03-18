@@ -1887,16 +1887,19 @@ var Shogiground = (function () {
         }
     }
     function bindHands(s, onResize) {
-        if (s.viewOnly || !s.dom.hands.elements.top || !s.dom.hands.elements.bottom)
-            return;
-        bindHand(s, s.dom.hands.elements.top, onResize);
-        bindHand(s, s.dom.hands.elements.bottom, onResize);
+        if (s.dom.hands.elements.top)
+            bindHand(s, s.dom.hands.elements.top, onResize);
+        if (s.dom.hands.elements.bottom)
+            bindHand(s, s.dom.hands.elements.bottom, onResize);
     }
     function bindHand(s, handEl, onResize) {
         if ('ResizeObserver' in window)
             new ResizeObserver(onResize).observe(handEl);
-        handEl.addEventListener('mousedown', startDragFromHand(s), { passive: false });
-        handEl.addEventListener('touchstart', startDragFromHand(s), {
+        if (s.viewOnly)
+            return;
+        const onStart = startDragFromHand(s);
+        handEl.addEventListener('mousedown', onStart, { passive: false });
+        handEl.addEventListener('touchstart', onStart, {
             passive: false,
         });
         if (s.disableContextMenu || s.drawable.enabled)
