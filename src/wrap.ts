@@ -31,19 +31,7 @@ export function wrapBoard(wrapElements: WrapElements, s: HeadlessState): DomBoar
   //       coords.ranks
   //       coords.files
 
-  wrapElements.board.innerHTML = '';
-
-  // ensure the sg-wrap class is set
-  // so bounds calculation can use the CSS width/height values
-  // add that class yourself to the element before calling shogiground
-  // for a slight performance improvement! (avoids recomputing style)
-  wrapElements.board.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
-
-  for (const c of colors) wrapElements.board.classList.toggle('orientation-' + c, s.orientation === c);
-  wrapElements.board.classList.toggle('manipulable', !s.viewOnly);
-
   const board = createEl('sg-board');
-  wrapElements.board.appendChild(board);
 
   const squares = renderSquares(s.dimensions, s.orientation);
   board.appendChild(squares);
@@ -101,6 +89,16 @@ export function wrapBoard(wrapElements: WrapElements, s: HeadlessState): DomBoar
       renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, s.dimensions.files)
     );
   }
+
+  wrapElements.board.innerHTML = '';
+
+  // ensure the sg-wrap class and dimensions class i set beforehand to avoid recomputing style
+  wrapElements.board.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
+
+  for (const c of colors) wrapElements.board.classList.toggle('orientation-' + c, s.orientation === c);
+  wrapElements.board.classList.toggle('manipulable', !s.viewOnly);
+
+  wrapElements.board.appendChild(board);
 
   return {
     board,
