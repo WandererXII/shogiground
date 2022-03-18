@@ -1,11 +1,21 @@
 import { HeadlessState } from './state.js';
 import { createEl, opposite, pieceNameOf, pos2key, setDisplay } from './util.js';
-import { colors, Notation, Elements, Dimensions, SquareNode, Color, PieceNode, Role, WrapElements } from './types.js';
+import {
+  colors,
+  Notation,
+  Dimensions,
+  SquareNode,
+  Color,
+  PieceNode,
+  Role,
+  WrapElements,
+  DomBoardElements,
+  DomHandsElements,
+} from './types.js';
 import { createSVGElement, setAttributes } from './shapes.js';
 
-export function renderWrap(wrapElements: WrapElements, s: HeadlessState): Elements {
+export function wrapBoard(wrapElements: WrapElements, s: HeadlessState): DomBoardElements {
   // .sg-wrap (element passed to Shogiground)
-  //     sg-hand  // if inlined
   //     sg-board
   //       sg-squares
   //       sg-pieces
@@ -20,7 +30,6 @@ export function renderWrap(wrapElements: WrapElements, s: HeadlessState): Elemen
   //     sg-free-pieces
   //       coords.ranks
   //       coords.files
-  //     sg-hand // if inlined
 
   wrapElements.board.innerHTML = '';
 
@@ -55,25 +64,6 @@ export function renderWrap(wrapElements: WrapElements, s: HeadlessState): Elemen
     squareOver = createEl('sg-square-over');
     setDisplay(squareOver, !!s.draggable.current?.touch);
     board.appendChild(squareOver);
-  }
-
-  let handTop, handBottom;
-  if (s.hands.inlined || wrapElements.handTop || wrapElements.handBottom) {
-    handTop = renderHand(opposite(s.orientation), s.hands.roles, 'top');
-    handBottom = renderHand(s.orientation, s.hands.roles, 'bottom');
-    if (s.hands.inlined) {
-      wrapElements.board.insertBefore(handTop, board);
-      wrapElements.board.insertBefore(handBottom, board.nextElementSibling);
-    } else {
-      if (wrapElements.handTop) {
-        wrapElements.handTop.innerHTML = '';
-        wrapElements.handTop.appendChild(handTop);
-      }
-      if (wrapElements.handBottom) {
-        wrapElements.handBottom.innerHTML = '';
-        wrapElements.handBottom.appendChild(handBottom);
-      }
-    }
   }
 
   let svg: SVGElement | undefined;
@@ -122,8 +112,31 @@ export function renderWrap(wrapElements: WrapElements, s: HeadlessState): Elemen
     svg,
     customSvg,
     freePieces,
-    handTop,
-    handBottom,
+  };
+}
+
+export function wrapHands(wrapElements: WrapElements, s: HeadlessState): DomHandsElements {
+  let handTop, handBottom;
+  if (s.hands.inlined || wrapElements.handTop || wrapElements.handBottom) {
+    handTop = renderHand(opposite(s.orientation), s.hands.roles, 'top');
+    handBottom = renderHand(s.orientation, s.hands.roles, 'bottom');
+    if (s.hands.inlined && wrapElements.board.firstElementChild) {
+      wrapElements.board.insertBefore(handTop, wrapElements.board.firstElementChild);
+      wrapElements.board.insertBefore(handBottom, wrapElements.board.firstElementChild.nextElementSibling);
+    } else {
+      if (wrapElements.handTop) {
+        wrapElements.handTop.innerHTML = '';
+        wrapElements.handTop.appendChild(handTop);
+      }
+      if (wrapElements.handBottom) {
+        wrapElements.handBottom.innerHTML = '';
+        wrapElements.handBottom.appendChild(handBottom);
+      }
+    }
+  }
+  return {
+    top: handTop,
+    bottom: handBottom,
   };
 }
 

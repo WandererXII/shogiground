@@ -16,7 +16,7 @@ export function cancelPromotion(s: State): void {
 }
 
 export function renderPromotions(s: State): void {
-  const promotionEl = s.dom.elements.promotion;
+  const promotionEl = s.dom.board.elements.promotion;
   if (!s.promotion.active || !s.promotion.key || !s.promotion.pieces || !promotionEl) return;
 
   const asSente = board.sentePov(s),
@@ -51,7 +51,7 @@ export function promote(s: State, e: sg.MouchEvent): void {
   } else board.callUserFunction(s.promotion.cancel);
 
   cancelPromotion(s);
-  setDisplay(s.dom.elements.promotion!, false);
+  setDisplay(s.dom.board.elements.promotion!, false);
 
   s.dom.redraw();
 }

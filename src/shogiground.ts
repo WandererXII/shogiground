@@ -1,7 +1,7 @@
 import { Api, start } from './api.js';
 import { Config, configure } from './config.js';
 import { HeadlessState, State, defaults } from './state.js';
-import { renderWrap } from './wrap.js';
+import { wrapBoard, wrapHands } from './wrap.js';
 import * as events from './events.js';
 import { render } from './render.js';
 import * as shapes from './shapes.js';
@@ -16,26 +16,27 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
 
   function redrawAll(): State {
     const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
-    const elements = renderWrap(wrapElements, maybeState),
+    const boardElements = wrapBoard(wrapElements, maybeState),
+      handElements = wrapHands(wrapElements, maybeState),
       boardBounds = util.memo(() => {
         console.log('getBoundingClientRect');
 
-        return elements.pieces.getBoundingClientRect();
+        return boardElements.pieces.getBoundingClientRect();
       }),
       handsBounds = util.memo(() => {
         console.log('getBoundingClientRect2');
 
         const handsRects = new Map();
-        if (elements.handTop) handsRects.set('top', elements.handTop.getBoundingClientRect());
-        if (elements.handBottom) handsRects.set('bottom', elements.handBottom.getBoundingClientRect());
+        if (handElements.top) handsRects.set('top', handElements.top.getBoundingClientRect());
+        if (handElements.bottom) handsRects.set('bottom', handElements.bottom.getBoundingClientRect());
         return handsRects;
       }),
       handPiecesBounds = util.memo(() => {
         console.log('getBoundingClientRect3');
 
         const handPiecesRects = new Map();
-        if (elements.handTop) {
-          let el = elements.handTop.firstElementChild as PieceNode | undefined;
+        if (handElements.top) {
+          let el = handElements.top.firstElementChild as PieceNode | undefined;
           while (el) {
             const role = el.sgRole;
             const color = el.sgColor;
@@ -44,8 +45,8 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
             el = el.nextElementSibling as PieceNode | undefined;
           }
         }
-        if (elements.handBottom) {
-          let el = elements.handBottom.firstElementChild as PieceNode | undefined;
+        if (handElements.bottom) {
+          let el = handElements.bottom.firstElementChild as PieceNode | undefined;
           while (el) {
             const role = el.sgRole;
             const color = el.sgColor;
@@ -59,8 +60,8 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
       redrawNow = (skipShapes?: boolean): void => {
         render(state);
         renderPromotions(state);
-        if (!skipShapes && elements.svg && elements.customSvg && elements.freePieces)
-          shapes.renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
+        if (!skipShapes && boardElements.svg && boardElements.customSvg && boardElements.freePieces)
+          shapes.renderShapes(state, boardElements.svg, boardElements.customSvg, boardElements.freePieces);
       },
       boundsUpdated = (): void => {
         boardBounds.clear();
@@ -69,10 +70,15 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
       };
     const state = maybeState as State;
     state.dom = {
-      elements,
-      boardBounds,
-      handsBounds,
-      handPiecesBounds,
+      board: {
+        elements: boardElements,
+        bounds: boardBounds,
+      },
+      hands: {
+        elements: handElements,
+        pieceBounds: handPiecesBounds,
+        bounds: handsBounds,
+      },
       redraw: debounceRedraw(redrawNow),
       redrawNow,
       unbind: prevUnbind,
@@ -82,7 +88,7 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
     events.bindBoard(state, boundsUpdated);
     events.bindHands(state);
     if (!prevUnbind) state.dom.unbind = events.bindDocument(state, boundsUpdated);
-    state.events.insert && state.events.insert(elements);
+    state.events.insert && state.events.insert(boardElements, handElements);
     return state;
   }
 

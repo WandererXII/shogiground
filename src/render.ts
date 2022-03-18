@@ -11,12 +11,12 @@ export function render(s: State): void {
   const asSente: boolean = sentePov(s),
     scaleDown = s.scaleDownPieces ? 0.5 : 1,
     posToTranslate = posToTranslateRel(s.dimensions),
-    squaresEl: HTMLElement = s.dom.elements.squares,
-    piecesEl: HTMLElement = s.dom.elements.pieces,
-    draggedEl: sg.PieceNode | undefined = s.dom.elements.dragged,
-    squareOverEl: HTMLElement | undefined = s.dom.elements.squareOver,
-    handTopEl: HTMLElement | undefined = s.dom.elements.handTop,
-    handBotEl: HTMLElement | undefined = s.dom.elements.handBottom,
+    squaresEl: HTMLElement = s.dom.board.elements.squares,
+    piecesEl: HTMLElement = s.dom.board.elements.pieces,
+    draggedEl: sg.PieceNode | undefined = s.dom.board.elements.dragged,
+    squareOverEl: HTMLElement | undefined = s.dom.board.elements.squareOver,
+    handTopEl: HTMLElement | undefined = s.dom.hands.elements.top,
+    handBotEl: HTMLElement | undefined = s.dom.hands.elements.bottom,
     pieces: sg.Pieces = s.pieces,
     curAnim: AnimCurrent | undefined = s.animation.current,
     anims: AnimVectors = curAnim ? curAnim.plan.anims : new Map(),
@@ -163,7 +163,7 @@ export function render(s: State): void {
 }
 
 function removeNodes(s: State, nodes: HTMLElement[]): void {
-  for (const node of nodes) s.dom.elements.pieces.removeChild(node);
+  for (const node of nodes) s.dom.board.elements.pieces.removeChild(node);
 }
 
 function computeSquareClasses(s: State): SquareClasses {

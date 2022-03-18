@@ -43,7 +43,7 @@ export interface WrapElements {
   sparesBottom?: HTMLElement;
 }
 
-export interface Elements {
+export interface DomBoardElements {
   board: HTMLElement;
   squares: HTMLElement;
   pieces: HTMLElement;
@@ -53,14 +53,24 @@ export interface Elements {
   svg?: SVGElement;
   customSvg?: SVGElement;
   freePieces?: HTMLElement;
-  handTop?: HTMLElement;
-  handBottom?: HTMLElement;
+}
+export interface DomBoard {
+  elements: DomBoardElements;
+  bounds: Memo<DOMRect>;
+}
+
+export interface DomHandsElements {
+  top?: HTMLElement;
+  bottom?: HTMLElement;
+}
+export interface DomHands {
+  elements: DomHandsElements;
+  pieceBounds: Memo<Map<PieceName, DOMRect>>;
+  bounds: Memo<Map<'top' | 'bottom', DOMRect>>;
 }
 export interface Dom {
-  elements: Elements;
-  boardBounds: Memo<DOMRect>;
-  handsBounds: Memo<Map<'top' | 'bottom', DOMRect>>;
-  handPiecesBounds: Memo<Map<PieceName, DOMRect>>;
+  board: DomBoard;
+  hands: DomHands;
   redraw: () => void;
   redrawNow: (skipSvg?: boolean) => void;
   unbind?: Unbind;

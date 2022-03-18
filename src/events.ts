@@ -10,12 +10,12 @@ type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
 
 export function bindBoard(s: State, boundsUpdated: () => void): void {
-  if ('ResizeObserver' in window) new ResizeObserver(boundsUpdated).observe(s.dom.elements.board);
+  if ('ResizeObserver' in window) new ResizeObserver(boundsUpdated).observe(s.dom.board.elements.board);
 
   if (s.viewOnly) return;
 
-  const piecesEl = s.dom.elements.pieces;
-  const promotionEl = s.dom.elements.promotion;
+  const piecesEl = s.dom.board.elements.pieces;
+  const promotionEl = s.dom.board.elements.promotion;
 
   // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
   const onStart = startDragOrDraw(s);
@@ -37,17 +37,17 @@ export function bindBoard(s: State, boundsUpdated: () => void): void {
 }
 
 export function bindHands(s: State): void {
-  if (s.viewOnly || !s.dom.elements.handTop || !s.dom.elements.handBottom) return;
-  bindHand(s, s.dom.elements.handTop);
-  bindHand(s, s.dom.elements.handBottom);
+  if (s.viewOnly || !s.dom.hands.elements.top || !s.dom.hands.elements.bottom) return;
+  bindHand(s, s.dom.hands.elements.top);
+  bindHand(s, s.dom.hands.elements.bottom);
 }
 
 function bindHand(s: State, handEl: HTMLElement): void {
   if ('ResizeObserver' in window)
     new ResizeObserver(() => {
-      s.dom.boardBounds.clear();
-      s.dom.handPiecesBounds.clear();
-      s.dom.handsBounds.clear();
+      s.dom.board.bounds.clear();
+      s.dom.hands.pieceBounds.clear();
+      s.dom.hands.bounds.clear();
     }).observe(handEl);
 
   handEl.addEventListener('mousedown', startDragFromHand(s) as EventListener, { passive: false });
@@ -76,9 +76,9 @@ export function bindDocument(s: State, boundsUpdated: () => void): sg.Unbind {
     for (const ev of ['touchend', 'mouseup']) unbinds.push(unbindable(document, ev, onend as EventListener));
 
     const onScroll = () => {
-      s.dom.boardBounds.clear();
-      s.dom.handsBounds.clear();
-      s.dom.handPiecesBounds.clear();
+      s.dom.board.bounds.clear();
+      s.dom.hands.bounds.clear();
+      s.dom.hands.pieceBounds.clear();
     };
     unbinds.push(unbindable(document, 'scroll', onScroll, { capture: true, passive: true }));
     unbinds.push(unbindable(window, 'resize', onScroll, { passive: true }));

@@ -89,21 +89,20 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
     } else if (preP) missings.push(preP);
   }
   if (current.animation.hands) {
-    const boardBounds = current.dom.boardBounds(),
-      handPiecesBounds = current.dom.handPiecesBounds();
     for (const color of sg.colors) {
       const curH = current.hands.handMap.get(color),
         preH = prevHands.get(color);
       if (preH && curH) {
         for (const [role, n] of curH) {
           const piece: sg.Piece = { role, color },
-            handPieceOffset = handPiecesBounds.get(util.pieceNameOf(piece)),
             preN = preH.get(role);
-          if (handPieceOffset && preN && preN > n) {
-            missings.push({
-              pos: posOfOutsideEl(handPieceOffset, sentePov(current), current.dimensions, boardBounds),
-              piece: piece,
-            });
+          if (preN && preN > n) {
+            const handPieceOffset = current.dom.hands.pieceBounds().get(util.pieceNameOf(piece));
+            if (handPieceOffset)
+              missings.push({
+                pos: posOfOutsideEl(handPieceOffset, sentePov(current), current.dimensions, current.dom.board.bounds()),
+                piece: piece,
+              });
           }
         }
       }
