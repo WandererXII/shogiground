@@ -1860,9 +1860,9 @@ var Shogiground = (function () {
         return hand;
     }
 
-    function bindBoard(s, boundsUpdated) {
+    function bindBoard(s, onResize) {
         if ('ResizeObserver' in window)
-            new ResizeObserver(boundsUpdated).observe(s.dom.board.elements.board);
+            new ResizeObserver(onResize).observe(s.dom.board.elements.board);
         if (s.viewOnly)
             return;
         const piecesEl = s.dom.board.elements.pieces;
@@ -1886,19 +1886,15 @@ var Shogiground = (function () {
                 promotionEl.addEventListener('contextmenu', e => e.preventDefault());
         }
     }
-    function bindHands(s) {
+    function bindHands(s, onResize) {
         if (s.viewOnly || !s.dom.hands.elements.top || !s.dom.hands.elements.bottom)
             return;
-        bindHand(s, s.dom.hands.elements.top);
-        bindHand(s, s.dom.hands.elements.bottom);
+        bindHand(s, s.dom.hands.elements.top, onResize);
+        bindHand(s, s.dom.hands.elements.bottom, onResize);
     }
-    function bindHand(s, handEl) {
+    function bindHand(s, handEl, onResize) {
         if ('ResizeObserver' in window)
-            new ResizeObserver(() => {
-                s.dom.board.bounds.clear();
-                s.dom.hands.pieceBounds.clear();
-                s.dom.hands.bounds.clear();
-            }).observe(handEl);
+            new ResizeObserver(onResize).observe(handEl);
         handEl.addEventListener('mousedown', startDragFromHand(s), { passive: false });
         handEl.addEventListener('touchstart', startDragFromHand(s), {
             passive: false,
@@ -1907,12 +1903,12 @@ var Shogiground = (function () {
             handEl.addEventListener('contextmenu', e => e.preventDefault());
     }
     // returns the unbind function
-    function bindDocument(s, boundsUpdated) {
+    function bindDocument(s, onResize) {
         const unbinds = [];
         // Old versions of Edge and Safari do not support ResizeObserver. Send
         // shogiground.resize if a user action has changed the bounds of the board.
         if (!('ResizeObserver' in window)) {
-            unbinds.push(unbindable(document.body, 'shogiground.resize', boundsUpdated));
+            unbinds.push(unbindable(document.body, 'shogiground.resize', onResize));
         }
         if (!s.viewOnly) {
             const onmove = dragOrDraw(s, move, move$1);
@@ -1921,13 +1917,8 @@ var Shogiground = (function () {
                 unbinds.push(unbindable(document, ev, onmove));
             for (const ev of ['touchend', 'mouseup'])
                 unbinds.push(unbindable(document, ev, onend));
-            const onScroll = () => {
-                s.dom.board.bounds.clear();
-                s.dom.hands.bounds.clear();
-                s.dom.hands.pieceBounds.clear();
-            };
-            unbinds.push(unbindable(document, 'scroll', onScroll, { capture: true, passive: true }));
-            unbinds.push(unbindable(window, 'resize', onScroll, { passive: true }));
+            unbinds.push(unbindable(document, 'scroll', onResize, { capture: true, passive: true }));
+            unbinds.push(unbindable(window, 'resize', onResize, { passive: true }));
         }
         return () => unbinds.forEach(f => f());
     }
@@ -2222,9 +2213,7 @@ var Shogiground = (function () {
                 if (handElements.top) {
                     let el = handElements.top.firstElementChild;
                     while (el) {
-                        const role = el.sgRole;
-                        const color = el.sgColor;
-                        const piece = { role, color };
+                        const piece = { role: el.sgRole, color: el.sgColor };
                         handPiecesRects.set(pieceNameOf(piece), el.getBoundingClientRect());
                         el = el.nextElementSibling;
                     }
@@ -2232,9 +2221,7 @@ var Shogiground = (function () {
                 if (handElements.bottom) {
                     let el = handElements.bottom.firstElementChild;
                     while (el) {
-                        const role = el.sgRole;
-                        const color = el.sgColor;
-                        const piece = { role, color };
+                        const piece = { role: el.sgRole, color: el.sgColor };
                         handPiecesRects.set(pieceNameOf(piece), el.getBoundingClientRect());
                         el = el.nextElementSibling;
                     }
@@ -2245,7 +2232,7 @@ var Shogiground = (function () {
                 renderPromotions(state);
                 if (!skipShapes && boardElements.svg && boardElements.customSvg && boardElements.freePieces)
                     renderShapes(state, boardElements.svg, boardElements.customSvg, boardElements.freePieces);
-            }, boundsUpdated = () => {
+            }, onResize = () => {
                 boardBounds.clear();
                 handsBounds.clear();
                 handPiecesBounds.clear();
@@ -2267,10 +2254,10 @@ var Shogiground = (function () {
             };
             state.drawable.prevSvgHash = '';
             redrawNow(false);
-            bindBoard(state, boundsUpdated);
-            bindHands(state);
+            bindBoard(state, onResize);
+            bindHands(state, onResize);
             if (!prevUnbind)
-                state.dom.unbind = bindDocument(state, boundsUpdated);
+                state.dom.unbind = bindDocument(state, onResize);
             state.events.insert && state.events.insert(boardElements, handElements);
             return state;
         }

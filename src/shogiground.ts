@@ -38,9 +38,7 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
         if (handElements.top) {
           let el = handElements.top.firstElementChild as PieceNode | undefined;
           while (el) {
-            const role = el.sgRole;
-            const color = el.sgColor;
-            const piece = { role, color };
+            const piece = { role: el.sgRole, color: el.sgColor };
             handPiecesRects.set(util.pieceNameOf(piece), el.getBoundingClientRect());
             el = el.nextElementSibling as PieceNode | undefined;
           }
@@ -48,9 +46,7 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
         if (handElements.bottom) {
           let el = handElements.bottom.firstElementChild as PieceNode | undefined;
           while (el) {
-            const role = el.sgRole;
-            const color = el.sgColor;
-            const piece = { role, color };
+            const piece = { role: el.sgRole, color: el.sgColor };
             handPiecesRects.set(util.pieceNameOf(piece), el.getBoundingClientRect());
             el = el.nextElementSibling as PieceNode | undefined;
           }
@@ -63,7 +59,7 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
         if (!skipShapes && boardElements.svg && boardElements.customSvg && boardElements.freePieces)
           shapes.renderShapes(state, boardElements.svg, boardElements.customSvg, boardElements.freePieces);
       },
-      boundsUpdated = (): void => {
+      onResize = (): void => {
         boardBounds.clear();
         handsBounds.clear();
         handPiecesBounds.clear();
@@ -85,9 +81,9 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
     };
     state.drawable.prevSvgHash = '';
     redrawNow(false);
-    events.bindBoard(state, boundsUpdated);
-    events.bindHands(state);
-    if (!prevUnbind) state.dom.unbind = events.bindDocument(state, boundsUpdated);
+    events.bindBoard(state, onResize);
+    events.bindHands(state, onResize);
+    if (!prevUnbind) state.dom.unbind = events.bindDocument(state, onResize);
     state.events.insert && state.events.insert(boardElements, handElements);
     return state;
   }

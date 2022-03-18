@@ -9,8 +9,8 @@ import { removeFromHand } from './board.js';
 type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
 
-export function bindBoard(s: State, boundsUpdated: () => void): void {
-  if ('ResizeObserver' in window) new ResizeObserver(boundsUpdated).observe(s.dom.board.elements.board);
+export function bindBoard(s: State, onResize: () => void): void {
+  if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(s.dom.board.elements.board);
 
   if (s.viewOnly) return;
 
@@ -36,19 +36,14 @@ export function bindBoard(s: State, boundsUpdated: () => void): void {
   }
 }
 
-export function bindHands(s: State): void {
+export function bindHands(s: State, onResize: () => void): void {
   if (s.viewOnly || !s.dom.hands.elements.top || !s.dom.hands.elements.bottom) return;
-  bindHand(s, s.dom.hands.elements.top);
-  bindHand(s, s.dom.hands.elements.bottom);
+  bindHand(s, s.dom.hands.elements.top, onResize);
+  bindHand(s, s.dom.hands.elements.bottom, onResize);
 }
 
-function bindHand(s: State, handEl: HTMLElement): void {
-  if ('ResizeObserver' in window)
-    new ResizeObserver(() => {
-      s.dom.board.bounds.clear();
-      s.dom.hands.pieceBounds.clear();
-      s.dom.hands.bounds.clear();
-    }).observe(handEl);
+function bindHand(s: State, handEl: HTMLElement, onResize: () => void): void {
+  if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(handEl);
 
   handEl.addEventListener('mousedown', startDragFromHand(s) as EventListener, { passive: false });
   handEl.addEventListener('touchstart', startDragFromHand(s) as EventListener, {
@@ -59,13 +54,13 @@ function bindHand(s: State, handEl: HTMLElement): void {
 }
 
 // returns the unbind function
-export function bindDocument(s: State, boundsUpdated: () => void): sg.Unbind {
+export function bindDocument(s: State, onResize: () => void): sg.Unbind {
   const unbinds: sg.Unbind[] = [];
 
   // Old versions of Edge and Safari do not support ResizeObserver. Send
   // shogiground.resize if a user action has changed the bounds of the board.
   if (!('ResizeObserver' in window)) {
-    unbinds.push(unbindable(document.body, 'shogiground.resize', boundsUpdated));
+    unbinds.push(unbindable(document.body, 'shogiground.resize', onResize));
   }
 
   if (!s.viewOnly) {
@@ -75,13 +70,8 @@ export function bindDocument(s: State, boundsUpdated: () => void): sg.Unbind {
     for (const ev of ['touchmove', 'mousemove']) unbinds.push(unbindable(document, ev, onmove as EventListener));
     for (const ev of ['touchend', 'mouseup']) unbinds.push(unbindable(document, ev, onend as EventListener));
 
-    const onScroll = () => {
-      s.dom.board.bounds.clear();
-      s.dom.hands.bounds.clear();
-      s.dom.hands.pieceBounds.clear();
-    };
-    unbinds.push(unbindable(document, 'scroll', onScroll, { capture: true, passive: true }));
-    unbinds.push(unbindable(window, 'resize', onScroll, { passive: true }));
+    unbinds.push(unbindable(document, 'scroll', onResize, { capture: true, passive: true }));
+    unbinds.push(unbindable(window, 'resize', onResize, { passive: true }));
   }
 
   return () => unbinds.forEach(f => f());
