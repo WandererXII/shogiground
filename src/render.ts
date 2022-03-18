@@ -168,7 +168,7 @@ function removeNodes(s: State, nodes: HTMLElement[]): void {
 
 function computeSquareClasses(s: State): SquareClasses {
   const squares: SquareClasses = new Map();
-  if (s.lastMove && s.highlight.lastMove) for (const k of s.lastMove) addSquare(squares, k, 'last-move');
+  if (s.lastDests && s.highlight.lastDests) for (const k of s.lastDests) addSquare(squares, k, 'last-dest');
   if (s.check && s.highlight.check) addSquare(squares, s.check, 'check');
   if (s.draggable.current?.hovering) addSquare(squares, s.draggable.current.hovering, 'hover');
   if (s.selected) {
@@ -178,12 +178,12 @@ function computeSquareClasses(s: State): SquareClasses {
       const dests = s.movable.dests?.get(s.selected);
       if (dests)
         for (const k of dests) {
-          addSquare(squares, k, 'move-dest' + (s.pieces.has(k) ? ' oc' : ''));
+          addSquare(squares, k, 'dest' + (s.pieces.has(k) ? ' oc' : ''));
         }
       const pDests = s.premovable.dests;
       if (pDests)
         for (const k of pDests) {
-          addSquare(squares, k, 'premove-dest' + (s.pieces.has(k) ? ' oc' : ''));
+          addSquare(squares, k, 'pre-dest' + (s.pieces.has(k) ? ' oc' : ''));
         }
     }
   } else if (s.selectedPiece) {
@@ -191,18 +191,18 @@ function computeSquareClasses(s: State): SquareClasses {
       const dests = s.droppable.dests?.get(s.selectedPiece.role);
       if (dests)
         for (const k of dests) {
-          addSquare(squares, k, 'move-dest');
+          addSquare(squares, k, 'dest');
         }
       const pDests = s.predroppable.dests;
       if (pDests)
         for (const k of pDests) {
-          addSquare(squares, k, 'premove-dest' + (s.pieces.has(k) ? ' oc' : ''));
+          addSquare(squares, k, 'pre-dest' + (s.pieces.has(k) ? ' oc' : ''));
         }
     }
   }
   const premove = s.premovable.current;
-  if (premove) for (const k of premove) addSquare(squares, k, 'current-premove');
-  else if (s.predroppable.current) addSquare(squares, s.predroppable.current.key, 'current-premove');
+  if (premove) for (const k of premove) addSquare(squares, k, 'current-pre');
+  else if (s.predroppable.current) addSquare(squares, s.predroppable.current.key, 'current-pre');
 
   return squares;
 }
@@ -223,6 +223,7 @@ function updateHand(s: State, handEl: HTMLElement): void {
     pieceEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
     pieceEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
     pieceEl.classList.toggle('drawing', !!s.drawable.piece && samePiece(s.drawable.piece, piece));
+    pieceEl.classList.toggle('current-pre', !!s.predroppable.current && samePiece(s.predroppable.current.piece, piece));
     pieceEl.dataset.nb = num.toString();
     pieceEl = pieceEl.nextElementSibling as sg.PieceNode | undefined;
   }

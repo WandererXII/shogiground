@@ -112,33 +112,33 @@ sg-squares {
   background-size: cover;
   pointer-events: none;
 }
-sg-squares sq.move-dest {
+sg-squares sq.dest {
   background: radial-gradient(rgba(20, 85, 30, 0.5) 22%, #208530 0, rgba(0, 0, 0, 0.3) 0, rgba(0, 0, 0, 0) 0);
 }
-sg-squares sq.premove-dest {
+sg-squares sq.pre-dest {
   background: radial-gradient(rgba(20, 30, 85, 0.5) 22%, #203085 0, rgba(0, 0, 0, 0.3) 0, rgba(0, 0, 0, 0) 0);
 }
-sg-squares sq.oc.move-dest {
+sg-squares sq.oc.dest {
   background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 85, 0, 0.3) 80%);
 }
-sg-squares sq.oc.premove-dest {
+sg-squares sq.oc.pre-dest {
   background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 30, 85, 0.2) 80%);
 }
-sg-squares sq.last-move.oc.move-dest {
+sg-squares sq.last-dest.oc.dest {
   background: radial-gradient(rgba(155, 199, 0, 0.41) 0%, rgba(155, 199, 0, 0.41) 80%, rgba(20, 85, 0, 0.3) 80%);
 }
-sg-squares sq.last-move.oc.premove-dest {
+sg-squares sq.last-dest.oc.pre-dest {
   background: radial-gradient(rgba(155, 199, 0, 0.41) 0%, rgba(155, 199, 0, 0.41) 80%, rgba(20, 30, 85, 0.2) 80%);
 }
-sg-squares sq.move-dest.hover,
-sg-squares sq.last-move.oc.move-dest.hover {
+sg-squares sq.dest.hover,
+sg-squares sq.last-dest.oc.dest.hover {
   background: rgba(20, 85, 30, 0.3);
 }
-sg-squares sq.premove-dest.hover,
-sg-squares sq.last-move.oc.premove-dest.hover {
+sg-squares sq.pre-dest.hover,
+sg-squares sq.last-dest.oc.pre-dest.hover {
   background: rgba(20, 30, 85, 0.2);
 }
-sg-squares sq.last-move {
+sg-squares sq.last-dest {
   background-color: rgba(155, 199, 0, 0.41);
 }
 sg-squares sq.selected {
@@ -156,7 +156,7 @@ sg-squares sq.check {
     rgba(158, 0, 0, 0) 100%
   );
 }
-sg-squares sq.current-premove {
+sg-squares sq.current-pre {
   background-color: rgba(20, 30, 85, 0.5);
 }
 sg-pieces piece.anim {

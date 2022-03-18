@@ -188,7 +188,7 @@ var Shogiground = (function () {
         state.animation.current = state.draggable.current = state.selected = state.selectedPiece = undefined;
     }
     function reset(state) {
-        state.lastMove = undefined;
+        state.lastDests = undefined;
         state.animation.current = state.draggable.current = undefined;
         unselect(state);
         unsetPremove(state);
@@ -245,7 +245,7 @@ var Shogiground = (function () {
         callUserFunction(state.events.move, orig, dest, captured);
         state.pieces.set(dest, origPiece);
         state.pieces.delete(orig);
-        state.lastMove = [orig, dest];
+        state.lastDests = [orig, dest];
         state.check = undefined;
         callUserFunction(state.events.change);
         return captured || true;
@@ -255,7 +255,7 @@ var Shogiground = (function () {
             return false;
         callUserFunction(state.events.drop, piece, key);
         state.pieces.set(key, piece);
-        state.lastMove = [key];
+        state.lastDests = [key];
         if (!spare)
             removeFromHand(state, piece);
         state.check = undefined;
@@ -681,13 +681,13 @@ var Shogiground = (function () {
         // apply config values that could be undefined yet meaningful
         if ('check' in config)
             setCheck(state, config.check || false);
-        if ('lastMove' in config && !config.lastMove)
-            state.lastMove = undefined;
+        if ('lastDests' in config && !config.lastDests)
+            state.lastDests = undefined;
         // in case of drop last move, there's a single square.
         // if the previous last move had two squares,
         // the merge algorithm will incorrectly keep the second square.
-        else if (config.lastMove)
-            state.lastMove = config.lastMove;
+        else if (config.lastDests)
+            state.lastDests = config.lastDests;
         // fix move/premove dests
         if (state.selected)
             setSelected(state, state.selected);
@@ -1356,7 +1356,7 @@ var Shogiground = (function () {
                 notation: 0 /* WESTERN */,
             },
             highlight: {
-                lastMove: true,
+                lastDests: true,
                 check: true,
             },
             animation: {
@@ -2124,9 +2124,9 @@ var Shogiground = (function () {
     function computeSquareClasses(s) {
         var _a, _b, _c;
         const squares = new Map();
-        if (s.lastMove && s.highlight.lastMove)
-            for (const k of s.lastMove)
-                addSquare(squares, k, 'last-move');
+        if (s.lastDests && s.highlight.lastDests)
+            for (const k of s.lastDests)
+                addSquare(squares, k, 'last-dest');
         if (s.check && s.highlight.check)
             addSquare(squares, s.check, 'check');
         if ((_a = s.draggable.current) === null || _a === void 0 ? void 0 : _a.hovering)
@@ -2140,12 +2140,12 @@ var Shogiground = (function () {
                 const dests = (_b = s.movable.dests) === null || _b === void 0 ? void 0 : _b.get(s.selected);
                 if (dests)
                     for (const k of dests) {
-                        addSquare(squares, k, 'move-dest' + (s.pieces.has(k) ? ' oc' : ''));
+                        addSquare(squares, k, 'dest' + (s.pieces.has(k) ? ' oc' : ''));
                     }
                 const pDests = s.premovable.dests;
                 if (pDests)
                     for (const k of pDests) {
-                        addSquare(squares, k, 'premove-dest' + (s.pieces.has(k) ? ' oc' : ''));
+                        addSquare(squares, k, 'pre-dest' + (s.pieces.has(k) ? ' oc' : ''));
                     }
             }
         }
@@ -2154,21 +2154,21 @@ var Shogiground = (function () {
                 const dests = (_c = s.droppable.dests) === null || _c === void 0 ? void 0 : _c.get(s.selectedPiece.role);
                 if (dests)
                     for (const k of dests) {
-                        addSquare(squares, k, 'move-dest');
+                        addSquare(squares, k, 'dest');
                     }
                 const pDests = s.predroppable.dests;
                 if (pDests)
                     for (const k of pDests) {
-                        addSquare(squares, k, 'premove-dest' + (s.pieces.has(k) ? ' oc' : ''));
+                        addSquare(squares, k, 'pre-dest' + (s.pieces.has(k) ? ' oc' : ''));
                     }
             }
         }
         const premove = s.premovable.current;
         if (premove)
             for (const k of premove)
-                addSquare(squares, k, 'current-premove');
+                addSquare(squares, k, 'current-pre');
         else if (s.predroppable.current)
-            addSquare(squares, s.predroppable.current.key, 'current-premove');
+            addSquare(squares, s.predroppable.current.key, 'current-pre');
         return squares;
     }
     function addSquare(squares, key, klass) {
@@ -2188,6 +2188,7 @@ var Shogiground = (function () {
             pieceEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
             pieceEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
             pieceEl.classList.toggle('drawing', !!s.drawable.piece && samePiece(s.drawable.piece, piece));
+            pieceEl.classList.toggle('current-pre', !!s.predroppable.current && samePiece(s.predroppable.current.piece, piece));
             pieceEl.dataset.nb = num.toString();
             pieceEl = pieceEl.nextElementSibling;
         }

@@ -14,7 +14,7 @@ export function toggleOrientation(state: HeadlessState): void {
 }
 
 export function reset(state: HeadlessState): void {
-  state.lastMove = undefined;
+  state.lastDests = undefined;
   state.animation.current = state.draggable.current = undefined;
   unselect(state);
   unsetPremove(state);
@@ -74,7 +74,7 @@ export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.P
   callUserFunction(state.events.move, orig, dest, captured);
   state.pieces.set(dest, origPiece);
   state.pieces.delete(orig);
-  state.lastMove = [orig, dest];
+  state.lastDests = [orig, dest];
   state.check = undefined;
   callUserFunction(state.events.change);
   return captured || true;
@@ -84,7 +84,7 @@ export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, spa
   if (state.pieces.has(key) && !state.droppable.free) return false;
   callUserFunction(state.events.drop, piece, key);
   state.pieces.set(key, piece);
-  state.lastMove = [key];
+  state.lastDests = [key];
   if (!spare) removeFromHand(state, piece);
   state.check = undefined;
   callUserFunction(state.events.change);

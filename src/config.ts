@@ -13,7 +13,7 @@ export interface Config {
   turnColor?: sg.Color; // turn to play. sente | gote
   activeColor?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
   check?: sg.Color | boolean; // true for current color, false to unset
-  lastMove?: sg.Key[]; // squares part of the last move ["3c", "4c"]
+  lastDests?: sg.Key[]; // squares part of the last move or drop ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
   selectedPiece?: sg.Piece; // piece in hand currently selected
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
@@ -26,7 +26,7 @@ export interface Config {
     notation?: sg.Notation;
   };
   highlight?: {
-    lastMove?: boolean; // add last-move class to squares
+    lastDests?: boolean; // add last-dest class to squares
     check?: boolean; // add check class to squares
   };
   animation?: {
@@ -46,7 +46,7 @@ export interface Config {
   movable?: {
     free?: boolean; // all moves are valid - board editor
     dests?: sg.Dests; // valid moves. {"2a" ["3a" "4a"] "1b" ["3a" "3c"]}
-    showDests?: boolean; // whether to add the move-dest class on squares
+    showDests?: boolean; // whether to add the dest class on squares
     events?: {
       after?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
     };
@@ -54,14 +54,14 @@ export interface Config {
   droppable?: {
     free?: boolean; // all drops are valid - board editor
     dests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
-    showDests?: boolean; // whether to add the move-dest class on squares
+    showDests?: boolean; // whether to add the dest class on squares
     events?: {
       after?: (role: sg.Piece, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after the drop has been played
     };
   };
   premovable?: {
     enabled?: boolean; // allow premoves for color that can not move
-    showDests?: boolean; // whether to add the premove-dest class on squares
+    showDests?: boolean; // whether to add the pre-dest class on squares
     dests?: sg.Key[]; // premove destinations for the current selection
     events?: {
       set?: (orig: sg.Key, dest: sg.Key) => void; // called after the premove has been set
@@ -70,7 +70,7 @@ export interface Config {
   };
   predroppable?: {
     enabled?: boolean; // allow predrops for color that can not move
-    showDests?: boolean; // whether to add the premove-dest class on squares for drops
+    showDests?: boolean; // whether to add the pre-dest class on squares for drops
     dests?: sg.Key[]; // premove destinations for the drop selection
     events?: {
       set?: (piece: sg.Piece, key: sg.Key) => void; // called after the predrop has been set
@@ -147,11 +147,11 @@ export function configure(state: HeadlessState, config: Config): void {
 
   // apply config values that could be undefined yet meaningful
   if ('check' in config) setCheck(state, config.check || false);
-  if ('lastMove' in config && !config.lastMove) state.lastMove = undefined;
+  if ('lastDests' in config && !config.lastDests) state.lastDests = undefined;
   // in case of drop last move, there's a single square.
   // if the previous last move had two squares,
   // the merge algorithm will incorrectly keep the second square.
-  else if (config.lastMove) state.lastMove = config.lastMove;
+  else if (config.lastDests) state.lastDests = config.lastDests;
 
   // fix move/premove dests
   if (state.selected) setSelected(state, state.selected);

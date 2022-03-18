@@ -11,7 +11,7 @@ export interface HeadlessState {
   turnColor: sg.Color; // turn to play. sente | gote
   activeColor?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
   check?: sg.Key; // square currently in check "5a"
-  lastMove?: sg.Key[]; // squares part of the last move ["2b"; "8h"]
+  lastDests?: sg.Key[]; // squares part of the last move or drop ["2b"; "8h"]
   selected?: sg.Key; // square currently selected "1a"
   selectedPiece?: sg.Piece; // piece in hand currently selected
   viewOnly: boolean; // don't bind events: the user will never be able to move pieces around
@@ -24,7 +24,7 @@ export interface HeadlessState {
     notation: sg.Notation;
   };
   highlight: {
-    lastMove: boolean; // add last-move class to squares
+    lastDests: boolean; // add last-dest class to squares
     check: boolean; // add check class to squares
   };
   animation: {
@@ -46,7 +46,7 @@ export interface HeadlessState {
   movable: {
     free: boolean; // all moves are valid - board editor
     dests?: sg.Dests; // valid moves. {"7g" ["7f"] "5i" ["4h" "5h" "6h"]}
-    showDests: boolean; // whether to add the move-dest class on squares
+    showDests: boolean; // whether to add the dest class on squares
     events: {
       after?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
     };
@@ -54,14 +54,14 @@ export interface HeadlessState {
   droppable: {
     free: boolean; // all drops are valid - board editor
     dests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
-    showDests: boolean; // whether to add the move-dest class on squares
+    showDests: boolean; // whether to add the dest class on squares
     events: {
       after?: (role: sg.Piece, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after the drop has been played
     };
   };
   premovable: {
     enabled: boolean; // allow premoves for color that can not move
-    showDests: boolean; // whether to add the premove-dest class on squares
+    showDests: boolean; // whether to add the pre-dest class on squares
     dests?: sg.Key[]; // premove destinations for the current selection
     current?: sg.KeyPair; // keys of the current saved premove ["5f" "5d"]
     events: {
@@ -71,7 +71,7 @@ export interface HeadlessState {
   };
   predroppable: {
     enabled: boolean; // allow predrops for color that can not move
-    showDests: boolean; // whether to add the premove-dest class on squares
+    showDests: boolean; // whether to add the pre-dest class on squares
     dests?: sg.Key[]; // premove destinations for the drop selection
     current?: {
       piece: sg.Piece;
@@ -134,7 +134,7 @@ export function defaults(): HeadlessState {
       notation: sg.Notation.WESTERN,
     },
     highlight: {
-      lastMove: true,
+      lastDests: true,
       check: true,
     },
     animation: {

@@ -83,13 +83,18 @@ sg-hand piece.preselected {
   background-color: rgba(20, 30, 85, 0.5);
 }
 
+sg-hand piece.current-pre {
+  background-color: rgba(20, 30, 85, 0.5);
+}
+
 sg-hand piece.drawing:before {
   content: '';
   position: absolute;
   width: 100%;
-  height: 100%;
-  outline: 5px solid rgb(21, 120, 27);
-  outline-offset: -4px;
+  height: calc(100% / 11 * 12);
+  margin: -1px 0;
+  outline: 4px solid rgb(21, 120, 27);
+  outline-offset: -5px;
   border-radius: 50%;
   opacity: 0.6 !important;
 }
