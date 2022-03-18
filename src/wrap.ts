@@ -3,7 +3,7 @@ import { createEl, opposite, pieceNameOf, pos2key, setDisplay } from './util.js'
 import { colors, Notation, Elements, Dimensions, SquareNode, Color, PieceNode, Role, WrapElements } from './types.js';
 import { createSVGElement, setAttributes } from './shapes.js';
 
-export function renderWrap(wrapElements: WrapElements, s: HeadlessState, relative: boolean): Elements {
+export function renderWrap(wrapElements: WrapElements, s: HeadlessState): Elements {
   // .sg-wrap (element passed to Shogiground)
   //     sg-hand  // if inlined
   //     sg-board
@@ -80,7 +80,7 @@ export function renderWrap(wrapElements: WrapElements, s: HeadlessState, relativ
   let customSvg: SVGElement | undefined;
   let freePieces: HTMLElement | undefined;
 
-  if (s.drawable.visible && !relative) {
+  if (s.drawable.visible) {
     svg = setAttributes(createSVGElement('svg'), {
       class: 'sg-shapes',
       viewBox: `-0.5 -0.5 ${s.dimensions.files} ${s.dimensions.ranks}`,

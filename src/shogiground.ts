@@ -3,7 +3,7 @@ import { Config, configure } from './config.js';
 import { HeadlessState, State, defaults } from './state.js';
 import { renderWrap } from './wrap.js';
 import * as events from './events.js';
-import { render, updateBounds } from './render.js';
+import { render } from './render.js';
 import * as shapes from './shapes.js';
 import * as util from './util.js';
 import { renderPromotions } from './promotion.js';
@@ -16,16 +16,23 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
 
   function redrawAll(): State {
     const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
-    const relative = maybeState.viewOnly && !maybeState.drawable.visible,
-      elements = renderWrap(wrapElements, maybeState, relative),
-      boardBounds = util.memo(() => elements.pieces.getBoundingClientRect()),
+    const elements = renderWrap(wrapElements, maybeState),
+      boardBounds = util.memo(() => {
+        console.log('getBoundingClientRect');
+
+        return elements.pieces.getBoundingClientRect();
+      }),
       handsBounds = util.memo(() => {
+        console.log('getBoundingClientRect2');
+
         const handsRects = new Map();
         if (elements.handTop) handsRects.set('top', elements.handTop.getBoundingClientRect());
         if (elements.handBottom) handsRects.set('bottom', elements.handBottom.getBoundingClientRect());
         return handsRects;
       }),
       handPiecesBounds = util.memo(() => {
+        console.log('getBoundingClientRect3');
+
         const handPiecesRects = new Map();
         if (elements.handTop) {
           let el = elements.handTop.firstElementChild as PieceNode | undefined;
@@ -59,10 +66,6 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
         boardBounds.clear();
         handsBounds.clear();
         handPiecesBounds.clear();
-        updateBounds(state);
-        renderPromotions(state);
-        if (elements.svg && elements.customSvg && elements.freePieces)
-          shapes.renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
       };
     const state = maybeState as State;
     state.dom = {
@@ -73,7 +76,6 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
       redraw: debounceRedraw(redrawNow),
       redrawNow,
       unbind: prevUnbind,
-      relative,
     };
     state.drawable.prevSvgHash = '';
     redrawNow(false);

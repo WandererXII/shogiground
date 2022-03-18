@@ -1,15 +1,5 @@
 import { State } from './state.js';
-import {
-  key2pos,
-  createEl,
-  setDisplay,
-  posToTranslateRel,
-  posToTranslateAbs,
-  translateRel,
-  translateAbs,
-  pieceNameOf,
-  samePiece,
-} from './util.js';
+import { key2pos, createEl, setDisplay, posToTranslateRel, translateRel, pieceNameOf, samePiece } from './util.js';
 import { sentePov } from './board.js';
 import { AnimCurrent, AnimVectors, AnimVector, AnimFadings } from './anim.js';
 import { DragCurrent } from './drag.js';
@@ -20,10 +10,7 @@ type SquareClasses = Map<sg.Key, string>;
 export function render(s: State): void {
   const asSente: boolean = sentePov(s),
     scaleDown = s.scaleDownPieces ? 0.5 : 1,
-    posToTranslate = s.dom.relative
-      ? posToTranslateRel(s.dimensions)
-      : posToTranslateAbs(s.dimensions, s.dom.boardBounds()),
-    translate = s.dom.relative ? translateRel : translateAbs,
+    posToTranslate = posToTranslateRel(s.dimensions),
     squaresEl: HTMLElement = s.dom.elements.squares,
     piecesEl: HTMLElement = s.dom.elements.pieces,
     draggedEl: sg.PieceNode | undefined = s.dom.elements.dragged,
@@ -87,11 +74,11 @@ export function render(s: State): void {
           pos[0] += anim[2];
           pos[1] += anim[3];
           el.classList.add('anim');
-          translate(el, posToTranslate(pos, asSente), scaleDown);
+          translateRel(el, posToTranslate(pos, asSente), scaleDown);
         } else if (el.sgAnimating) {
           el.sgAnimating = false;
           el.classList.remove('anim');
-          translate(el, posToTranslate(key2pos(k), asSente), scaleDown);
+          translateRel(el, posToTranslate(key2pos(k), asSente), scaleDown);
         }
         // same piece: flag as same
         if (elPieceName === pieceNameOf(pieceAtKey) && (!fading || !el.sgFading)) {
@@ -145,7 +132,7 @@ export function render(s: State): void {
           pos[0] += anim[2];
           pos[1] += anim[3];
         }
-        translate(pMvd, posToTranslate(pos, asSente), scaleDown);
+        translateRel(pMvd, posToTranslate(pos, asSente), scaleDown);
       }
       // no piece in moved obj: insert the new piece
       // assumes the new piece is not being dragged
@@ -161,7 +148,7 @@ export function render(s: State): void {
           pos[0] += anim[2];
           pos[1] += anim[3];
         }
-        translate(pieceNode, posToTranslate(pos, asSente), scaleDown);
+        translateRel(pieceNode, posToTranslate(pos, asSente), scaleDown);
 
         piecesEl.appendChild(pieceNode);
       }
@@ -173,18 +160,6 @@ export function render(s: State): void {
 
   // remove any element that remains in the moved sets
   for (const nodes of movedPieces.values()) removeNodes(s, nodes);
-}
-
-export function updateBounds(s: State): void {
-  if (s.dom.relative) return;
-  const asSente: boolean = sentePov(s),
-    scaleDown = s.scaleDownPieces ? 0.5 : 1,
-    posToTranslate = posToTranslateAbs(s.dimensions, s.dom.boardBounds());
-  let el = s.dom.elements.pieces.firstElementChild as HTMLElement | undefined;
-  while (el) {
-    if (sg.isPieceNode(el) && !el.sgAnimating) translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente), scaleDown);
-    el = el.nextElementSibling as HTMLElement | undefined;
-  }
 }
 
 function removeNodes(s: State, nodes: HTMLElement[]): void {

@@ -41,12 +41,12 @@ var Shogiground = (function () {
         const xFactor = bounds.width / dims.files, yFactor = bounds.height / dims.ranks;
         return (pos, asSente) => posToTranslateBase(pos, dims, asSente, xFactor, yFactor);
     };
-    const posToTranslateRel = (dims) => (pos, asSente) => posToTranslateBase(pos, dims, asSente, 50, 50);
+    const posToTranslateRel = (dims) => (pos, asSente) => posToTranslateBase(pos, dims, asSente, 100, 100);
     const translateAbs = (el, pos, scale) => {
         el.style.transform = `translate(${pos[0]}px,${pos[1]}px) scale(${scale}`;
     };
     const translateRel = (el, percents, scale) => {
-        el.style.transform = `translate(${percents[0]}%,${percents[1]}%) scale(${scale})`;
+        el.style.transform = `translate(${percents[0] * scale}%,${percents[1] * scale}%) scale(${scale})`;
     };
     const setDisplay = (el, v) => {
         el.style.display = v ? '' : 'none';
@@ -1181,16 +1181,17 @@ var Shogiground = (function () {
         if (!s.promotion.active || !s.promotion.key || !s.promotion.pieces || !promotionEl)
             return;
         const asSente = sentePov(s), initPos = key2pos(s.promotion.key);
-        const promotionChoice = createEl('promotion');
-        translateAbs(promotionChoice, posToTranslateAbs(s.dimensions, s.dom.boardBounds())(initPos, asSente), 1);
+        const promotionSquare = createEl('sg-promotion-square'), promotionChoices = createEl('sg-promotion-choices');
+        translateRel(promotionSquare, posToTranslateRel(s.dimensions)(initPos, asSente), 1);
         s.promotion.pieces.forEach(p => {
             const pieceNode = createEl('piece', pieceNameOf(p));
             pieceNode.sgColor = p.color;
             pieceNode.sgRole = p.role;
-            promotionChoice.appendChild(pieceNode);
+            promotionChoices.appendChild(pieceNode);
         });
         promotionEl.innerHTML = '';
-        promotionEl.appendChild(promotionChoice);
+        promotionSquare.appendChild(promotionChoices);
+        promotionEl.appendChild(promotionSquare);
         setDisplay(promotionEl, s.promotion.active);
     }
     function promote(s, e) {
@@ -1454,7 +1455,7 @@ var Shogiground = (function () {
         return document.createElementNS('http://www.w3.org/2000/svg', tagName);
     }
     function renderShapes(state, svg, customSvg, freePieces) {
-        const d = state.drawable, curD = d.current, cur = curD && curD.mouseSq ? curD : undefined, arrowDests = new Map(), pieceMap = new Map(), bounds = state.dom.boardBounds();
+        const d = state.drawable, curD = d.current, cur = curD && curD.mouseSq ? curD : undefined, arrowDests = new Map(), pieceMap = new Map();
         for (const s of d.shapes.concat(d.autoShapes).concat(cur ? [cur] : [])) {
             if (s.dest)
                 arrowDests.set(s.dest, (arrowDests.get(s.dest) || 0) + 1);
@@ -1466,21 +1467,21 @@ var Shogiground = (function () {
         const pieceShapes = [...pieceMap.values()].map(s => {
             return {
                 shape: s,
-                hash: shapeHash(s, arrowDests, false, bounds),
+                hash: shapeHash(s, arrowDests, false),
             };
         });
         const shapes = d.shapes.concat(d.autoShapes).map((s) => {
             return {
                 shape: s,
                 current: false,
-                hash: shapeHash(s, arrowDests, false, bounds),
+                hash: shapeHash(s, arrowDests, false),
             };
         });
         if (cur)
             shapes.push({
                 shape: cur,
                 current: true,
-                hash: shapeHash(cur, arrowDests, true, bounds),
+                hash: shapeHash(cur, arrowDests, true),
             });
         const fullHash = shapes.map(sc => sc.hash).join(';');
         if (fullHash === state.drawable.prevSvgHash)
@@ -1509,9 +1510,9 @@ var Shogiground = (function () {
         const shapesEl = svg.querySelector('g');
         const customSvgsEl = customSvg.querySelector('g');
         syncDefs(d, shapes, defsEl);
-        syncShapes(shapes.filter(s => !s.shape.customSvg), shapesEl, shape => renderSVGShape(state, shape, d.brushes, arrowDests, bounds));
-        syncShapes(shapes.filter(s => s.shape.customSvg), customSvgsEl, shape => renderSVGShape(state, shape, d.brushes, arrowDests, bounds));
-        syncShapes(pieceShapes, freePieces, shape => renderPiece(state, shape, bounds));
+        syncShapes(shapes.filter(s => !s.shape.customSvg), shapesEl, shape => renderSVGShape(state, shape, d.brushes, arrowDests));
+        syncShapes(shapes.filter(s => s.shape.customSvg), customSvgsEl, shape => renderSVGShape(state, shape, d.brushes, arrowDests));
+        syncShapes(pieceShapes, freePieces, shape => renderPiece(state, shape));
     }
     // append only. Don't try to update/remove.
     function syncDefs(d, shapes, defsEl) {
@@ -1565,10 +1566,8 @@ var Shogiground = (function () {
             }
         }
     }
-    function shapeHash({ orig, dest, brush, piece, modifiers, customSvg }, arrowDests, current, bounds) {
+    function shapeHash({ orig, dest, brush, piece, modifiers, customSvg }, arrowDests, current) {
         return [
-            bounds.width,
-            bounds.height,
             current,
             orig,
             dest,
@@ -1595,12 +1594,12 @@ var Shogiground = (function () {
         }
         return 'custom-' + h.toString();
     }
-    function renderSVGShape(state, { shape, current, hash }, brushes, arrowDests, bounds) {
+    function renderSVGShape(state, { shape, current, hash }, brushes, arrowDests) {
         const dims = state.dimensions;
         let el;
         if (shape.customSvg) {
             const orig = orient(key2pos(shape.orig), state.orientation, dims);
-            el = renderCustomSvg(shape.customSvg, orig, dims, bounds);
+            el = renderCustomSvg(shape.customSvg, orig, dims);
         }
         else {
             const orig = orient(key2pos(shape.orig), state.orientation, dims);
@@ -1608,30 +1607,26 @@ var Shogiground = (function () {
                 let brush = brushes[shape.brush];
                 if (shape.modifiers)
                     brush = makeCustomBrush(brush, shape.modifiers);
-                el = renderArrow(brush, orig, orient(key2pos(shape.dest), state.orientation, dims), !!current, (arrowDests.get(shape.dest) || 0) > 1, dims, bounds);
+                el = renderArrow(brush, orig, orient(key2pos(shape.dest), state.orientation, dims), !!current, (arrowDests.get(shape.dest) || 0) > 1, dims);
             }
             else
-                el = renderCircle(brushes[shape.brush], orig, !!current, dims, bounds);
+                el = renderCircle(brushes[shape.brush], orig, !!current, dims);
         }
         el.setAttribute('sgHash', hash);
         return el;
     }
-    function renderCustomSvg(customSvg, pos, dims, bounds) {
-        const { width, height } = bounds;
-        const w = width / dims.files;
-        const h = height / dims.ranks;
-        const x = pos[0] * w;
-        const y = (dims.ranks - 1 - pos[1]) * h;
+    function renderCustomSvg(customSvg, pos, dims) {
+        const [x, y] = pos2user(pos, dims);
         // Translate to top-left of `orig` square
         const g = setAttributes(createSVGElement('g'), { transform: `translate(${x},${y})` });
         // Give 100x100 coordinate system to the user for `orig` square
-        const svg = setAttributes(createSVGElement('svg'), { width: w, height: w, viewBox: '0 0 100 100' });
+        const svg = setAttributes(createSVGElement('svg'), { width: 1, height: 1, viewBox: '0 0 100 100' });
         g.appendChild(svg);
         svg.innerHTML = customSvg;
         return g;
     }
-    function renderCircle(brush, pos, current, dims, bounds) {
-        const o = pos2px(pos, bounds, dims), widths = circleWidth(dims, bounds), radius = (bounds.width + bounds.height) / (dims.files * 4);
+    function renderCircle(brush, pos, current, dims) {
+        const o = pos2user(pos, dims), widths = circleWidth(), radius = 0.5;
         return setAttributes(createSVGElement('circle'), {
             stroke: brush.color,
             'stroke-width': widths[current ? 0 : 1],
@@ -1642,11 +1637,11 @@ var Shogiground = (function () {
             r: radius - widths[1] / 2,
         });
     }
-    function renderArrow(brush, orig, dest, current, shorten, dims, bounds) {
-        const m = arrowMargin(dims, bounds, shorten && !current), a = pos2px(orig, bounds, dims), b = pos2px(dest, bounds, dims), dx = b[0] - a[0], dy = b[1] - a[1], angle = Math.atan2(dy, dx), xo = Math.cos(angle) * m, yo = Math.sin(angle) * m;
+    function renderArrow(brush, orig, dest, current, shorten, dims) {
+        const m = arrowMargin(shorten && !current), a = pos2user(orig, dims), b = pos2user(dest, dims), dx = b[0] - a[0], dy = b[1] - a[1], angle = Math.atan2(dy, dx), xo = Math.cos(angle) * m, yo = Math.sin(angle) * m;
         return setAttributes(createSVGElement('line'), {
             stroke: brush.color,
-            'stroke-width': lineWidth(brush, dims, current, bounds),
+            'stroke-width': lineWidth(brush, current),
             'stroke-linecap': 'round',
             'marker-end': 'url(#arrowhead-' + brush.key + ')',
             opacity: opacity(brush, current),
@@ -1656,7 +1651,7 @@ var Shogiground = (function () {
             y2: b[1] - yo,
         });
     }
-    function renderPiece(state, { shape, hash }, bounds) {
+    function renderPiece(state, { shape, hash }) {
         var _a;
         if (!shape.piece)
             return;
@@ -1666,7 +1661,7 @@ var Shogiground = (function () {
         pieceEl.setAttribute('sgHash', hash);
         pieceEl.sgKey = orig;
         pieceEl.sgScale = scale;
-        translateAbs(pieceEl, posToTranslateAbs(state.dimensions, bounds)(key2pos(orig), sentePov(state)), scale);
+        translateRel(pieceEl, posToTranslateRel(state.dimensions)(key2pos(orig), sentePov(state)), scale);
         return pieceEl;
     }
     function renderMarker(brush) {
@@ -1701,24 +1696,23 @@ var Shogiground = (function () {
             key: [base.key, modifiers.lineWidth].filter(x => x).join(''),
         };
     }
-    function circleWidth(dims, bounds) {
-        const base = bounds.width / (55 * dims.files);
-        return [3 * base, 4 * base];
+    function circleWidth() {
+        return [3 / 64, 4 / 64];
     }
-    function lineWidth(brush, dims, current, bounds) {
-        return (((brush.lineWidth || 10) * (current ? 0.85 : 1)) / (55 * dims.files)) * bounds.width;
+    function lineWidth(brush, current) {
+        return ((brush.lineWidth || 10) * (current ? 0.85 : 1)) / 64;
     }
     function opacity(brush, current) {
         return (brush.opacity || 1) * (current ? 0.9 : 1);
     }
-    function arrowMargin(dims, bounds, shorten) {
-        return ((shorten ? 20 : 10) / (55 * dims.files)) * bounds.width;
+    function arrowMargin(shorten) {
+        return (shorten ? 20 : 10) / 64;
     }
-    function pos2px(pos, bounds, dims) {
-        return [((pos[0] + 0.5) * bounds.width) / dims.files, ((dims.ranks - 0.5 - pos[1]) * bounds.height) / dims.ranks];
+    function pos2user(pos, dims) {
+        return [pos[0], dims.ranks - 1 - pos[1]];
     }
 
-    function renderWrap(wrapElements, s, relative) {
+    function renderWrap(wrapElements, s) {
         // .sg-wrap (element passed to Shogiground)
         //     sg-hand  // if inlined
         //     sg-board
@@ -1786,11 +1780,18 @@ var Shogiground = (function () {
         let svg;
         let customSvg;
         let freePieces;
-        if (s.drawable.visible && !relative) {
-            svg = setAttributes(createSVGElement('svg'), { class: 'sg-shapes' });
+        if (s.drawable.visible) {
+            svg = setAttributes(createSVGElement('svg'), {
+                class: 'sg-shapes',
+                viewBox: `-0.5 -0.5 ${s.dimensions.files} ${s.dimensions.ranks}`,
+                preserveAspectRatio: 'none',
+            });
             svg.appendChild(createSVGElement('defs'));
             svg.appendChild(createSVGElement('g'));
-            customSvg = setAttributes(createSVGElement('svg'), { class: 'sg-custom-svgs' });
+            customSvg = setAttributes(createSVGElement('svg'), {
+                class: 'sg-custom-svgs',
+                viewBox: `0 0 ${s.dimensions.files} ${s.dimensions.ranks}`,
+            });
             customSvg.appendChild(createSVGElement('g'));
             freePieces = createEl('sg-free-pieces');
             board.appendChild(svg);
@@ -1861,7 +1862,7 @@ var Shogiground = (function () {
     }
 
     function bindBoard(s, boundsUpdated) {
-        if (!s.dom.relative && s.resizable && 'ResizeObserver' in window)
+        if (s.resizable && 'ResizeObserver' in window)
             new ResizeObserver(boundsUpdated).observe(s.dom.elements.board);
         if (s.viewOnly)
             return;
@@ -1893,7 +1894,7 @@ var Shogiground = (function () {
         bindHand(s, s.dom.elements.handBottom);
     }
     function bindHand(s, handEl) {
-        if (!s.dom.relative && s.resizable && 'ResizeObserver' in window)
+        if (s.resizable && 'ResizeObserver' in window)
             new ResizeObserver(() => {
                 s.dom.boardBounds.clear();
                 s.dom.handPiecesBounds.clear();
@@ -1911,7 +1912,7 @@ var Shogiground = (function () {
         const unbinds = [];
         // Old versions of Edge and Safari do not support ResizeObserver. Send
         // shogiground.resize if a user action has changed the bounds of the board.
-        if (!s.dom.relative && s.resizable && !('ResizeObserver' in window)) {
+        if (s.resizable && !('ResizeObserver' in window)) {
             unbinds.push(unbindable(document.body, 'shogiground.resize', boundsUpdated));
         }
         if (!s.viewOnly) {
@@ -1990,9 +1991,7 @@ var Shogiground = (function () {
 
     function render(s) {
         var _a, _b;
-        const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = s.dom.relative
-            ? posToTranslateRel(s.dimensions)
-            : posToTranslateAbs(s.dimensions, s.dom.boardBounds()), translate = s.dom.relative ? translateRel : translateAbs, squaresEl = s.dom.elements.squares, piecesEl = s.dom.elements.pieces, draggedEl = s.dom.elements.dragged, squareOverEl = s.dom.elements.squareOver, handTopEl = s.dom.elements.handTop, handBotEl = s.dom.elements.handBottom, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), curDrag = s.draggable.current, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
+        const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = posToTranslateRel(s.dimensions), squaresEl = s.dom.elements.squares, piecesEl = s.dom.elements.pieces, draggedEl = s.dom.elements.dragged, squareOverEl = s.dom.elements.squareOver, handTopEl = s.dom.elements.handTop, handBotEl = s.dom.elements.handBottom, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), curDrag = s.draggable.current, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
         // if piece not being dragged anymore, hide it
         if (!curDrag && (draggedEl === null || draggedEl === void 0 ? void 0 : draggedEl.sgDragging)) {
             draggedEl.sgDragging = false;
@@ -2033,12 +2032,12 @@ var Shogiground = (function () {
                         pos[0] += anim[2];
                         pos[1] += anim[3];
                         el.classList.add('anim');
-                        translate(el, posToTranslate(pos, asSente), scaleDown);
+                        translateRel(el, posToTranslate(pos, asSente), scaleDown);
                     }
                     else if (el.sgAnimating) {
                         el.sgAnimating = false;
                         el.classList.remove('anim');
-                        translate(el, posToTranslate(key2pos(k), asSente), scaleDown);
+                        translateRel(el, posToTranslate(key2pos(k), asSente), scaleDown);
                     }
                     // same piece: flag as same
                     if (elPieceName === pieceNameOf(pieceAtKey) && (!fading || !el.sgFading)) {
@@ -2091,7 +2090,7 @@ var Shogiground = (function () {
                         pos[0] += anim[2];
                         pos[1] += anim[3];
                     }
-                    translate(pMvd, posToTranslate(pos, asSente), scaleDown);
+                    translateRel(pMvd, posToTranslate(pos, asSente), scaleDown);
                 }
                 // no piece in moved obj: insert the new piece
                 // assumes the new piece is not being dragged
@@ -2105,7 +2104,7 @@ var Shogiground = (function () {
                         pos[0] += anim[2];
                         pos[1] += anim[3];
                     }
-                    translate(pieceNode, posToTranslate(pos, asSente), scaleDown);
+                    translateRel(pieceNode, posToTranslate(pos, asSente), scaleDown);
                     piecesEl.appendChild(pieceNode);
                 }
             }
@@ -2117,17 +2116,6 @@ var Shogiground = (function () {
         // remove any element that remains in the moved sets
         for (const nodes of movedPieces.values())
             removeNodes(s, nodes);
-    }
-    function updateBounds(s) {
-        if (s.dom.relative)
-            return;
-        const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = posToTranslateAbs(s.dimensions, s.dom.boardBounds());
-        let el = s.dom.elements.pieces.firstElementChild;
-        while (el) {
-            if (isPieceNode(el) && !el.sgAnimating)
-                translateAbs(el, posToTranslate(key2pos(el.sgKey), asSente), scaleDown);
-            el = el.nextElementSibling;
-        }
     }
     function removeNodes(s, nodes) {
         for (const node of nodes)
@@ -2217,10 +2205,11 @@ var Shogiground = (function () {
         configure(maybeState, config || {});
         function redrawAll() {
             const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
-            const relative = maybeState.viewOnly && !maybeState.drawable.visible, elements = renderWrap(wrapElements, maybeState, relative), boardBounds = memo(() => {
+            const elements = renderWrap(wrapElements, maybeState), boardBounds = memo(() => {
                 console.log('getBoundingClientRect');
                 return elements.pieces.getBoundingClientRect();
             }), handsBounds = memo(() => {
+                console.log('getBoundingClientRect2');
                 const handsRects = new Map();
                 if (elements.handTop)
                     handsRects.set('top', elements.handTop.getBoundingClientRect());
@@ -2228,6 +2217,7 @@ var Shogiground = (function () {
                     handsRects.set('bottom', elements.handBottom.getBoundingClientRect());
                 return handsRects;
             }), handPiecesBounds = memo(() => {
+                console.log('getBoundingClientRect3');
                 const handPiecesRects = new Map();
                 if (elements.handTop) {
                     let el = elements.handTop.firstElementChild;
@@ -2256,14 +2246,9 @@ var Shogiground = (function () {
                 if (!skipShapes && elements.svg && elements.customSvg && elements.freePieces)
                     renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
             }, boundsUpdated = () => {
-                console.log('boundsUpdated');
                 boardBounds.clear();
                 handsBounds.clear();
                 handPiecesBounds.clear();
-                updateBounds(state);
-                renderPromotions(state);
-                if (elements.svg && elements.customSvg && elements.freePieces)
-                    renderShapes(state, elements.svg, elements.customSvg, elements.freePieces);
             };
             const state = maybeState;
             state.dom = {
@@ -2274,7 +2259,6 @@ var Shogiground = (function () {
                 redraw: debounceRedraw(redrawNow),
                 redrawNow,
                 unbind: prevUnbind,
-                relative,
             };
             state.drawable.prevSvgHash = '';
             redrawNow(false);
