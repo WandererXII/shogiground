@@ -19,7 +19,6 @@ export interface Config {
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu?: boolean; // because who needs a context menu on a board, only without viewOnly
   blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
-  resizable?: boolean; // listens to shogiground.resize on document.body to clear bounds cache
   scaleDownPieces?: boolean; // helpful for pgns - https://ctidd.com/2015/svg-background-scaling
   coordinates?: {
     enabled?: boolean; // include coords attributes

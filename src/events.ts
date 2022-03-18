@@ -10,7 +10,7 @@ type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
 
 export function bindBoard(s: State, boundsUpdated: () => void): void {
-  if (s.resizable && 'ResizeObserver' in window) new ResizeObserver(boundsUpdated).observe(s.dom.elements.board);
+  if ('ResizeObserver' in window) new ResizeObserver(boundsUpdated).observe(s.dom.elements.board);
 
   if (s.viewOnly) return;
 
@@ -43,7 +43,7 @@ export function bindHands(s: State): void {
 }
 
 function bindHand(s: State, handEl: HTMLElement): void {
-  if (s.resizable && 'ResizeObserver' in window)
+  if ('ResizeObserver' in window)
     new ResizeObserver(() => {
       s.dom.boardBounds.clear();
       s.dom.handPiecesBounds.clear();
@@ -64,7 +64,7 @@ export function bindDocument(s: State, boundsUpdated: () => void): sg.Unbind {
 
   // Old versions of Edge and Safari do not support ResizeObserver. Send
   // shogiground.resize if a user action has changed the bounds of the board.
-  if (s.resizable && !('ResizeObserver' in window)) {
+  if (!('ResizeObserver' in window)) {
     unbinds.push(unbindable(document.body, 'shogiground.resize', boundsUpdated));
   }
 

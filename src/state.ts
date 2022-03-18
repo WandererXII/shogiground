@@ -16,7 +16,6 @@ export interface HeadlessState {
   selectedPiece?: sg.Piece; // piece in hand currently selected
   viewOnly: boolean; // don't bind events: the user will never be able to move pieces around
   disableContextMenu: boolean; // because who needs a context menu on a shogi board
-  resizable: boolean; // listens to shogiground.resize on document.body to clear bounds cache
   blockTouchScroll: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
   scaleDownPieces: boolean;
   coordinates: {
@@ -126,7 +125,6 @@ export function defaults(): HeadlessState {
     activeColor: 'both',
     viewOnly: false,
     disableContextMenu: false,
-    resizable: true,
     blockTouchScroll: false,
     scaleDownPieces: true,
     coordinates: {

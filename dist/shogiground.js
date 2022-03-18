@@ -1348,7 +1348,6 @@ var Shogiground = (function () {
             activeColor: 'both',
             viewOnly: false,
             disableContextMenu: false,
-            resizable: true,
             blockTouchScroll: false,
             scaleDownPieces: true,
             coordinates: {
@@ -1863,7 +1862,7 @@ var Shogiground = (function () {
     }
 
     function bindBoard(s, boundsUpdated) {
-        if (s.resizable && 'ResizeObserver' in window)
+        if ('ResizeObserver' in window)
             new ResizeObserver(boundsUpdated).observe(s.dom.elements.board);
         if (s.viewOnly)
             return;
@@ -1895,7 +1894,7 @@ var Shogiground = (function () {
         bindHand(s, s.dom.elements.handBottom);
     }
     function bindHand(s, handEl) {
-        if (s.resizable && 'ResizeObserver' in window)
+        if ('ResizeObserver' in window)
             new ResizeObserver(() => {
                 s.dom.boardBounds.clear();
                 s.dom.handPiecesBounds.clear();
@@ -1913,7 +1912,7 @@ var Shogiground = (function () {
         const unbinds = [];
         // Old versions of Edge and Safari do not support ResizeObserver. Send
         // shogiground.resize if a user action has changed the bounds of the board.
-        if (s.resizable && !('ResizeObserver' in window)) {
+        if (!('ResizeObserver' in window)) {
             unbinds.push(unbindable(document.body, 'shogiground.resize', boundsUpdated));
         }
         if (!s.viewOnly) {
