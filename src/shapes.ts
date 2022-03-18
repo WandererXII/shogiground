@@ -313,7 +313,7 @@ export function setAttributes(el: SVGElement, attrs: { [key: string]: any }): SV
 }
 
 function orient(pos: sg.Pos, color: sg.Color, dims: sg.Dimensions): sg.Pos {
-  return color === 'sente' ? [dims.files - 1 - pos[0], dims.ranks - 1 - pos[1]] : pos;
+  return color === 'sente' ? pos : [dims.files - 1 - pos[0], dims.ranks - 1 - pos[1]];
 }
 
 function makeCustomBrush(base: DrawBrush, modifiers: DrawModifiers): DrawBrush {
@@ -342,5 +342,5 @@ function arrowMargin(shorten: boolean): number {
 }
 
 function pos2user(pos: sg.Pos, dims: sg.Dimensions): sg.NumberPair {
-  return [pos[0], dims.ranks - 1 - pos[1]];
+  return [dims.files - 1 - pos[0], pos[1]];
 }

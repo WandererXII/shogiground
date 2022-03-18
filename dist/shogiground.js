@@ -1686,7 +1686,7 @@ var Shogiground = (function () {
         return el;
     }
     function orient(pos, color, dims) {
-        return color === 'sente' ? [dims.files - 1 - pos[0], dims.ranks - 1 - pos[1]] : pos;
+        return color === 'sente' ? pos : [dims.files - 1 - pos[0], dims.ranks - 1 - pos[1]];
     }
     function makeCustomBrush(base, modifiers) {
         return {
@@ -1709,7 +1709,7 @@ var Shogiground = (function () {
         return (shorten ? 20 : 10) / 64;
     }
     function pos2user(pos, dims) {
-        return [pos[0], dims.ranks - 1 - pos[1]];
+        return [dims.files - 1 - pos[0], pos[1]];
     }
 
     function renderWrap(wrapElements, s) {
