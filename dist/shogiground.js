@@ -1791,6 +1791,7 @@ var Shogiground = (function () {
             customSvg = setAttributes(createSVGElement('svg'), {
                 class: 'sg-custom-svgs',
                 viewBox: `0 0 ${s.dimensions.files} ${s.dimensions.ranks}`,
+                preserveAspectRatio: 'none',
             });
             customSvg.appendChild(createSVGElement('g'));
             freePieces = createEl('sg-free-pieces');

@@ -92,6 +92,7 @@ export function renderWrap(wrapElements: WrapElements, s: HeadlessState): Elemen
     customSvg = setAttributes(createSVGElement('svg'), {
       class: 'sg-custom-svgs',
       viewBox: `0 0 ${s.dimensions.files} ${s.dimensions.ranks}`,
+      preserveAspectRatio: 'none',
     });
     customSvg.appendChild(createSVGElement('g'));
 
