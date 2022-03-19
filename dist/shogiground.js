@@ -943,14 +943,14 @@ var Shogiground = (function () {
             e.preventDefault();
         const hadPremove = !!s.premovable.current;
         const hadPredrop = !!s.predroppable.current;
-        if (s.spares.deleteOnTouch && piece)
+        if (s.editable.deleteOnTouch && piece)
             s.pieces.delete(orig);
         else if ((s.selectedPiece && canDrop(s, s.selectedPiece, orig)) ||
             (s.selected && canMove(s, s.selected, orig))) {
-            anim(state => selectSquare(state, orig, s.spares.active), s);
+            anim(state => selectSquare(state, orig, s.editable.spare), s);
         }
         else {
-            selectSquare(s, orig, s.spares.active);
+            selectSquare(s, orig, s.editable.spare);
         }
         const stillSelected = s.selected === orig, draggedEl = s.dom.board.elements.dragged;
         if (piece && draggedEl && stillSelected && isDraggable(s, piece)) {
@@ -1369,26 +1369,6 @@ var Shogiground = (function () {
                 handMap: new Map(),
                 roles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
             },
-            spares: {
-                roles: [
-                    'king',
-                    'rook',
-                    'bishop',
-                    'gold',
-                    'silver',
-                    'knight',
-                    'lance',
-                    'pawn',
-                    'dragon',
-                    'horse',
-                    'promotedsilver',
-                    'promotedknight',
-                    'promotedlance',
-                    'tokin',
-                ],
-                deleteOnTouch: false,
-                active: false,
-            },
             movable: {
                 free: true,
                 showDests: true,
@@ -1420,6 +1400,10 @@ var Shogiground = (function () {
             },
             selectable: {
                 enabled: true,
+            },
+            editable: {
+                spare: false,
+                deleteOnTouch: false,
             },
             promotion: {
                 active: false,
@@ -1959,7 +1943,7 @@ var Shogiground = (function () {
             const target = e.target;
             if (isPieceNode(target)) {
                 const piece = { color: target.sgColor, role: target.sgRole };
-                if (e.shiftKey || isRightButton(e)) {
+                if (s.drawable.enabled && (e.shiftKey || isRightButton(e))) {
                     if (s.drawable.piece && samePiece(s.drawable.piece, piece))
                         s.drawable.piece = undefined;
                     else
@@ -1967,7 +1951,7 @@ var Shogiground = (function () {
                     s.dom.redraw();
                 }
                 else if (!s.viewOnly && !unwantedEvent(e)) {
-                    if (s.spares.deleteOnTouch) {
+                    if (s.editable.deleteOnTouch) {
                         removeFromHand(s, piece);
                         s.dom.redraw();
                     }

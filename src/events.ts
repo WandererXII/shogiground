@@ -112,12 +112,12 @@ function startDragFromHand(s: State): MouchBind {
     const target = e.target as HTMLElement;
     if (sg.isPieceNode(target)) {
       const piece = { color: target.sgColor, role: target.sgRole };
-      if (e.shiftKey || isRightButton(e)) {
+      if (s.drawable.enabled && (e.shiftKey || isRightButton(e))) {
         if (s.drawable.piece && samePiece(s.drawable.piece, piece)) s.drawable.piece = undefined;
         else s.drawable.piece = piece;
         s.dom.redraw();
       } else if (!s.viewOnly && !drag.unwantedEvent(e)) {
-        if (s.spares.deleteOnTouch) {
+        if (s.editable.deleteOnTouch) {
           removeFromHand(s, piece);
           s.dom.redraw();
         } else if (

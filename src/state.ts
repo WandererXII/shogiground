@@ -37,11 +37,6 @@ export interface HeadlessState {
     handMap: sg.Hands;
     roles: sg.Role[]; // roles to render in sg-hand
   };
-  spares: {
-    roles: sg.Role[]; // roles to be rendered in sg-spares
-    deleteOnTouch: boolean; // clicking a piece will remove it
-    active: boolean; // activate spare drop mode - won't remove the piece from hand
-  };
   movable: {
     free: boolean; // all moves are valid - board editor
     dests?: sg.Dests; // valid moves. {"7g" ["7f"] "5i" ["4h" "5h" "6h"]}
@@ -87,13 +82,16 @@ export interface HeadlessState {
     autoDistance: boolean; // lets shogiground set distance to zero when user drags pieces
     showGhost: boolean; // show ghost of piece being dragged
     showTouchSquareOverlay: boolean; // show square overlay on the square that is currently being hovered, touch only
-    deleteOnDropOff: boolean; // delete a piece when it is dropped off the board
-    addToHandOnDropOff: boolean; // add a piece to hand when it is dropped on it, requires deleteOnDropOff
+    deleteOnDropOff: boolean; // delete a piece when it is dropped off the board - board editor
+    addToHandOnDropOff: boolean; // add a piece to hand when it is dropped on it, requires deleteOnDropOff - board editor
     current?: DragCurrent;
   };
   selectable: {
-    // disable to enforce dragging over click-click move
-    enabled: boolean;
+    enabled: boolean; // disable to enforce dragging over click-click move
+  };
+  editable: {
+    spare: boolean; // dropped piece won't be removed from hand
+    deleteOnTouch: boolean; // selecting a piece will remove it
   };
   promotion: {
     active: boolean;
@@ -145,26 +143,6 @@ export function defaults(): HeadlessState {
       handMap: new Map(),
       roles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
     },
-    spares: {
-      roles: [
-        'king',
-        'rook',
-        'bishop',
-        'gold',
-        'silver',
-        'knight',
-        'lance',
-        'pawn',
-        'dragon',
-        'horse',
-        'promotedsilver',
-        'promotedknight',
-        'promotedlance',
-        'tokin',
-      ],
-      deleteOnTouch: false,
-      active: false,
-    },
     movable: {
       free: true,
       showDests: true,
@@ -196,6 +174,10 @@ export function defaults(): HeadlessState {
     },
     selectable: {
       enabled: true,
+    },
+    editable: {
+      spare: false,
+      deleteOnTouch: false,
     },
     promotion: {
       active: false,

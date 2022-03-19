@@ -47,14 +47,14 @@ export function start(s: State, e: sg.MouchEvent): void {
     e.preventDefault();
   const hadPremove = !!s.premovable.current;
   const hadPredrop = !!s.predroppable.current;
-  if (s.spares.deleteOnTouch && piece) s.pieces.delete(orig);
+  if (s.editable.deleteOnTouch && piece) s.pieces.delete(orig);
   else if (
     (s.selectedPiece && board.canDrop(s, s.selectedPiece, orig)) ||
     (s.selected && board.canMove(s, s.selected, orig))
   ) {
-    anim(state => board.selectSquare(state, orig, s.spares.active), s);
+    anim(state => board.selectSquare(state, orig, s.editable.spare), s);
   } else {
-    board.selectSquare(s, orig, s.spares.active);
+    board.selectSquare(s, orig, s.editable.spare);
   }
 
   const stillSelected = s.selected === orig,
