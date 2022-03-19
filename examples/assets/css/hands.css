@@ -1,3 +1,7 @@
+.sg-wrap {
+  height: 100%;
+}
+
 sg-hand piece::after {
   content: attr(data-nb);
   top: 0;
