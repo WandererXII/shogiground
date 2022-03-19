@@ -134,7 +134,8 @@ function addShape(drawable: Drawable, cur: DrawCurrent): void {
   const diffPiece = drawable.shapes.find(s => s.orig === cur.orig && s.piece && piece && !samePiece(s.piece, piece));
 
   if (similar) drawable.shapes = drawable.shapes.filter(s => !similarShape(s));
-  if (!similar || similar.brush !== cur.brush) drawable.shapes.push(cur);
+  if (!similar || similar.brush !== cur.brush || (!!similar.piece !== !!cur.piece && cur.piece))
+    drawable.shapes.push(cur);
   if (!!piece !== !!cur.piece || diffPiece) drawable.shapes.push({ orig: cur.orig, brush: cur.brush, piece: piece });
   onChange(drawable);
 }
