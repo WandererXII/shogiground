@@ -105,8 +105,7 @@ export function render(s: State): void {
   // walk over all squares and apply classes
   let sqEl = squaresEl.firstElementChild as HTMLElement | undefined;
   while (sqEl && sg.isSquareNode(sqEl)) {
-    const cc = squares.get(sqEl.sgKey) || '';
-    sqEl.className = cc;
+    sqEl.className = squares.get(sqEl.sgKey) || '';
     sqEl = sqEl.nextElementSibling as HTMLElement | undefined;
   }
 

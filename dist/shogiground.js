@@ -2057,8 +2057,7 @@ var Shogiground = (function () {
         // walk over all squares and apply classes
         let sqEl = squaresEl.firstElementChild;
         while (sqEl && isSquareNode(sqEl)) {
-            const cc = squares.get(sqEl.sgKey) || '';
-            sqEl.className = cc;
+            sqEl.className = squares.get(sqEl.sgKey) || '';
             sqEl = sqEl.nextElementSibling;
         }
         // walk over all pieces in current set, apply dom changes to moved pieces
