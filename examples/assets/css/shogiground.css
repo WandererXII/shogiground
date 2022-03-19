@@ -206,7 +206,7 @@ sg-square-over {
 }
 
 .sg-wrap sg-free-pieces {
-  z-index: 2;
+  z-index: 3;
 }
 
 .sg-wrap sg-free-pieces piece {

@@ -250,13 +250,13 @@ var Shogiground = (function () {
         callUserFunction(state.events.change);
         return captured || true;
     }
-    function baseDrop(state, piece, key, spare) {
+    function baseDrop(state, piece, key) {
         if (state.pieces.has(key) && !state.droppable.free)
             return false;
         callUserFunction(state.events.drop, piece, key);
         state.pieces.set(key, piece);
         state.lastDests = [key];
-        if (!spare)
+        if (!state.droppable.spare)
             removeFromHand(state, piece);
         state.check = undefined;
         callUserFunction(state.events.change);
@@ -272,8 +272,8 @@ var Shogiground = (function () {
         }
         return result;
     }
-    function baseUserDrop(state, piece, key, spare) {
-        const result = baseDrop(state, piece, key, spare);
+    function baseUserDrop(state, piece, key) {
+        const result = baseDrop(state, piece, key);
         if (result) {
             state.movable.dests = undefined;
             state.droppable.dests = undefined;
@@ -282,9 +282,9 @@ var Shogiground = (function () {
         }
         return result;
     }
-    function userDrop(state, piece, dest, spare) {
+    function userDrop(state, piece, dest) {
         if (canDrop(state, piece, dest)) {
-            const result = baseUserDrop(state, piece, dest, spare);
+            const result = baseUserDrop(state, piece, dest);
             if (result) {
                 unselect(state);
                 callUserFunction(state.droppable.events.after, piece, dest, {
@@ -336,10 +336,10 @@ var Shogiground = (function () {
         if (hand && num)
             hand.set(piece.role, Math.max(num - cnt, 0));
     }
-    function selectSquare(state, key, spare, force) {
+    function selectSquare(state, key, force) {
         callUserFunction(state.events.select, key);
-        if (state.selectedPiece) {
-            if (userDrop(state, state.selectedPiece, key, spare))
+        if ((state.selectable.enabled || force) && state.selectedPiece) {
+            if (userDrop(state, state.selectedPiece, key))
                 return;
         }
         else if (state.selected) {
@@ -357,8 +357,9 @@ var Shogiground = (function () {
             setSelected(state, key);
         }
     }
-    function selectPiece(state, piece) {
+    function selectPiece(state, piece, spare) {
         callUserFunction(state.events.pieceSelect, piece);
+        state.droppable.spare = !!spare;
         if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece))
             unselect(state);
         else if (isDroppable(state, piece) || isPredroppable(state, piece)) {
@@ -380,10 +381,7 @@ var Shogiground = (function () {
         }
     }
     function unselect(state) {
-        state.selected = undefined;
-        state.selectedPiece = undefined;
-        state.premovable.dests = undefined;
-        state.predroppable.dests = undefined;
+        state.selected = state.selectedPiece = state.premovable.dests = state.predroppable.dests = undefined;
     }
     function isMovable(state, orig) {
         const piece = state.pieces.get(orig);
@@ -943,14 +941,14 @@ var Shogiground = (function () {
             e.preventDefault();
         const hadPremove = !!s.premovable.current;
         const hadPredrop = !!s.predroppable.current;
-        if (s.editable.deleteOnTouch && piece)
+        if (s.selectable.deleteOnTouch)
             s.pieces.delete(orig);
         else if ((s.selectedPiece && canDrop(s, s.selectedPiece, orig)) ||
             (s.selected && canMove(s, s.selected, orig))) {
-            anim(state => selectSquare(state, orig, s.editable.spare), s);
+            anim(state => selectSquare(state, orig), s);
         }
         else {
-            selectSquare(s, orig, s.editable.spare);
+            selectSquare(s, orig);
         }
         const stillSelected = s.selected === orig, draggedEl = s.dom.board.elements.dragged;
         if (piece && draggedEl && stillSelected && isDraggable(s, piece)) {
@@ -995,7 +993,7 @@ var Shogiground = (function () {
         const previouslySelectedPiece = s.selectedPiece, draggedEl = s.dom.board.elements.dragged, position = eventPosition(e), touch = e.type === 'touchstart';
         if (!draggedEl)
             return;
-        selectPiece(s, piece);
+        selectPiece(s, piece, spare);
         s.dom.redraw();
         const hadPremove = !!s.premovable.current;
         const hadPredrop = !!s.predroppable.current;
@@ -1011,7 +1009,6 @@ var Shogiground = (function () {
                     originBounds: s.dom.hands.pieceBounds().get(pieceNameOf(piece)),
                     leftOrigin: false,
                     previouslySelectedPiece,
-                    spare,
                 },
             };
             draggedEl.sgColor = piece.color;
@@ -1109,7 +1106,7 @@ var Shogiground = (function () {
         const dest = getKeyAtDomPos(eventPos, sentePov(s), s.dimensions, s.dom.board.bounds());
         if (dest && cur.started && ((_a = cur.fromBoard) === null || _a === void 0 ? void 0 : _a.orig) !== dest) {
             if (cur.fromOutside)
-                userDrop(s, cur.piece, dest, cur.fromOutside.spare);
+                userDrop(s, cur.piece, dest);
             else if (cur.fromBoard)
                 userMove(s, cur.fromBoard.orig, dest);
         }
@@ -1251,7 +1248,10 @@ var Shogiground = (function () {
                 anim(state => baseMove(state, orig, dest), state);
             },
             drop(piece, key, spare) {
-                anim(state => baseDrop(state, piece, key, spare), state);
+                anim(state => {
+                    state.droppable.spare = !!spare;
+                    baseDrop(state, piece, key);
+                }, state);
             },
             setPieces(pieces) {
                 anim(state => setPieces(state, pieces), state);
@@ -1268,17 +1268,17 @@ var Shogiground = (function () {
             stopPromotion() {
                 render$1(state => cancelPromotion(state), state);
             },
-            selectSquare(key, spare, force) {
+            selectSquare(key, force) {
                 if (key)
-                    anim(state => selectSquare(state, key, spare, force), state);
+                    anim(state => selectSquare(state, key, force), state);
                 else if (state.selected) {
                     unselect(state);
                     state.dom.redraw();
                 }
             },
-            selectPiece(piece) {
+            selectPiece(piece, spare) {
                 if (piece)
-                    render$1(state => selectPiece(state, piece), state);
+                    render$1(state => selectPiece(state, piece, spare), state);
                 else if (state.selectedPiece) {
                     unselect(state);
                     state.dom.redraw();
@@ -1377,6 +1377,7 @@ var Shogiground = (function () {
             droppable: {
                 free: true,
                 showDests: true,
+                spare: false,
                 events: {},
             },
             premovable: {
@@ -1400,9 +1401,6 @@ var Shogiground = (function () {
             },
             selectable: {
                 enabled: true,
-            },
-            editable: {
-                spare: false,
                 deleteOnTouch: false,
             },
             promotion: {
@@ -1951,7 +1949,7 @@ var Shogiground = (function () {
                     s.dom.redraw();
                 }
                 else if (!s.viewOnly && !unwantedEvent(e)) {
-                    if (s.editable.deleteOnTouch) {
+                    if (s.selectable.deleteOnTouch) {
                         removeFromHand(s, piece);
                         s.dom.redraw();
                     }
@@ -2160,7 +2158,7 @@ var Shogiground = (function () {
         while (pieceEl) {
             const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
             const num = ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role)) || 0;
-            const isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece);
+            const isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece) && !s.droppable.spare;
             pieceEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
             pieceEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
             pieceEl.classList.toggle('drawing', !!s.drawable.piece && samePiece(s.drawable.piece, piece));

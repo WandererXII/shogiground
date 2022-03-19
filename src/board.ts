@@ -80,12 +80,12 @@ export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.P
   return captured || true;
 }
 
-export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, spare?: boolean): boolean {
+export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key): boolean {
   if (state.pieces.has(key) && !state.droppable.free) return false;
   callUserFunction(state.events.drop, piece, key);
   state.pieces.set(key, piece);
   state.lastDests = [key];
-  if (!spare) removeFromHand(state, piece);
+  if (!state.droppable.spare) removeFromHand(state, piece);
   state.check = undefined;
   callUserFunction(state.events.change);
   return true;
@@ -102,8 +102,8 @@ function baseUserMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.Piec
   return result;
 }
 
-function baseUserDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, spare?: boolean): boolean {
-  const result = baseDrop(state, piece, key, spare);
+function baseUserDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key): boolean {
+  const result = baseDrop(state, piece, key);
   if (result) {
     state.movable.dests = undefined;
     state.droppable.dests = undefined;
@@ -113,9 +113,9 @@ function baseUserDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, spare?
   return result;
 }
 
-export function userDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key, spare?: boolean): boolean {
+export function userDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   if (canDrop(state, piece, dest)) {
-    const result = baseUserDrop(state, piece, dest, spare);
+    const result = baseUserDrop(state, piece, dest);
     if (result) {
       unselect(state);
       callUserFunction(state.droppable.events.after, piece, dest, {
@@ -166,10 +166,10 @@ export function removeFromHand(state: HeadlessState, piece: sg.Piece, cnt = 1): 
   if (hand && num) hand.set(piece.role, Math.max(num - cnt, 0));
 }
 
-export function selectSquare(state: HeadlessState, key: sg.Key, spare?: boolean, force?: boolean): void {
+export function selectSquare(state: HeadlessState, key: sg.Key, force?: boolean): void {
   callUserFunction(state.events.select, key);
-  if (state.selectedPiece) {
-    if (userDrop(state, state.selectedPiece, key, spare)) return;
+  if ((state.selectable.enabled || force) && state.selectedPiece) {
+    if (userDrop(state, state.selectedPiece, key)) return;
   } else if (state.selected) {
     if (state.selected === key && !state.draggable.enabled) {
       unselect(state);
@@ -185,9 +185,10 @@ export function selectSquare(state: HeadlessState, key: sg.Key, spare?: boolean,
   }
 }
 
-export function selectPiece(state: HeadlessState, piece: sg.Piece): void {
+export function selectPiece(state: HeadlessState, piece: sg.Piece, spare?: boolean): void {
   callUserFunction(state.events.pieceSelect, piece);
 
+  state.droppable.spare = !!spare;
   if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) unselect(state);
   else if (isDroppable(state, piece) || isPredroppable(state, piece)) {
     setSelectedPiece(state, piece);
@@ -213,10 +214,7 @@ export function setSelectedPiece(state: HeadlessState, piece: sg.Piece): void {
 }
 
 export function unselect(state: HeadlessState): void {
-  state.selected = undefined;
-  state.selectedPiece = undefined;
-  state.premovable.dests = undefined;
-  state.predroppable.dests = undefined;
+  state.selected = state.selectedPiece = state.premovable.dests = state.predroppable.dests = undefined;
 }
 
 function isMovable(state: HeadlessState, orig: sg.Key): boolean {

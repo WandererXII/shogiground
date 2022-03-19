@@ -49,6 +49,7 @@ export interface HeadlessState {
     free: boolean; // all drops are valid - board editor
     dests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
     showDests: boolean; // whether to add the dest class on squares
+    spare: boolean; // whether to remove dropped piece from hand after drop - board editor
     events: {
       after?: (role: sg.Piece, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after the drop has been played
     };
@@ -88,10 +89,7 @@ export interface HeadlessState {
   };
   selectable: {
     enabled: boolean; // disable to enforce dragging over click-click move
-  };
-  editable: {
-    spare: boolean; // dropped piece won't be removed from hand
-    deleteOnTouch: boolean; // selecting a piece will remove it
+    deleteOnTouch: boolean; // selecting a piece on the board or in hand will remove it - board editor
   };
   promotion: {
     active: boolean;
@@ -151,6 +149,7 @@ export function defaults(): HeadlessState {
     droppable: {
       free: true,
       showDests: true,
+      spare: false,
       events: {},
     },
     premovable: {
@@ -174,9 +173,6 @@ export function defaults(): HeadlessState {
     },
     selectable: {
       enabled: true,
-    },
-    editable: {
-      spare: false,
       deleteOnTouch: false,
     },
     promotion: {

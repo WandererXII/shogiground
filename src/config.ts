@@ -49,6 +49,7 @@ export interface Config {
     free?: boolean; // all drops are valid - board editor
     dests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
     showDests?: boolean; // whether to add the dest class on squares
+    spare?: boolean; // whether to remove dropped piece from hand after drop - board editor
     events?: {
       after?: (role: sg.Piece, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after the drop has been played
     };
@@ -81,8 +82,8 @@ export interface Config {
     addToHandOnDropOff?: boolean; // add a piece to hand when it is dropped on it, requires deleteOnDropOff
   };
   selectable?: {
-    // disable to enforce dragging over click-click move
-    enabled?: boolean;
+    enabled?: boolean; // disable to enforce dragging over click-click move
+    deleteOnTouch?: boolean; // selecting a piece on the board or in hand will remove it - board editor
   };
   events?: {
     change?: () => void; // called after the situation changes on the board
@@ -102,10 +103,6 @@ export interface Config {
       baseUrl?: string;
     };
     onChange?: (shapes: DrawShape[]) => void; // called after drawable shapes change
-  };
-  editable?: {
-    spare?: boolean; // dropped piece won't be removed from hand
-    deleteOnTouch?: boolean; // selecting a piece will remove it
   };
   promotion?: {
     active?: boolean;

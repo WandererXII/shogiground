@@ -117,7 +117,7 @@ function startDragFromHand(s: State): MouchBind {
         else s.drawable.piece = piece;
         s.dom.redraw();
       } else if (!s.viewOnly && !drag.unwantedEvent(e)) {
-        if (s.editable.deleteOnTouch) {
+        if (s.selectable.deleteOnTouch) {
           removeFromHand(s, piece);
           s.dom.redraw();
         } else if (

@@ -28,7 +28,7 @@ export interface Api {
   // perform a move programmatically
   move(orig: sg.Key, dest: sg.Key): void;
 
-  // perform a drop programmatically
+  // perform a drop programmatically, by default piece is taken from hand
   drop(piece: sg.Piece, key: sg.Key, spare?: boolean): void;
 
   // add and/or remove arbitrary pieces on the board
@@ -49,8 +49,8 @@ export interface Api {
   // click a square programmatically
   selectSquare(key: sg.Key | null, spare?: boolean, force?: boolean): void;
 
-  // select a piece from hand to drop programatically
-  selectPiece(piece: sg.Piece | null): void;
+  // select a piece from hand to drop programatically, by default piece in hand is selected
+  selectPiece(piece: sg.Piece | null, spare?: boolean): void;
 
   // play the current premove, if any; returns true if premove was played
   playPremove(): boolean;
@@ -138,7 +138,10 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
     },
 
     drop(piece, key, spare): void {
-      anim(state => board.baseDrop(state, piece, key, spare), state);
+      anim(state => {
+        state.droppable.spare = !!spare;
+        board.baseDrop(state, piece, key);
+      }, state);
     },
 
     setPieces(pieces): void {
@@ -161,16 +164,16 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       render(state => cancelPromotion(state), state);
     },
 
-    selectSquare(key, spare, force): void {
-      if (key) anim(state => board.selectSquare(state, key, spare, force), state);
+    selectSquare(key, force): void {
+      if (key) anim(state => board.selectSquare(state, key, force), state);
       else if (state.selected) {
         board.unselect(state);
         state.dom.redraw();
       }
     },
 
-    selectPiece(piece): void {
-      if (piece) render(state => board.selectPiece(state, piece), state);
+    selectPiece(piece, spare): void {
+      if (piece) render(state => board.selectPiece(state, piece, spare), state);
       else if (state.selectedPiece) {
         board.unselect(state);
         state.dom.redraw();

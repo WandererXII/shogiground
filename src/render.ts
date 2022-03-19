@@ -217,7 +217,7 @@ function updateHand(s: State, handEl: HTMLElement): void {
   while (pieceEl) {
     const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
     const num = s.hands.handMap.get(piece.color)?.get(piece.role) || 0;
-    const isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece);
+    const isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece) && !s.droppable.spare;
 
     pieceEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
     pieceEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
