@@ -134,8 +134,8 @@ export const roles = [
   'promotedlance',
   'tokin',
 ] as const;
-export const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9'] as const;
-export const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] as const;
+export const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'] as const;
+export const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'] as const;
 
 export const enum Notation {
   WESTERN,

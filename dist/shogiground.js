@@ -8,13 +8,18 @@ var Shogiground = (function () {
         return el.tagName === 'SQ';
     }
     const colors = ['sente', 'gote'];
-    const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+    const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+    const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'];
 
     // 1a, 2a, 3a ...
     const allKeys = Array.prototype.concat(...ranks.map(r => files.map(f => f + r)));
-    const pos2key = (pos) => allKeys[pos[0] + 9 * pos[1]];
-    const key2pos = (k) => [k.charCodeAt(0) - 49, k.charCodeAt(1) - 97];
+    const pos2key = (pos) => allKeys[pos[0] + 12 * pos[1]];
+    const key2pos = (k) => {
+        if (k.length > 2)
+            return [k.charCodeAt(1) - 39, k.charCodeAt(2) - 97];
+        else
+            return [k.charCodeAt(0) - 49, k.charCodeAt(1) - 97];
+    };
     function memo(f) {
         let v;
         const ret = () => {
@@ -564,9 +569,15 @@ var Shogiground = (function () {
                     x = dims.files - 1;
                     break;
                 default: {
-                    const nb = sfen[i].charCodeAt(0);
-                    if (nb < 58 && nb > 47)
-                        x -= nb - 48;
+                    const nb1 = sfen[i].charCodeAt(0), nb2 = sfen[i + 1] && sfen[i + 1].charCodeAt(0);
+                    if (nb1 < 58 && nb1 > 47) {
+                        if (nb2 && nb2 < 58 && nb2 > 47) {
+                            x -= (nb1 - 48) * 10 + (nb2 - 48);
+                            i++;
+                        }
+                        else
+                            x -= nb1 - 48;
+                    }
                     else {
                         const roleStr = (sfen[i] === '+' && sfen.length > i + 1 ? '+' + sfen[++i] : sfen[i]).toLowerCase();
                         const role = stringToRole(roleStr);
@@ -1753,7 +1764,7 @@ var Shogiground = (function () {
             const orientClass = s.orientation === 'gote' ? ' gote' : '';
             const ranks = ranksByNotation(s.coordinates.notation);
             board.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
-            board.appendChild(renderCoords(['9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, s.dimensions.files));
+            board.appendChild(renderCoords(['12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, s.dimensions.files));
         }
         wrapElements.board.innerHTML = '';
         // ensure the sg-wrap class and dimensions class i set beforehand to avoid recomputing style
@@ -1802,11 +1813,11 @@ var Shogiground = (function () {
     function ranksByNotation(notation) {
         switch (notation) {
             case 2 /* JAPANESE */:
-                return ['九', '八', '七', '六', '五', '四', '三', '二', '一'];
+                return ['十二', '十一', '十', '九', '八', '七', '六', '五', '四', '三', '二', '一'];
             case 3 /* WESTERN2 */:
-                return ['i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+                return ['l', 'k', 'j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
             default:
-                return ['9', '8', '7', '6', '5', '4', '3', '2', '1'];
+                return ['12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
         }
     }
     function renderCoords(elems, className, trim) {

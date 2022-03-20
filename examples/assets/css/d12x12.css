@@ -1,0 +1,19 @@
+.d-12x12 sg-squares {
+  grid-template: repeat(12, 1fr) / repeat(12, 1fr);
+}
+.d-12x12 piece {
+  width: calc(200% / 12);
+  height: calc(200% / 12);
+  margin: calc(-50% / 12 / 11 * 12) calc(-50% / 12);
+}
+
+sg-squares sq:nth-child(31)::after,
+sg-squares sq:nth-child(34)::after,
+sg-squares sq:nth-child(58)::after,
+sg-squares sq:nth-child(61)::after {
+  content: none !important;
+}
+
+.sg-wrap coords coord {
+  flex: 1 1 calc(100% / 12);
+}

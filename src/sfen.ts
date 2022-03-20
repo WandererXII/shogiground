@@ -84,9 +84,14 @@ export function readBoard(sfen: sg.BoardSfen, dims: sg.Dimensions): sg.Pieces {
         x = dims.files - 1;
         break;
       default: {
-        const nb = sfen[i].charCodeAt(0);
-        if (nb < 58 && nb > 47) x -= nb - 48;
-        else {
+        const nb1 = sfen[i].charCodeAt(0),
+          nb2 = sfen[i + 1] && sfen[i + 1].charCodeAt(0);
+        if (nb1 < 58 && nb1 > 47) {
+          if (nb2 && nb2 < 58 && nb2 > 47) {
+            x -= (nb1 - 48) * 10 + (nb2 - 48);
+            i++;
+          } else x -= nb1 - 48;
+        } else {
           const roleStr = (sfen[i] === '+' && sfen.length > i + 1 ? '+' + sfen[++i] : sfen[i]).toLowerCase();
           const role = stringToRole(roleStr);
           if (x >= 0 && role) {
