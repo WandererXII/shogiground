@@ -108,8 +108,9 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
 
   if (!draggedEl) return;
 
+  if (!previouslySelectedPiece && !spare && s.drawable.enabled && s.drawable.eraseOnClick) drawClear(s);
+
   board.selectPiece(s, piece, spare);
-  s.dom.redraw();
 
   const hadPremove = !!s.premovable.current;
   const hadPredrop = !!s.predroppable.current;
@@ -139,6 +140,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
     if (hadPremove) board.unsetPremove(s);
     if (hadPredrop) board.unsetPredrop(s);
   }
+  s.dom.redraw();
 }
 
 function processDrag(s: State): void {
