@@ -55,16 +55,6 @@ function closer(piece: AnimPiece, pieces: AnimPiece[]): AnimPiece | undefined {
   })[0];
 }
 
-function posOfOutsideEl(elRect: DOMRect, asSente: boolean, dims: sg.Dimensions, boardBounds: DOMRect): sg.Pos {
-  const sqW = boardBounds.width / dims.files,
-    sqH = boardBounds.height / dims.ranks;
-  let xOff = (elRect.left - boardBounds.left) / sqW;
-  if (asSente) xOff = dims.files - 1 - xOff;
-  let yOff = (elRect.top - boardBounds.top) / sqH;
-  if (!asSente) yOff = dims.ranks - 1 - yOff;
-  return [xOff, yOff];
-}
-
 function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State): AnimPlan {
   const anims: AnimVectors = new Map(),
     animedOrigs: sg.Key[] = [],
@@ -100,7 +90,13 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
             const handPieceOffset = current.dom.hands.pieceBounds().get(util.pieceNameOf(piece));
             if (handPieceOffset)
               missings.push({
-                pos: posOfOutsideEl(handPieceOffset, sentePov(current), current.dimensions, current.dom.board.bounds()),
+                pos: util.posOfOutsideEl(
+                  handPieceOffset.left,
+                  handPieceOffset.top,
+                  sentePov(current),
+                  current.dimensions,
+                  current.dom.board.bounds()
+                ),
                 piece: piece,
               });
           }

@@ -77,6 +77,8 @@ export const eventPosition = (e: sg.MouchEvent): sg.NumberPair | undefined => {
 
 export const isRightButton = (e: sg.MouchEvent): boolean => e.buttons === 2 || e.button === 2;
 
+export const isMiddleButton = (e: sg.MouchEvent): boolean => e.buttons === 4 || e.button === 1;
+
 export const createEl = (tagName: string, className?: string): HTMLElement => {
   const el = document.createElement(tagName);
   if (className) el.className = className;
@@ -110,4 +112,41 @@ export function domSquareIndexOfKey(key: sg.Key, asSente: boolean, dims: sg.Dime
   if (!asSente) index = dims.files * dims.ranks - 1 - index;
 
   return index;
+}
+
+export function isInsideRect(rect: DOMRect, pos: sg.Pos): boolean {
+  return (
+    rect.left <= pos[0] && rect.top <= pos[1] && rect.left + rect.width > pos[0] && rect.top + rect.height > pos[1]
+  );
+}
+
+export function posOfOutsideEl(
+  left: number,
+  top: number,
+  asSente: boolean,
+  dims: sg.Dimensions,
+  boardBounds: DOMRect
+): sg.Pos {
+  const sqW = boardBounds.width / dims.files,
+    sqH = boardBounds.height / dims.ranks;
+  let xOff = (left - boardBounds.left) / sqW;
+  if (asSente) xOff = dims.files - 1 - xOff;
+  let yOff = (top - boardBounds.top) / sqH;
+  if (!asSente) yOff = dims.ranks - 1 - yOff;
+  return [xOff, yOff];
+}
+
+export function getHandPieceAtDomPos(
+  pos: sg.NumberPair,
+  roles: sg.Role[],
+  bounds: Map<sg.PieceName, DOMRect>
+): sg.Piece | undefined {
+  for (const color of sg.colors) {
+    for (const role of roles) {
+      const piece = { color, role },
+        pieceRect = bounds.get(pieceNameOf(piece));
+      if (pieceRect && isInsideRect(pieceRect, pos)) return piece;
+    }
+  }
+  return;
 }

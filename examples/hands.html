@@ -71,7 +71,7 @@
       // Update the current slider value (each time you drag the slider handle)
       slider.oninput = function () {
         board.style.width = (450 + parseInt(this.value)).toString() + 'px';
-        board.style.height = (450 + parseInt(this.value)).toString() + 'px';
+        board.style.height = 'calc(' + (450 + parseInt(this.value)).toString() + 'px/ 11 * 12)';
         //document.dispatchEvent(new Event('shogiground.resize'));
       };
     </script>

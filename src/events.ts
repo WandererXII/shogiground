@@ -1,7 +1,7 @@
 import { State } from './state.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
-import { isRightButton, samePiece } from './util.js';
+import { isMiddleButton, isRightButton, samePiece } from './util.js';
 import * as sg from './types.js';
 import { promote } from './promotion.js';
 import { removeFromHand } from './board.js';
@@ -72,8 +72,13 @@ export function bindDocument(s: State, onResize: () => void): sg.Unbind {
     for (const ev of ['touchmove', 'mousemove']) unbinds.push(unbindable(document, ev, onmove as EventListener));
     for (const ev of ['touchend', 'mouseup']) unbinds.push(unbindable(document, ev, onend as EventListener));
 
-    unbinds.push(unbindable(document, 'scroll', onResize, { capture: true, passive: true }));
-    unbinds.push(unbindable(window, 'resize', onResize, { passive: true }));
+    const onScroll = () => {
+      s.dom.board.bounds.clear();
+      s.dom.hands.bounds.clear();
+      s.dom.hands.pieceBounds.clear();
+    };
+    unbinds.push(unbindable(document, 'scroll', onScroll, { capture: true, passive: true }));
+    unbinds.push(unbindable(window, 'resize', onScroll, { passive: true }));
   }
 
   return () => unbinds.forEach(f => f());
@@ -112,10 +117,12 @@ function startDragFromHand(s: State): MouchBind {
     const target = e.target as HTMLElement;
     if (sg.isPieceNode(target)) {
       const piece = { color: target.sgColor, role: target.sgRole };
-      if (s.drawable.enabled && (e.shiftKey || isRightButton(e))) {
+      if (s.drawable.enabled && isMiddleButton(e)) {
         if (s.drawable.piece && samePiece(s.drawable.piece, piece)) s.drawable.piece = undefined;
         else s.drawable.piece = piece;
         s.dom.redraw();
+      } else if (s.drawable.enabled && (e.shiftKey || isRightButton(e))) {
+        draw.startFromHand(s, piece, e);
       } else if (!s.viewOnly && !drag.unwantedEvent(e)) {
         if (s.selectable.deleteOnTouch) {
           removeFromHand(s, piece);

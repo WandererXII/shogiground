@@ -13,6 +13,7 @@ sg-hand piece::after {
   font-size: 1.5em;
   color: black;
   background-color: coral;
+  z-index: 5;
 }
 sg-hand.hand-bottom piece::after {
   top: unset;
@@ -84,11 +85,9 @@ sg-hand piece.current-pre {
 sg-hand piece.drawing:before {
   content: '';
   position: absolute;
-  width: 100%;
-  height: calc(100% / 11 * 12);
-  margin: -1px 0;
-  outline: 4px solid rgb(21, 120, 27);
-  outline-offset: -5px;
+  width: 12%;
+  height: calc(12% / 11 * 12);
+  background-color: black;
   border-radius: 50%;
-  opacity: 0.6 !important;
+  opacity: 0.7 !important;
 }

@@ -214,8 +214,7 @@ sg-square-over {
 }
 
 .sg-wrap .sg-shapes {
-  overflow: hidden;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .sg-wrap .sg-custom-svgs {
@@ -232,6 +231,7 @@ sg-square-over {
   pointer-events: none;
   opacity: 0.8;
   font-size: 9px;
+  user-select: none;
 }
 .sg-wrap coords.ranks {
   right: -15px;

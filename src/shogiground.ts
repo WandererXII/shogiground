@@ -56,13 +56,18 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
       redrawNow = (skipShapes?: boolean): void => {
         render(state);
         renderPromotions(state);
-        if (!skipShapes && boardElements.svg && boardElements.customSvg && boardElements.freePieces)
-          shapes.renderShapes(state, boardElements.svg, boardElements.customSvg, boardElements.freePieces);
+        if (!skipShapes && boardElements.svg)
+          shapes.renderShapes(state, boardElements.svg, boardElements.customSvg!, boardElements.freePieces!);
       },
       onResize = (): void => {
+        console.log('resize');
+
         boardBounds.clear();
         handsBounds.clear();
         handPiecesBounds.clear();
+
+        if (maybeState.drawable.shapes.some(s => shapes.isPiece(s.orig) || shapes.isPiece(s.dest)) && boardElements.svg)
+          shapes.renderShapes(state, boardElements.svg, boardElements.customSvg!, boardElements.freePieces!);
       };
     const state = maybeState as State;
     state.dom = {

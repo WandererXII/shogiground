@@ -180,7 +180,7 @@ function processDrag(s: State): void {
         else if (cur.fromOutside)
           cur.fromOutside.leftOrigin =
             cur.fromOutside.leftOrigin ||
-            (!!cur.fromOutside.originBounds && !isInsideSquare(cur.fromOutside.originBounds, cur.pos));
+            (!!cur.fromOutside.originBounds && !util.isInsideRect(cur.fromOutside.originBounds, cur.pos));
 
         // if the hovered square changed
         if (hover !== cur.hovering) {
@@ -240,9 +240,9 @@ export function end(s: State, e: sg.MouchEvent): void {
       const handBounds = s.dom.hands.bounds(),
         handBoundsTop = handBounds.get('top'),
         handBoundsBottom = handBounds.get('bottom');
-      if (handBoundsTop && isInsideSquare(handBoundsTop, cur.pos))
+      if (handBoundsTop && util.isInsideRect(handBoundsTop, cur.pos))
         board.addToHand(s, { color: util.opposite(s.orientation), role: cur.piece.role });
-      else if (handBoundsBottom && isInsideSquare(handBoundsBottom, cur.pos))
+      else if (handBoundsBottom && util.isInsideRect(handBoundsBottom, cur.pos))
         board.addToHand(s, { color: s.orientation, role: cur.piece.role });
     }
     board.callUserFunction(s.events.change);
@@ -257,7 +257,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   else if (
     cur.fromOutside?.leftOrigin ||
     (cur.fromOutside?.originBounds &&
-      isInsideSquare(cur.fromOutside.originBounds, cur.pos) &&
+      util.isInsideRect(cur.fromOutside.originBounds, cur.pos) &&
       cur.fromOutside.previouslySelectedPiece &&
       util.samePiece(cur.fromOutside.previouslySelectedPiece as sg.Piece, cur.piece))
   )
@@ -279,12 +279,6 @@ export function cancel(s: State): void {
 // support one finger touch only or left click
 export function unwantedEvent(e: sg.MouchEvent): boolean {
   return !e.isTrusted || (e.button !== undefined && e.button !== 0) || (!!e.touches && e.touches.length > 1);
-}
-
-function isInsideSquare(rect: DOMRect, pos: sg.Pos): boolean {
-  return (
-    rect.left <= pos[0] && rect.top <= pos[1] && rect.left + rect.width > pos[0] && rect.top + rect.height > pos[1]
-  );
 }
 
 function updateHovers(s: State, prevHover?: sg.Key): void {

@@ -1,11 +1,12 @@
 import { State } from './state.js';
 import { unselect, cancelMoveOrDrop, getKeyAtDomPos, sentePov } from './board.js';
-import { eventPosition, isRightButton, samePiece } from './util.js';
+import { eventPosition, isRightButton, posOfOutsideEl, samePiece, getHandPieceAtDomPos } from './util.js';
 import * as sg from './types.js';
+import { isPiece, pos2user, samePieceOrKey, setAttributes } from './shapes.js';
 
 export interface DrawShape {
-  orig: sg.Key;
-  dest?: sg.Key;
+  orig: sg.Key | sg.Piece;
+  dest: sg.Key | sg.Piece;
   brush: string;
   modifiers?: DrawModifiers;
   piece?: DrawShapePiece;
@@ -47,10 +48,10 @@ export interface Drawable {
 }
 
 export interface DrawCurrent {
-  orig: sg.Key; // orig key of drawing
-  dest?: sg.Key; // shape dest, or undefined for circle
+  orig: sg.Key | sg.Piece;
+  dest?: sg.Key | sg.Piece; // undefined if outside board
+  arrow?: SVGElement;
   piece?: sg.Piece;
-  mouseSq?: sg.Key; // square being moused over
   pos: sg.NumberPair; // relative current position
   brush: string; // brush name for shape
 }
@@ -63,14 +64,32 @@ export function start(state: State, e: sg.MouchEvent): void {
   e.stopPropagation();
   e.preventDefault();
   e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
-  const pos = eventPosition(e)!,
-    orig = getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.board.bounds()),
+  const pos = eventPosition(e),
+    orig = pos && getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.board.bounds()),
     piece = state.drawable.piece;
   if (!orig) return;
   state.drawable.current = {
     orig,
+    dest: undefined,
     pos,
     piece,
+    brush: eventBrush(e),
+  };
+  processDraw(state);
+}
+
+export function startFromHand(state: State, piece: sg.Piece, e: sg.MouchEvent): void {
+  // support one finger touch only
+  if (e.touches && e.touches.length > 1) return;
+  e.stopPropagation();
+  e.preventDefault();
+  e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
+  const pos = eventPosition(e);
+  if (!pos) return;
+  state.drawable.current = {
+    orig: piece,
+    dest: undefined,
+    pos,
     brush: eventBrush(e),
   };
   processDraw(state);
@@ -79,12 +98,24 @@ export function start(state: State, e: sg.MouchEvent): void {
 export function processDraw(state: State): void {
   requestAnimationFrame(() => {
     const cur = state.drawable.current;
+
     if (cur) {
-      const mouseSq = getKeyAtDomPos(cur.pos, sentePov(state), state.dimensions, state.dom.board.bounds());
-      if (mouseSq !== cur.mouseSq) {
-        cur.mouseSq = mouseSq;
-        cur.dest = mouseSq !== cur.orig ? mouseSq : undefined;
+      const bounds = state.dom.board.bounds(),
+        dest =
+          getKeyAtDomPos(cur.pos, sentePov(state), state.dimensions, bounds) ||
+          getHandPieceAtDomPos(cur.pos, state.hands.roles, state.dom.hands.pieceBounds());
+      if (cur.dest !== dest && !(cur.dest && dest && samePieceOrKey(dest, cur.dest))) {
+        cur.dest = dest;
         state.dom.redrawNow();
+      }
+      if (!cur.dest && cur.arrow) {
+        const dest = pos2user(
+          posOfOutsideEl(cur.pos[0], cur.pos[1], sentePov(state), state.dimensions, bounds),
+          state.orientation,
+          state.dimensions
+        );
+
+        setAttributes(cur.arrow, { x2: dest[0] - 0.5, y2: dest[1] - 0.5 });
       }
       processDraw(state);
     }
@@ -95,10 +126,10 @@ export function move(state: State, e: sg.MouchEvent): void {
   if (state.drawable.current) state.drawable.current.pos = eventPosition(e)!;
 }
 
-export function end(state: State): void {
+export function end(state: State, _: sg.MouchEvent): void {
   const cur = state.drawable.current;
   if (cur) {
-    if (cur.mouseSq) addShape(state.drawable, cur);
+    addShape(state.drawable, cur);
     cancel(state);
   }
 }
@@ -113,6 +144,7 @@ export function cancel(state: State): void {
 export function clear(state: State): void {
   if (state.drawable.shapes.length) {
     state.drawable.shapes = [];
+    state.drawable.piece = undefined;
     state.dom.redraw();
     onChange(state.drawable);
   }
@@ -125,18 +157,28 @@ function eventBrush(e: sg.MouchEvent): string {
 }
 
 function addShape(drawable: Drawable, cur: DrawCurrent): void {
-  const similarShape = (s: DrawShape) => s.orig === cur.orig && s.dest === cur.dest;
+  if (!cur.dest) return;
 
-  // have arrows be independent of pieces
+  const similarShape = (s: DrawShape) => samePieceOrKey(cur.orig, s.orig) && samePieceOrKey(cur.dest!, s.dest);
+
+  // separate shape for pieces
   const piece = cur.piece;
-  if (cur.dest) cur.piece = undefined;
-  const similar = drawable.shapes.find(similarShape);
-  const diffPiece = drawable.shapes.find(s => s.orig === cur.orig && s.piece && piece && !samePiece(s.piece, piece));
+  cur.piece = undefined;
 
+  const similar = drawable.shapes.find(similarShape);
+  const removePiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && samePiece(piece, s.piece));
+  const diffPiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && !samePiece(piece, s.piece));
+
+  // remove every similar shape
   if (similar) drawable.shapes = drawable.shapes.filter(s => !similarShape(s));
-  if (!similar || similar.brush !== cur.brush || (!!similar.piece !== !!cur.piece && cur.piece))
-    drawable.shapes.push(cur);
-  if (!!piece !== !!cur.piece || diffPiece) drawable.shapes.push({ orig: cur.orig, brush: cur.brush, piece: piece });
+
+  if (!isPiece(cur.orig) && piece && !removePiece) {
+    drawable.shapes.push({ orig: cur.orig, dest: cur.orig, piece: piece, brush: cur.brush });
+    // force circle around drawn pieces
+    if (!samePieceOrKey(cur.orig, cur.dest)) drawable.shapes.push({ orig: cur.orig, dest: cur.orig, brush: cur.brush });
+  }
+
+  if (!similar || diffPiece || similar.brush !== cur.brush) drawable.shapes.push(cur as DrawShape);
   onChange(drawable);
 }
 
