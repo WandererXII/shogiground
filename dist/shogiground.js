@@ -931,16 +931,16 @@ var Shogiground = (function () {
         const defsEl = svg.querySelector('defs');
         const shapesEl = svg.querySelector('g');
         const customSvgsEl = customSvg.querySelector('g');
-        syncDefs(d, shapes, outsideArrow ? curD : undefined, defsEl);
-        syncShapes(shapes.filter(s => !s.shape.customSvg && (!s.shape.piece || s.current)), shapesEl, shape => renderSVGShape(state, shape, d.brushes, arrowDests), outsideArrow);
-        syncShapes(shapes.filter(s => s.shape.customSvg), customSvgsEl, shape => renderSVGShape(state, shape, d.brushes, arrowDests));
+        syncDefs(shapes, outsideArrow ? curD : undefined, defsEl);
+        syncShapes(shapes.filter(s => !s.shape.customSvg && (!s.shape.piece || s.current)), shapesEl, shape => renderSVGShape(state, shape, arrowDests), outsideArrow);
+        syncShapes(shapes.filter(s => s.shape.customSvg), customSvgsEl, shape => renderSVGShape(state, shape, arrowDests));
         syncShapes(pieceShapes, freePieces, shape => renderPiece(state, shape));
         if (!outsideArrow && curD)
             curD.arrow = undefined;
         if (outsideArrow && !curD.arrow) {
             const orig = pieceOrKeyToPos(curD.orig, state);
             if (orig) {
-                const el = renderArrow(d.brushes[curD.brush], orig, orig, true, false, true);
+                const el = renderArrow(curD.brush, orig, orig, true, false, true);
                 el.setAttribute('sgHash', outsideArrowHash);
                 curD.arrow = el;
                 shapesEl.appendChild(el);
@@ -948,30 +948,23 @@ var Shogiground = (function () {
         }
     }
     // append only. Don't try to update/remove.
-    function syncDefs(d, shapes, outsideShape, defsEl) {
-        const brushes = new Map();
-        let brush;
-        const addBrush = (shape) => {
-            brush = d.brushes[shape.brush];
-            if (shape.modifiers)
-                brush = makeCustomBrush(brush, shape.modifiers);
-            brushes.set(brush.key, brush);
-        };
+    function syncDefs(shapes, outsideShape, defsEl) {
+        const brushes = new Set();
         for (const s of shapes) {
             if (!samePieceOrKey(s.shape.dest, s.shape.orig))
-                addBrush(s.shape);
+                brushes.add(s.shape.brush);
         }
         if (outsideShape)
-            addBrush(outsideShape);
+            brushes.add(outsideShape.brush);
         const keysInDom = new Set();
         let el = defsEl.firstElementChild;
         while (el) {
             keysInDom.add(el.getAttribute('sgKey'));
             el = el.nextElementSibling;
         }
-        for (const [key, brush] of brushes.entries()) {
+        for (const key of brushes) {
             if (!keysInDom.has(key))
-                defsEl.appendChild(renderMarker(brush));
+                defsEl.appendChild(renderMarker(key));
         }
     }
     // append and remove only. No updates.
@@ -1005,7 +998,7 @@ var Shogiground = (function () {
             }
         }
     }
-    function shapeHash({ orig, dest, brush, piece, modifiers, customSvg }, arrowDests, current, boundHash) {
+    function shapeHash({ orig, dest, brush, piece, customSvg }, arrowDests, current, boundHash) {
         return [
             current,
             (isPiece(orig) || isPiece(dest)) && boundHash(),
@@ -1014,7 +1007,6 @@ var Shogiground = (function () {
             brush,
             (arrowDests.get(isPiece(dest) ? pieceNameOf(dest) : dest) || 0) > 1,
             piece && pieceHash(piece),
-            modifiers && modifiersHash(modifiers),
             customSvg && customSvgHash(customSvg),
         ]
             .filter(x => x)
@@ -1022,9 +1014,6 @@ var Shogiground = (function () {
     }
     function pieceHash(piece) {
         return [piece.color, piece.role, piece.scale].filter(x => x).join(',');
-    }
-    function modifiersHash(m) {
-        return '' + (m.lineWidth || '');
     }
     function customSvgHash(s) {
         // Rolling hash with base 31 (cf. https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript)
@@ -1034,7 +1023,7 @@ var Shogiground = (function () {
         }
         return 'custom-' + h.toString();
     }
-    function renderSVGShape(state, { shape, current, hash }, brushes, arrowDests) {
+    function renderSVGShape(state, { shape, current, hash }, arrowDests) {
         const orig = pieceOrKeyToPos(shape.orig, state);
         if (!orig)
             return;
@@ -1045,17 +1034,14 @@ var Shogiground = (function () {
         else {
             const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state);
             if (dest) {
-                let brush = brushes[shape.brush];
-                if (shape.modifiers)
-                    brush = makeCustomBrush(brush, shape.modifiers);
-                el = renderArrow(brush, orig, dest, !!current, (arrowDests.get((isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest)) || 0) > 1, false);
+                el = renderArrow(shape.brush, orig, dest, !!current, (arrowDests.get((isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest)) || 0) > 1, false);
             }
             else if (samePieceOrKey(shape.dest, shape.orig)) {
                 const radius = isPiece(shape.orig) &&
                     state.dom.hands.pieceBounds().get(pieceNameOf(shape.orig)).height /
                         (state.dom.board.bounds().height / state.dimensions.ranks) /
                         2;
-                el = renderCircle(brushes[shape.brush], orig, radius || 0.5, !!current);
+                el = renderCircle(shape.brush, orig, radius || 0.5, !!current);
             }
         }
         if (el) {
@@ -1077,10 +1063,9 @@ var Shogiground = (function () {
     function renderCircle(brush, pos, radius, current) {
         const o = pos, widths = circleWidth();
         return setAttributes(createSVGElement('circle'), {
-            stroke: brush.color,
+            class: brush,
             'stroke-width': widths[current ? 0 : 1],
             fill: 'none',
-            opacity: opacity(brush, current, false),
             cx: o[0],
             cy: o[1],
             r: radius - widths[1] / 2,
@@ -1089,11 +1074,10 @@ var Shogiground = (function () {
     function renderArrow(brush, orig, dest, current, shorten, outside) {
         const m = arrowMargin(shorten && !current), a = orig, b = dest, dx = b[0] - a[0], dy = b[1] - a[1], angle = Math.atan2(dy, dx), xo = Math.cos(angle) * m, yo = Math.sin(angle) * m;
         return setAttributes(createSVGElement('line'), {
-            stroke: brush.color,
-            'stroke-width': lineWidth(brush, current),
+            class: shapeClass(brush, current, outside),
+            'stroke-width': lineWidth(current),
             'stroke-linecap': 'round',
-            'marker-end': 'url(#arrowhead-' + brush.key + ')',
-            opacity: opacity(brush, current, outside),
+            'marker-end': 'url(#arrowhead-' + brush + ')',
             x1: a[0],
             y1: a[1],
             x2: b[0] - xo,
@@ -1113,7 +1097,7 @@ var Shogiground = (function () {
     }
     function renderMarker(brush) {
         const marker = setAttributes(createSVGElement('marker'), {
-            id: 'arrowhead-' + brush.key,
+            id: 'arrowhead-' + brush,
             orient: 'auto',
             markerWidth: 4,
             markerHeight: 8,
@@ -1122,9 +1106,8 @@ var Shogiground = (function () {
         });
         marker.appendChild(setAttributes(createSVGElement('path'), {
             d: 'M0,0 V4 L3,2 Z',
-            fill: brush.color,
         }));
-        marker.setAttribute('sgKey', brush.key);
+        marker.setAttribute('sgKey', brush);
         return marker;
     }
     function setAttributes(el, attrs) {
@@ -1141,22 +1124,14 @@ var Shogiground = (function () {
     function samePieceOrKey(kp1, kp2) {
         return (isPiece(kp1) && isPiece(kp2) && samePiece(kp1, kp2)) || kp1 === kp2;
     }
-    function makeCustomBrush(base, modifiers) {
-        return {
-            color: base.color,
-            opacity: Math.round(base.opacity * 10) / 10,
-            lineWidth: Math.round(modifiers.lineWidth || base.lineWidth),
-            key: [base.key, modifiers.lineWidth].filter(x => x).join(''),
-        };
+    function shapeClass(brush, current, outside) {
+        return brush + (current ? ' current' : '') + (outside ? ' outside' : '');
     }
     function circleWidth() {
         return [3 / 64, 4 / 64];
     }
-    function lineWidth(brush, current) {
-        return ((brush.lineWidth || 10) * (current ? 0.85 : 1)) / 64;
-    }
-    function opacity(brush, current, outside) {
-        return ((brush.opacity || 1) * (current ? 0.9 : 1)) / (outside ? 2 : 1);
+    function lineWidth(current) {
+        return (current ? 8.5 : 10) / 64;
     }
     function arrowMargin(shorten) {
         return (shorten ? 20 : 10) / 64;
@@ -1171,7 +1146,7 @@ var Shogiground = (function () {
             return pos2user(key2pos(kp), state.orientation, state.dimensions);
     }
 
-    const brushes = ['green', 'red', 'blue', 'yellow'];
+    const brushes = ['primary', 'alternative0', 'alternative1', 'alternative2'];
     function start$2(state, e) {
         // support one finger touch only
         if (e.touches && e.touches.length > 1)
@@ -1771,21 +1746,6 @@ var Shogiground = (function () {
                 eraseOnClick: true,
                 shapes: [],
                 autoShapes: [],
-                brushes: {
-                    green: { key: 'g', color: '#15781B', opacity: 1, lineWidth: 10 },
-                    red: { key: 'r', color: '#882020', opacity: 1, lineWidth: 10 },
-                    blue: { key: 'b', color: '#003088', opacity: 1, lineWidth: 10 },
-                    yellow: { key: 'y', color: '#e68f00', opacity: 1, lineWidth: 10 },
-                    paleBlue: { key: 'pb', color: '#003088', opacity: 0.4, lineWidth: 15 },
-                    paleGreen: { key: 'pg', color: '#15781B', opacity: 0.4, lineWidth: 15 },
-                    paleRed: { key: 'pr', color: '#882020', opacity: 0.4, lineWidth: 15 },
-                    paleGrey: {
-                        key: 'pgr',
-                        color: '#4a4a4a',
-                        opacity: 0.35,
-                        lineWidth: 15,
-                    },
-                },
                 prevSvgHash: '',
             },
         };

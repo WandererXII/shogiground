@@ -261,3 +261,54 @@ sg-square-over {
 .sg-wrap coords.ranks coord {
   transform: translateY(39%);
 }
+
+.sg-wrap .sg-shapes circle {
+  fill: none;
+}
+.sg-wrap .sg-shapes line.current {
+  opacity: 0.9;
+}
+.sg-wrap .sg-shapes line.outside {
+  opacity: 0.4;
+}
+
+.sg-wrap .sg-shapes circle.primary {
+  stroke: #15781b;
+}
+.sg-wrap .sg-shapes line.primary {
+  stroke: #15781b;
+}
+.sg-wrap .sg-shapes marker#arrowhead-primary path {
+  fill: #15781b;
+}
+
+.sg-wrap .sg-shapes circle.alternative0 {
+  stroke: #882020;
+}
+.sg-wrap .sg-shapes line.alternative0 {
+  stroke: #882020;
+}
+.sg-wrap .sg-shapes marker#arrowhead-alternative0 path {
+  fill: #882020;
+}
+
+.sg-wrap .sg-shapes circle.alternative1 {
+  stroke: #003088;
+}
+.sg-wrap .sg-shapes line.alternative1 {
+  stroke: #003088;
+}
+.sg-wrap .sg-shapes marker#arrowhead-alternative1 path {
+  fill: #003088;
+}
+
+.sg-wrap .sg-shapes circle.alternative2 {
+  stroke: #e68f00;
+}
+.sg-wrap .sg-shapes line.alternative2 {
+  stroke: #e68f00;
+  stroke-width: 0.2;
+}
+.sg-wrap .sg-shapes marker#arrowhead-alternative2 path {
+  fill: #e68f00;
+}

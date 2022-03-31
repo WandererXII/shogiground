@@ -7,31 +7,15 @@ import { isPiece, pos2user, samePieceOrKey, setAttributes } from './shapes.js';
 export interface DrawShape {
   orig: sg.Key | sg.Piece;
   dest: sg.Key | sg.Piece;
-  brush: string;
-  modifiers?: DrawModifiers;
   piece?: DrawShapePiece;
-  customSvg?: string;
+  customSvg?: string; // svg
+  brush: string; // css class to be appended
 }
 
 export interface DrawShapePiece {
   role: sg.Role;
   color: sg.Color;
   scale?: number;
-}
-
-export interface DrawBrush {
-  key: string;
-  color: string;
-  opacity: number;
-  lineWidth: number;
-}
-
-export interface DrawBrushes {
-  [name: string]: DrawBrush;
-}
-
-export interface DrawModifiers {
-  lineWidth?: number;
 }
 
 export interface Drawable {
@@ -42,7 +26,6 @@ export interface Drawable {
   shapes: DrawShape[]; // user shapes
   autoShapes: DrawShape[]; // computer shapes
   current?: DrawCurrent;
-  brushes: DrawBrushes;
   prevSvgHash: string;
   piece?: sg.Piece;
 }
@@ -56,7 +39,7 @@ export interface DrawCurrent {
   brush: string; // brush name for shape
 }
 
-const brushes = ['green', 'red', 'blue', 'yellow'];
+const brushes = ['primary', 'alternative0', 'alternative1', 'alternative2'];
 
 export function start(state: State, e: sg.MouchEvent): void {
   // support one finger touch only
