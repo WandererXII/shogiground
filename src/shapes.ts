@@ -108,7 +108,7 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
   if (outsideArrow && !curD.arrow) {
     const orig = pieceOrKeyToPos(curD.orig, state);
     if (orig) {
-      const el = renderArrow(curD.brush, orig, orig, true, false, true);
+      const el = renderArrow(curD.brush, orig, orig, state.squareRatio, true, false, true);
       el.setAttribute('sgHash', outsideArrowHash);
       curD.arrow = el;
       shapesEl.appendChild(el);
@@ -212,18 +212,23 @@ function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDest
         shape.brush,
         orig,
         dest,
+        state.squareRatio,
         !!current,
         (arrowDests.get((isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest)!) || 0) > 1,
         false
       );
     } else if (samePieceOrKey(shape.dest, shape.orig)) {
-      const radius =
-        isPiece(shape.orig) &&
-        state.dom.hands.pieceBounds().get(pieceNameOf(shape.orig))!.height /
-          (state.dom.board.bounds().height / state.dimensions.ranks) /
-          2;
-
-      el = renderCircle(shape.brush, orig, radius || 0.5, !!current);
+      let ratio: sg.NumberPair = state.squareRatio;
+      if (isPiece(shape.orig)) {
+        const pieceBounds = state.dom.hands.pieceBounds().get(pieceNameOf(shape.orig)),
+          bounds = state.dom.board.bounds();
+        if (pieceBounds) {
+          const heightBase = pieceBounds.height / (bounds.height / state.dimensions.files);
+          // we want to keep the ratio that is on the board
+          ratio = [heightBase * state.squareRatio[0], heightBase * state.squareRatio[1]];
+        }
+      }
+      el = renderEllipse(shape.brush, orig, ratio, !!current);
     }
   }
   if (el) {
@@ -248,16 +253,17 @@ function renderCustomSvg(customSvg: string, pos: sg.Pos): SVGElement {
   return g;
 }
 
-function renderCircle(brush: string, pos: sg.Pos, radius: number, current: boolean): SVGElement {
+function renderEllipse(brush: string, pos: sg.Pos, ratio: sg.NumberPair, current: boolean): SVGElement {
   const o = pos,
-    widths = circleWidth();
-  return setAttributes(createSVGElement('circle'), {
+    widths = ellipseWidth(ratio);
+  return setAttributes(createSVGElement('ellipse'), {
     class: brush,
     'stroke-width': widths[current ? 0 : 1],
     fill: 'none',
     cx: o[0],
     cy: o[1],
-    r: radius - widths[1] / 2,
+    rx: ratio[0] / 2 - widths[1] / 2,
+    ry: ratio[1] / 2 - widths[1] / 2,
   });
 }
 
@@ -265,11 +271,12 @@ function renderArrow(
   brush: string,
   orig: sg.Pos,
   dest: sg.Pos,
+  ratio: sg.NumberPair,
   current: boolean,
   shorten: boolean,
   outside: boolean
 ): SVGElement {
-  const m = arrowMargin(shorten && !current),
+  const m = arrowMargin(shorten && !current, ratio),
     a = orig,
     b = dest,
     dx = b[0] - a[0],
@@ -279,7 +286,7 @@ function renderArrow(
     yo = Math.sin(angle) * m;
   return setAttributes(createSVGElement('line'), {
     class: shapeClass(brush, current, outside),
-    'stroke-width': lineWidth(current),
+    'stroke-width': lineWidth(current, ratio),
     'stroke-linecap': 'round',
     'marker-end': 'url(#arrowhead-' + brush + ')',
     x1: a[0],
@@ -327,8 +334,10 @@ export function setAttributes(el: SVGElement, attrs: { [key: string]: any }): SV
   return el;
 }
 
-export function pos2user(pos: sg.Pos, color: sg.Color, dims: sg.Dimensions): sg.NumberPair {
-  return color === 'sente' ? [dims.files - 1 - pos[0], pos[1]] : [pos[0], dims.ranks - 1 - pos[1]];
+export function pos2user(pos: sg.Pos, color: sg.Color, dims: sg.Dimensions, ratio: sg.NumberPair): sg.NumberPair {
+  return color === 'sente'
+    ? [(dims.files - 1 - pos[0]) * ratio[0], pos[1] * ratio[1]]
+    : [pos[0] * ratio[0], (dims.ranks - 1 - pos[1]) * ratio[1]];
 }
 
 export function isPiece(x: sg.Key | sg.Piece): x is sg.Piece {
@@ -343,16 +352,20 @@ function shapeClass(brush: string, current: boolean, outside: boolean): string {
   return brush + (current ? ' current' : '') + (outside ? ' outside' : '');
 }
 
-function circleWidth(): [number, number] {
-  return [3 / 64, 4 / 64];
+function ratioAverage(ratio: sg.NumberPair): number {
+  return (ratio[0] + ratio[1]) / 2;
 }
 
-function lineWidth(current: boolean): number {
-  return (current ? 8.5 : 10) / 64;
+function ellipseWidth(ratio: sg.NumberPair): [number, number] {
+  return [(3 / 64) * ratioAverage(ratio), (4 / 64) * ratioAverage(ratio)];
 }
 
-function arrowMargin(shorten: boolean): number {
-  return (shorten ? 20 : 10) / 64;
+function lineWidth(current: boolean, ratio: sg.NumberPair): number {
+  return ((current ? 8.5 : 10) / 64) * ratioAverage(ratio);
+}
+
+function arrowMargin(shorten: boolean, ratio: sg.NumberPair): number {
+  return ((shorten ? 20 : 10) / 64) * ratioAverage(ratio);
 }
 
 function pieceOrKeyToPos(kp: sg.Key | sg.Piece, state: State): sg.Pos | undefined {
@@ -368,6 +381,8 @@ function pieceOrKeyToPos(kp: sg.Key | sg.Piece, state: State): sg.Pos | undefine
           state.dimensions,
           state.dom.board.bounds()
         );
-    return pos && pos2user([pos[0] + offset[0], pos[1] + offset[1]], state.orientation, state.dimensions);
-  } else return pos2user(key2pos(kp), state.orientation, state.dimensions);
+    return (
+      pos && pos2user([pos[0] + offset[0], pos[1] + offset[1]], state.orientation, state.dimensions, state.squareRatio)
+    );
+  } else return pos2user(key2pos(kp), state.orientation, state.dimensions, state.squareRatio);
 }

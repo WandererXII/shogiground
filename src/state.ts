@@ -15,6 +15,7 @@ export interface HeadlessState {
   selected?: sg.Key; // square currently selected "1a"
   selectedPiece?: sg.Piece; // piece in hand currently selected
   viewOnly: boolean; // don't bind events: the user will never be able to move pieces around
+  squareRatio: sg.NumberPair; // ratio of the board [width, height]
   disableContextMenu: boolean; // because who needs a context menu on a shogi board
   blockTouchScroll: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
   scaleDownPieces: boolean;
@@ -120,6 +121,7 @@ export function defaults(): HeadlessState {
     turnColor: 'sente',
     activeColor: 'both',
     viewOnly: false,
+    squareRatio: [11, 12],
     disableContextMenu: false,
     blockTouchScroll: false,
     scaleDownPieces: true,

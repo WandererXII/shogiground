@@ -95,10 +95,11 @@ export function processDraw(state: State): void {
         const dest = pos2user(
           posOfOutsideEl(cur.pos[0], cur.pos[1], sentePov(state), state.dimensions, bounds),
           state.orientation,
-          state.dimensions
+          state.dimensions,
+          state.squareRatio
         );
 
-        setAttributes(cur.arrow, { x2: dest[0] - 0.5, y2: dest[1] - 0.5 });
+        setAttributes(cur.arrow, { x2: dest[0] - state.squareRatio[0] / 2, y2: dest[1] - state.squareRatio[1] / 2 });
       }
       processDraw(state);
     }

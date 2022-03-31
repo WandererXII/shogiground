@@ -940,7 +940,7 @@ var Shogiground = (function () {
         if (outsideArrow && !curD.arrow) {
             const orig = pieceOrKeyToPos(curD.orig, state);
             if (orig) {
-                const el = renderArrow(curD.brush, orig, orig, true, false, true);
+                const el = renderArrow(curD.brush, orig, orig, state.squareRatio, true, false, true);
                 el.setAttribute('sgHash', outsideArrowHash);
                 curD.arrow = el;
                 shapesEl.appendChild(el);
@@ -1034,14 +1034,19 @@ var Shogiground = (function () {
         else {
             const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state);
             if (dest) {
-                el = renderArrow(shape.brush, orig, dest, !!current, (arrowDests.get((isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest)) || 0) > 1, false);
+                el = renderArrow(shape.brush, orig, dest, state.squareRatio, !!current, (arrowDests.get((isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest)) || 0) > 1, false);
             }
             else if (samePieceOrKey(shape.dest, shape.orig)) {
-                const radius = isPiece(shape.orig) &&
-                    state.dom.hands.pieceBounds().get(pieceNameOf(shape.orig)).height /
-                        (state.dom.board.bounds().height / state.dimensions.ranks) /
-                        2;
-                el = renderCircle(shape.brush, orig, radius || 0.5, !!current);
+                let ratio = state.squareRatio;
+                if (isPiece(shape.orig)) {
+                    const pieceBounds = state.dom.hands.pieceBounds().get(pieceNameOf(shape.orig)), bounds = state.dom.board.bounds();
+                    if (pieceBounds) {
+                        const heightBase = pieceBounds.height / (bounds.height / state.dimensions.files);
+                        // we want to keep the ratio that is on the board
+                        ratio = [heightBase * state.squareRatio[0], heightBase * state.squareRatio[1]];
+                    }
+                }
+                el = renderEllipse(shape.brush, orig, ratio, !!current);
             }
         }
         if (el) {
@@ -1060,22 +1065,23 @@ var Shogiground = (function () {
         svg.innerHTML = customSvg;
         return g;
     }
-    function renderCircle(brush, pos, radius, current) {
-        const o = pos, widths = circleWidth();
-        return setAttributes(createSVGElement('circle'), {
+    function renderEllipse(brush, pos, ratio, current) {
+        const o = pos, widths = ellipseWidth(ratio);
+        return setAttributes(createSVGElement('ellipse'), {
             class: brush,
             'stroke-width': widths[current ? 0 : 1],
             fill: 'none',
             cx: o[0],
             cy: o[1],
-            r: radius - widths[1] / 2,
+            rx: ratio[0] / 2 - widths[1] / 2,
+            ry: ratio[1] / 2 - widths[1] / 2,
         });
     }
-    function renderArrow(brush, orig, dest, current, shorten, outside) {
-        const m = arrowMargin(shorten && !current), a = orig, b = dest, dx = b[0] - a[0], dy = b[1] - a[1], angle = Math.atan2(dy, dx), xo = Math.cos(angle) * m, yo = Math.sin(angle) * m;
+    function renderArrow(brush, orig, dest, ratio, current, shorten, outside) {
+        const m = arrowMargin(shorten && !current, ratio), a = orig, b = dest, dx = b[0] - a[0], dy = b[1] - a[1], angle = Math.atan2(dy, dx), xo = Math.cos(angle) * m, yo = Math.sin(angle) * m;
         return setAttributes(createSVGElement('line'), {
             class: shapeClass(brush, current, outside),
-            'stroke-width': lineWidth(current),
+            'stroke-width': lineWidth(current, ratio),
             'stroke-linecap': 'round',
             'marker-end': 'url(#arrowhead-' + brush + ')',
             x1: a[0],
@@ -1115,8 +1121,10 @@ var Shogiground = (function () {
             el.setAttribute(key, attrs[key]);
         return el;
     }
-    function pos2user(pos, color, dims) {
-        return color === 'sente' ? [dims.files - 1 - pos[0], pos[1]] : [pos[0], dims.ranks - 1 - pos[1]];
+    function pos2user(pos, color, dims, ratio) {
+        return color === 'sente'
+            ? [(dims.files - 1 - pos[0]) * ratio[0], pos[1] * ratio[1]]
+            : [pos[0] * ratio[0], (dims.ranks - 1 - pos[1]) * ratio[1]];
     }
     function isPiece(x) {
         return typeof x === 'object';
@@ -1127,23 +1135,26 @@ var Shogiground = (function () {
     function shapeClass(brush, current, outside) {
         return brush + (current ? ' current' : '') + (outside ? ' outside' : '');
     }
-    function circleWidth() {
-        return [3 / 64, 4 / 64];
+    function ratioAverage(ratio) {
+        return (ratio[0] + ratio[1]) / 2;
     }
-    function lineWidth(current) {
-        return (current ? 8.5 : 10) / 64;
+    function ellipseWidth(ratio) {
+        return [(3 / 64) * ratioAverage(ratio), (4 / 64) * ratioAverage(ratio)];
     }
-    function arrowMargin(shorten) {
-        return (shorten ? 20 : 10) / 64;
+    function lineWidth(current, ratio) {
+        return ((current ? 8.5 : 10) / 64) * ratioAverage(ratio);
+    }
+    function arrowMargin(shorten, ratio) {
+        return ((shorten ? 20 : 10) / 64) * ratioAverage(ratio);
     }
     function pieceOrKeyToPos(kp, state) {
         if (isPiece(kp)) {
             const pieceBounds = state.dom.hands.pieceBounds().get(pieceNameOf(kp)), offset = sentePov(state) ? [0.5, -0.5] : [-0.5, 0.5], pos = pieceBounds &&
                 posOfOutsideEl(pieceBounds.left + pieceBounds.width / 2, pieceBounds.top + pieceBounds.height / 2, sentePov(state), state.dimensions, state.dom.board.bounds());
-            return pos && pos2user([pos[0] + offset[0], pos[1] + offset[1]], state.orientation, state.dimensions);
+            return (pos && pos2user([pos[0] + offset[0], pos[1] + offset[1]], state.orientation, state.dimensions, state.squareRatio));
         }
         else
-            return pos2user(key2pos(kp), state.orientation, state.dimensions);
+            return pos2user(key2pos(kp), state.orientation, state.dimensions, state.squareRatio);
     }
 
     const brushes = ['primary', 'alternative0', 'alternative1', 'alternative2'];
@@ -1195,8 +1206,8 @@ var Shogiground = (function () {
                     state.dom.redrawNow();
                 }
                 if (!cur.dest && cur.arrow) {
-                    const dest = pos2user(posOfOutsideEl(cur.pos[0], cur.pos[1], sentePov(state), state.dimensions, bounds), state.orientation, state.dimensions);
-                    setAttributes(cur.arrow, { x2: dest[0] - 0.5, y2: dest[1] - 0.5 });
+                    const dest = pos2user(posOfOutsideEl(cur.pos[0], cur.pos[1], sentePov(state), state.dimensions, bounds), state.orientation, state.dimensions, state.squareRatio);
+                    setAttributes(cur.arrow, { x2: dest[0] - state.squareRatio[0] / 2, y2: dest[1] - state.squareRatio[1] / 2 });
                 }
                 processDraw(state);
             }
@@ -1681,6 +1692,7 @@ var Shogiground = (function () {
             turnColor: 'sente',
             activeColor: 'both',
             viewOnly: false,
+            squareRatio: [11, 12],
             disableContextMenu: false,
             blockTouchScroll: false,
             scaleDownPieces: true,
@@ -1791,15 +1803,13 @@ var Shogiground = (function () {
         if (s.drawable.visible) {
             svg = setAttributes(createSVGElement('svg'), {
                 class: 'sg-shapes',
-                viewBox: `-0.5 -0.5 ${s.dimensions.files} ${s.dimensions.ranks}`,
-                preserveAspectRatio: 'none',
+                viewBox: `-${s.squareRatio[0] / 2} -${s.squareRatio[1] / 2} ${s.dimensions.files * s.squareRatio[0]} ${s.dimensions.ranks * s.squareRatio[1]}`,
             });
             svg.appendChild(createSVGElement('defs'));
             svg.appendChild(createSVGElement('g'));
             customSvg = setAttributes(createSVGElement('svg'), {
                 class: 'sg-custom-svgs',
-                viewBox: `0 0 ${s.dimensions.files} ${s.dimensions.ranks}`,
-                preserveAspectRatio: 'none',
+                viewBox: `0 0 ${s.dimensions.files * s.squareRatio[0]} ${s.dimensions.ranks * s.squareRatio[1]}`,
             });
             customSvg.appendChild(createSVGElement('g'));
             freePieces = createEl('sg-free-pieces');

@@ -262,7 +262,7 @@ sg-square-over {
   transform: translateY(39%);
 }
 
-.sg-wrap .sg-shapes circle {
+.sg-wrap .sg-shapes ellipse {
   fill: none;
 }
 .sg-wrap .sg-shapes line.current {
@@ -272,7 +272,7 @@ sg-square-over {
   opacity: 0.4;
 }
 
-.sg-wrap .sg-shapes circle.primary {
+.sg-wrap .sg-shapes ellipse.primary {
   stroke: #15781b;
 }
 .sg-wrap .sg-shapes line.primary {
@@ -282,7 +282,7 @@ sg-square-over {
   fill: #15781b;
 }
 
-.sg-wrap .sg-shapes circle.alternative0 {
+.sg-wrap .sg-shapes ellipse.alternative0 {
   stroke: #882020;
 }
 .sg-wrap .sg-shapes line.alternative0 {
@@ -292,7 +292,7 @@ sg-square-over {
   fill: #882020;
 }
 
-.sg-wrap .sg-shapes circle.alternative1 {
+.sg-wrap .sg-shapes ellipse.alternative1 {
   stroke: #003088;
 }
 .sg-wrap .sg-shapes line.alternative1 {
@@ -302,7 +302,7 @@ sg-square-over {
   fill: #003088;
 }
 
-.sg-wrap .sg-shapes circle.alternative2 {
+.sg-wrap .sg-shapes ellipse.alternative2 {
   stroke: #e68f00;
 }
 .sg-wrap .sg-shapes line.alternative2 {

@@ -23,7 +23,7 @@
   background-color: black;
 }
 
-.sg-wrap .sg-shapes circle.primary {
+.sg-wrap .sg-shapes ellipse.primary {
   stroke: #f08a04;
 }
 .sg-wrap .sg-shapes line.primary {

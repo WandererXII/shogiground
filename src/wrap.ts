@@ -61,16 +61,16 @@ export function wrapBoard(wrapElements: WrapElements, s: HeadlessState): DomBoar
   if (s.drawable.visible) {
     svg = setAttributes(createSVGElement('svg'), {
       class: 'sg-shapes',
-      viewBox: `-0.5 -0.5 ${s.dimensions.files} ${s.dimensions.ranks}`,
-      preserveAspectRatio: 'none',
+      viewBox: `-${s.squareRatio[0] / 2} -${s.squareRatio[1] / 2} ${s.dimensions.files * s.squareRatio[0]} ${
+        s.dimensions.ranks * s.squareRatio[1]
+      }`,
     });
     svg.appendChild(createSVGElement('defs'));
     svg.appendChild(createSVGElement('g'));
 
     customSvg = setAttributes(createSVGElement('svg'), {
       class: 'sg-custom-svgs',
-      viewBox: `0 0 ${s.dimensions.files} ${s.dimensions.ranks}`,
-      preserveAspectRatio: 'none',
+      viewBox: `0 0 ${s.dimensions.files * s.squareRatio[0]} ${s.dimensions.ranks * s.squareRatio[1]}`,
     });
     customSvg.appendChild(createSVGElement('g'));
 

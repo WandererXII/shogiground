@@ -1,7 +1,7 @@
 import { HeadlessState } from './state.js';
 import { setCheck, setSelected, setSelectedPiece } from './board.js';
 import { inferDimensions, readBoard as sfenRead, readHands } from './sfen.js';
-import { DrawShape, DrawBrushes } from './draw.js';
+import { DrawShape } from './draw.js';
 import * as sg from './types.js';
 
 export interface Config {
@@ -17,6 +17,7 @@ export interface Config {
   selected?: sg.Key; // square currently selected "1a"
   selectedPiece?: sg.Piece; // piece in hand currently selected
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
+  squareRatio?: sg.NumberPair; // ratio of a single square [width, height]
   disableContextMenu?: boolean; // because who needs a context menu on a board, only without viewOnly
   blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
   scaleDownPieces?: boolean; // helpful for pgns - https://ctidd.com/2015/svg-background-scaling
@@ -98,7 +99,6 @@ export interface Config {
     eraseOnClick?: boolean;
     shapes?: DrawShape[];
     autoShapes?: DrawShape[];
-    brushes?: DrawBrushes;
     pieces?: {
       baseUrl?: string;
     };
