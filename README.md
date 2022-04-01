@@ -6,7 +6,7 @@
 ![Shogiground](/screenshot/board1.png)
 
 _Shogiground_ is a free/libre open source shogi UI developed for
-[lishogi.org](https://lishogi.org). Forked from [Chessground](https://github.com/ornicar/chessground)
+[lishogi.org](https://lishogi.org). Forked from [Chessground](https://github.com/ornicar/chessground).
 It targets modern browsers, as well as mobile development using Cordova.
 
 ## License
@@ -29,31 +29,31 @@ Please read more about GPL for JavaScript on [greendrake.info/#nfy0](http://gree
 
 ## Features
 
+![Shogiground](/screenshot/board2.png)
+
 Shogiground is designed to fulfill all lishogi.org web and mobile apps needs, so it is pretty featureful.
 
 - Well typed with TypeScript
 - Fast. Uses a custom DOM diff algorithm to reduce DOM writes to the absolute minimum.
-- Small footprint: 32K unzipped. No dependencies.
-- SVG drawing of circles and arrows on the board
-- SVG grid
+- Small footprint: cca 38K unzipped. No dependencies.
+- SVG drawing of circles and arrows on the board and hands
+- Individual square elements for styling
 - Entirely configurable and reconfigurable at any time
-- Styling with CSS only: board and pieces can be changed by simply switching a class
+- Styling with CSS only: board, pieces and drawn shapes can be changed by simply switching a class
 - Fluid layout: board can be resized at any time
 - Full mobile support (touchstart, touchmove, touchend)
-- Move pieces by click
-- Move pieces by drag & drop
+- Move or drop pieces by click
+- Move or drop pieces by drag & drop
   - Minimum distance before drag
   - Centralisation of the piece under the cursor
   - Piece ghost element
   - Drop off revert or trash
-- Drop pieces by click
-- Drop pieces by drag
 - Premove or predrop by click or drag
-- Hand managment
-- Animation of pieces: moving and fading away
+- Animation of pieces: moving and fading away both on board and from hands
 - Display last move, check, move destinations, and premove destinations (hover effects possible)
 - Import and export positions in SFEN notation
 - User callbacks
+- Supports board dimensions up to 12x12
 - No shogi logic inside: can be used for [shogi variants](https://lishogi.org/variant)
 
 ## Installation
