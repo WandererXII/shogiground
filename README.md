@@ -6,7 +6,7 @@
 ![Shogiground](/screenshot/board1.png)
 
 _Shogiground_ is a free/libre open source shogi UI developed for
-[lishogi.org](https://lishogi.org). Forked from [Chessground](https://github.com/ornicar/chessground).
+[lishogi.org](https://lishogi.org). Forked from [Chessground](https://github.com/lichess-org/chessground).
 It targets modern browsers, as well as mobile development using Cordova.
 
 ## License
