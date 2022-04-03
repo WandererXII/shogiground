@@ -1,7 +1,7 @@
 import { State } from './state.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
-import { isMiddleButton, isRightButton, samePiece } from './util.js';
+import { eventPosition, getHandPieceAtDomPos, isMiddleButton, isRightButton, samePiece } from './util.js';
 import * as sg from './types.js';
 import { promote } from './promotion.js';
 import { removeFromHand } from './board.js';
@@ -114,9 +114,9 @@ function dragOrDraw(s: State, withDrag: StateMouchBind, withDraw: StateMouchBind
 
 function startDragFromHand(s: State): MouchBind {
   return e => {
-    const target = e.target as HTMLElement;
-    if (sg.isPieceNode(target)) {
-      const piece = { color: target.sgColor, role: target.sgRole };
+    const pos = eventPosition(e),
+      piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.hands.pieceBounds());
+    if (piece) {
       if (s.drawable.enabled && isMiddleButton(e)) {
         if (s.drawable.piece && samePiece(s.drawable.piece, piece)) s.drawable.piece = undefined;
         else s.drawable.piece = piece;
