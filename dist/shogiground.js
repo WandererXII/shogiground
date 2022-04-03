@@ -2008,9 +2008,8 @@ var Shogiground = (function () {
     function startDragFromHand(s) {
         return e => {
             var _a;
-            const target = e.target;
-            if (isPieceNode(target)) {
-                const piece = { color: target.sgColor, role: target.sgRole };
+            const pos = eventPosition(e), piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.hands.pieceBounds());
+            if (piece) {
                 if (s.drawable.enabled && isMiddleButton(e)) {
                     if (s.drawable.piece && samePiece(s.drawable.piece, piece))
                         s.drawable.piece = undefined;
@@ -2253,11 +2252,7 @@ var Shogiground = (function () {
         configure(maybeState, config || {});
         function redrawAll() {
             const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
-            const boardElements = wrapBoard(wrapElements, maybeState), handElements = wrapHands(wrapElements, maybeState), boardBounds = memo(() => {
-                console.log('getBoundingClientRect');
-                return boardElements.pieces.getBoundingClientRect();
-            }), handsBounds = memo(() => {
-                console.log('getBoundingClientRect2');
+            const boardElements = wrapBoard(wrapElements, maybeState), handElements = wrapHands(wrapElements, maybeState), boardBounds = memo(() => boardElements.pieces.getBoundingClientRect()), handsBounds = memo(() => {
                 const handsRects = new Map();
                 if (handElements.top)
                     handsRects.set('top', handElements.top.getBoundingClientRect());
@@ -2265,7 +2260,6 @@ var Shogiground = (function () {
                     handsRects.set('bottom', handElements.bottom.getBoundingClientRect());
                 return handsRects;
             }), handPiecesBounds = memo(() => {
-                console.log('getBoundingClientRect3');
                 const handPiecesRects = new Map();
                 if (handElements.top) {
                     let el = handElements.top.firstElementChild;
@@ -2290,7 +2284,6 @@ var Shogiground = (function () {
                 if (!skipShapes && boardElements.svg)
                     renderShapes(state, boardElements.svg, boardElements.customSvg, boardElements.freePieces);
             }, onResize = () => {
-                console.log('resize');
                 boardBounds.clear();
                 handsBounds.clear();
                 handPiecesBounds.clear();

@@ -18,22 +18,14 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
     const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
     const boardElements = wrapBoard(wrapElements, maybeState),
       handElements = wrapHands(wrapElements, maybeState),
-      boardBounds = util.memo(() => {
-        console.log('getBoundingClientRect');
-
-        return boardElements.pieces.getBoundingClientRect();
-      }),
+      boardBounds = util.memo(() => boardElements.pieces.getBoundingClientRect()),
       handsBounds = util.memo(() => {
-        console.log('getBoundingClientRect2');
-
         const handsRects = new Map();
         if (handElements.top) handsRects.set('top', handElements.top.getBoundingClientRect());
         if (handElements.bottom) handsRects.set('bottom', handElements.bottom.getBoundingClientRect());
         return handsRects;
       }),
       handPiecesBounds = util.memo(() => {
-        console.log('getBoundingClientRect3');
-
         const handPiecesRects = new Map();
         if (handElements.top) {
           let el = handElements.top.firstElementChild as PieceNode | undefined;
@@ -60,8 +52,6 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
           shapes.renderShapes(state, boardElements.svg, boardElements.customSvg!, boardElements.freePieces!);
       },
       onResize = (): void => {
-        console.log('resize');
-
         boardBounds.clear();
         handsBounds.clear();
         handPiecesBounds.clear();
