@@ -28,7 +28,7 @@ export interface DragCurrent {
 export function start(s: State, e: sg.MouchEvent): void {
   const bounds = s.dom.board.bounds(),
     position = util.eventPosition(e),
-    orig = position && board.getKeyAtDomPos(position, board.sentePov(s), s.dimensions, bounds);
+    orig = position && util.getKeyAtDomPos(position, board.sentePov(s), s.dimensions, bounds);
 
   if (!orig) return;
 
@@ -174,7 +174,7 @@ function processDrag(s: State): void {
           draggedEl.sgDragging = true;
           util.setDisplay(draggedEl, true);
         }
-        const hover = board.getKeyAtDomPos(cur.pos, board.sentePov(s), s.dimensions, bounds);
+        const hover = util.getKeyAtDomPos(cur.pos, board.sentePov(s), s.dimensions, bounds);
 
         if (cur.fromBoard) cur.fromBoard.keyHasChanged = cur.fromBoard.keyHasChanged || cur.fromBoard.orig !== hover;
         else if (cur.fromOutside)
@@ -228,7 +228,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   board.unsetPredrop(s);
   // touchend has no position; so use the last touchmove position instead
   const eventPos = util.eventPosition(e) || cur.pos;
-  const dest = board.getKeyAtDomPos(eventPos, board.sentePov(s), s.dimensions, s.dom.board.bounds());
+  const dest = util.getKeyAtDomPos(eventPos, board.sentePov(s), s.dimensions, s.dom.board.bounds());
   if (dest && cur.started && cur.fromBoard?.orig !== dest) {
     if (cur.fromOutside) board.userDrop(s, cur.piece, dest);
     else if (cur.fromBoard) board.userMove(s, cur.fromBoard.orig, dest);

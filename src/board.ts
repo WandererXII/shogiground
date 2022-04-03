@@ -1,5 +1,5 @@
 import { HeadlessState } from './state.js';
-import { pos2key, opposite, samePiece } from './util.js';
+import { opposite, samePiece } from './util.js';
 import { premove } from './premove.js';
 import * as sg from './types.js';
 import { predrop } from './predrop.js';
@@ -320,19 +320,6 @@ export function stop(state: HeadlessState): void {
     state.animation.current =
       undefined;
   cancelMoveOrDrop(state);
-}
-
-export function getKeyAtDomPos(
-  pos: sg.NumberPair,
-  asSente: boolean,
-  dims: sg.Dimensions,
-  bounds: DOMRect
-): sg.Key | undefined {
-  let file = Math.floor((dims.files * (pos[0] - bounds.left)) / bounds.width);
-  if (asSente) file = dims.files - 1 - file;
-  let rank = Math.floor((dims.ranks * (pos[1] - bounds.top)) / bounds.height);
-  if (!asSente) rank = dims.ranks - 1 - rank;
-  return file >= 0 && file < dims.files && rank >= 0 && rank < dims.ranks ? pos2key([file, rank]) : undefined;
 }
 
 export function sentePov(s: HeadlessState): boolean {

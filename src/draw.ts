@@ -1,6 +1,13 @@
 import { State } from './state.js';
-import { unselect, cancelMoveOrDrop, getKeyAtDomPos, sentePov } from './board.js';
-import { eventPosition, isRightButton, posOfOutsideEl, samePiece, getHandPieceAtDomPos } from './util.js';
+import { unselect, cancelMoveOrDrop, sentePov } from './board.js';
+import {
+  eventPosition,
+  isRightButton,
+  posOfOutsideEl,
+  samePiece,
+  getHandPieceAtDomPos,
+  getKeyAtDomPos,
+} from './util.js';
 import * as sg from './types.js';
 import { isPiece, pos2user, samePieceOrKey, setAttributes } from './shapes.js';
 

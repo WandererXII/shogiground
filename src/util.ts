@@ -120,20 +120,17 @@ export function isInsideRect(rect: DOMRect, pos: sg.Pos): boolean {
   );
 }
 
-export function posOfOutsideEl(
-  left: number,
-  top: number,
+export function getKeyAtDomPos(
+  pos: sg.NumberPair,
   asSente: boolean,
   dims: sg.Dimensions,
-  boardBounds: DOMRect
-): sg.Pos {
-  const sqW = boardBounds.width / dims.files,
-    sqH = boardBounds.height / dims.ranks;
-  let xOff = (left - boardBounds.left) / sqW;
-  if (asSente) xOff = dims.files - 1 - xOff;
-  let yOff = (top - boardBounds.top) / sqH;
-  if (!asSente) yOff = dims.ranks - 1 - yOff;
-  return [xOff, yOff];
+  bounds: DOMRect
+): sg.Key | undefined {
+  let file = Math.floor((dims.files * (pos[0] - bounds.left)) / bounds.width);
+  if (asSente) file = dims.files - 1 - file;
+  let rank = Math.floor((dims.ranks * (pos[1] - bounds.top)) / bounds.height);
+  if (!asSente) rank = dims.ranks - 1 - rank;
+  return file >= 0 && file < dims.files && rank >= 0 && rank < dims.ranks ? pos2key([file, rank]) : undefined;
 }
 
 export function getHandPieceAtDomPos(
@@ -149,4 +146,20 @@ export function getHandPieceAtDomPos(
     }
   }
   return;
+}
+
+export function posOfOutsideEl(
+  left: number,
+  top: number,
+  asSente: boolean,
+  dims: sg.Dimensions,
+  boardBounds: DOMRect
+): sg.Pos {
+  const sqW = boardBounds.width / dims.files,
+    sqH = boardBounds.height / dims.ranks;
+  let xOff = (left - boardBounds.left) / sqW;
+  if (asSente) xOff = dims.files - 1 - xOff;
+  let yOff = (top - boardBounds.top) / sqH;
+  if (!asSente) yOff = dims.ranks - 1 - yOff;
+  return [xOff, yOff];
 }

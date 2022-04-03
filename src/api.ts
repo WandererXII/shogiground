@@ -76,9 +76,6 @@ export interface Api {
   // programmatically draw auto shapes
   setAutoShapes(shapes: DrawShape[]): void;
 
-  // square name at this DOM position (like "e4")
-  getKeyAtDomPos(pos: sg.NumberPair): sg.Key | undefined;
-
   // only useful when CSS changes the board width/height ratio (for ratio change)
   redrawAll: sg.Redraw;
 
@@ -226,10 +223,6 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     setShapes(shapes: DrawShape[]): void {
       render(state => (state.drawable.shapes = shapes), state);
-    },
-
-    getKeyAtDomPos(pos): sg.Key | undefined {
-      return board.getKeyAtDomPos(pos, board.sentePov(state), state.dimensions, state.dom.board.bounds());
     },
 
     redrawAll,

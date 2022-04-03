@@ -96,15 +96,14 @@ var Shogiground = (function () {
     function isInsideRect(rect, pos) {
         return (rect.left <= pos[0] && rect.top <= pos[1] && rect.left + rect.width > pos[0] && rect.top + rect.height > pos[1]);
     }
-    function posOfOutsideEl(left, top, asSente, dims, boardBounds) {
-        const sqW = boardBounds.width / dims.files, sqH = boardBounds.height / dims.ranks;
-        let xOff = (left - boardBounds.left) / sqW;
+    function getKeyAtDomPos(pos, asSente, dims, bounds) {
+        let file = Math.floor((dims.files * (pos[0] - bounds.left)) / bounds.width);
         if (asSente)
-            xOff = dims.files - 1 - xOff;
-        let yOff = (top - boardBounds.top) / sqH;
+            file = dims.files - 1 - file;
+        let rank = Math.floor((dims.ranks * (pos[1] - bounds.top)) / bounds.height);
         if (!asSente)
-            yOff = dims.ranks - 1 - yOff;
-        return [xOff, yOff];
+            rank = dims.ranks - 1 - rank;
+        return file >= 0 && file < dims.files && rank >= 0 && rank < dims.ranks ? pos2key([file, rank]) : undefined;
     }
     function getHandPieceAtDomPos(pos, roles, bounds) {
         for (const color of colors) {
@@ -115,6 +114,16 @@ var Shogiground = (function () {
             }
         }
         return;
+    }
+    function posOfOutsideEl(left, top, asSente, dims, boardBounds) {
+        const sqW = boardBounds.width / dims.files, sqH = boardBounds.height / dims.ranks;
+        let xOff = (left - boardBounds.left) / sqW;
+        if (asSente)
+            xOff = dims.files - 1 - xOff;
+        let yOff = (top - boardBounds.top) / sqH;
+        if (!asSente)
+            yOff = dims.ranks - 1 - yOff;
+        return [xOff, yOff];
     }
 
     function diff(a, b) {
@@ -497,15 +506,6 @@ var Shogiground = (function () {
                         state.animation.current =
                             undefined;
         cancelMoveOrDrop(state);
-    }
-    function getKeyAtDomPos(pos, asSente, dims, bounds) {
-        let file = Math.floor((dims.files * (pos[0] - bounds.left)) / bounds.width);
-        if (asSente)
-            file = dims.files - 1 - file;
-        let rank = Math.floor((dims.ranks * (pos[1] - bounds.top)) / bounds.height);
-        if (!asSente)
-            rank = dims.ranks - 1 - rank;
-        return file >= 0 && file < dims.files && rank >= 0 && rank < dims.ranks ? pos2key([file, rank]) : undefined;
     }
     function sentePov(s) {
         return s.orientation === 'sente';
@@ -1668,9 +1668,6 @@ var Shogiground = (function () {
             },
             setShapes(shapes) {
                 render$1(state => (state.drawable.shapes = shapes), state);
-            },
-            getKeyAtDomPos(pos) {
-                return getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.board.bounds());
             },
             redrawAll,
             dragNewPiece(piece, event, spare) {
