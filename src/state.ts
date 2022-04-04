@@ -74,7 +74,7 @@ export interface HeadlessState {
       key: sg.Key;
     };
     events: {
-      set?: (role: sg.Piece, key: sg.Key) => void; // called after the predrop has been set
+      set?: (piece: sg.Piece, key: sg.Key) => void; // called after the predrop has been set
       unset?: () => void; // called after the predrop has been unset
     };
   };
