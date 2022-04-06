@@ -119,8 +119,7 @@ export function userDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): b
     if (result) {
       unselect(state);
       callUserFunction(state.droppable.events.after, piece, dest, {
-        premove: false,
-        predrop: false,
+        premade: false,
       });
       return true;
     }
@@ -139,8 +138,7 @@ export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): bool
     if (result) {
       unselect(state);
       const metadata: sg.MoveMetadata = {
-        premove: false,
-        predrop: false,
+        premade: false,
       };
       if (result !== true) metadata.captured = result;
       callUserFunction(state.movable.events.after, orig, dest, metadata);
@@ -279,7 +277,7 @@ export function playPremove(state: HeadlessState): boolean {
   if (canMove(state, orig, dest)) {
     const result = baseUserMove(state, orig, dest);
     if (result) {
-      const metadata: sg.MoveMetadata = { premove: true, predrop: false };
+      const metadata: sg.MoveMetadata = { premade: true };
       if (result !== true) metadata.captured = result;
       callUserFunction(state.movable.events.after, orig, dest, metadata);
       success = true;
@@ -296,8 +294,7 @@ export function playPredrop(state: HeadlessState): boolean {
   if (canDrop(state, drop.piece, drop.key)) {
     if (baseUserDrop(state, drop.piece, drop.key)) {
       callUserFunction(state.droppable.events.after, drop.piece, drop.key, {
-        premove: false,
-        predrop: true,
+        premade: true,
       });
       success = true;
     }

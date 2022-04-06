@@ -70,8 +70,7 @@ export interface Dom {
 }
 
 export interface MoveMetadata {
-  premove: boolean;
-  predrop: boolean;
+  premade: boolean;
   captured?: Piece;
 }
 
