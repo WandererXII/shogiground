@@ -120,18 +120,20 @@ export function wrapBoard(wrapElements: WrapElements, s: HeadlessState): DomBoar
 export function wrapHands(wrapElements: WrapElements, s: HeadlessState): DomHandsElements {
   let handTop, handBottom;
   if (s.hands.inlined || wrapElements.handTop || wrapElements.handBottom) {
-    handTop = renderHand(opposite(s.orientation), s.hands.roles, 'top');
-    handBottom = renderHand(s.orientation, s.hands.roles, 'bottom');
+    handTop = renderHand(opposite(s.orientation), s.hands.roles);
+    handBottom = renderHand(s.orientation, s.hands.roles);
     if (s.hands.inlined && wrapElements.board.firstElementChild) {
       wrapElements.board.insertBefore(handTop, wrapElements.board.firstElementChild);
       wrapElements.board.insertBefore(handBottom, wrapElements.board.firstElementChild.nextElementSibling);
     } else {
       if (wrapElements.handTop) {
         wrapElements.handTop.innerHTML = '';
+        wrapElements.handTop.classList.add('hand-top');
         wrapElements.handTop.appendChild(handTop);
       }
       if (wrapElements.handBottom) {
         wrapElements.handBottom.innerHTML = '';
+        wrapElements.handBottom.classList.add('hand-bottom');
         wrapElements.handBottom.appendChild(handBottom);
       }
     }
@@ -179,8 +181,8 @@ function renderSquares(dims: Dimensions, orientation: Color): HTMLElement {
   return squares;
 }
 
-function renderHand(color: Color, roles: Role[], position: 'top' | 'bottom'): HTMLElement {
-  const hand = createEl('sg-hand', `hand-${position}`);
+function renderHand(color: Color, roles: Role[]): HTMLElement {
+  const hand = createEl('sg-hand');
   for (const role of roles) {
     const piece = { role: role, color: color },
       pieceEl = createEl('piece', pieceNameOf(piece)) as PieceNode;

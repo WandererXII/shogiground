@@ -15,7 +15,7 @@ sg-hand piece::after {
   background-color: coral;
   z-index: 5;
 }
-sg-hand.hand-bottom piece::after {
+.hand-bottom sg-hand piece::after {
   top: unset;
   bottom: 0;
 }
@@ -52,7 +52,7 @@ piece[data-nb='0']:not(.selected):not(.drawing)::after {
   left: 0;
 }
 
-#hand-bottom {
+.hand-bottom {
   align-self: flex-end;
 }
 
