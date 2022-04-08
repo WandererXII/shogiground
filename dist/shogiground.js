@@ -326,8 +326,7 @@ var Shogiground = (function () {
             if (result) {
                 unselect(state);
                 callUserFunction(state.droppable.events.after, piece, dest, {
-                    premove: false,
-                    predrop: false,
+                    premade: false,
                 });
                 return true;
             }
@@ -346,8 +345,7 @@ var Shogiground = (function () {
             if (result) {
                 unselect(state);
                 const metadata = {
-                    premove: false,
-                    predrop: false,
+                    premade: false,
                 };
                 if (result !== true)
                     metadata.captured = result;
@@ -466,7 +464,7 @@ var Shogiground = (function () {
         if (canMove(state, orig, dest)) {
             const result = baseUserMove(state, orig, dest);
             if (result) {
-                const metadata = { premove: true, predrop: false };
+                const metadata = { premade: true };
                 if (result !== true)
                     metadata.captured = result;
                 callUserFunction(state.movable.events.after, orig, dest, metadata);
@@ -484,8 +482,7 @@ var Shogiground = (function () {
         if (canDrop(state, drop.piece, drop.key)) {
             if (baseUserDrop(state, drop.piece, drop.key)) {
                 callUserFunction(state.droppable.events.after, drop.piece, drop.key, {
-                    premove: false,
-                    predrop: true,
+                    premade: true,
                 });
                 success = true;
             }
@@ -1842,8 +1839,8 @@ var Shogiground = (function () {
     function wrapHands(wrapElements, s) {
         let handTop, handBottom;
         if (s.hands.inlined || wrapElements.handTop || wrapElements.handBottom) {
-            handTop = renderHand(opposite(s.orientation), s.hands.roles, 'top');
-            handBottom = renderHand(s.orientation, s.hands.roles, 'bottom');
+            handTop = renderHand(opposite(s.orientation), s.hands.roles);
+            handBottom = renderHand(s.orientation, s.hands.roles);
             if (s.hands.inlined && wrapElements.board.firstElementChild) {
                 wrapElements.board.insertBefore(handTop, wrapElements.board.firstElementChild);
                 wrapElements.board.insertBefore(handBottom, wrapElements.board.firstElementChild.nextElementSibling);
@@ -1851,10 +1848,12 @@ var Shogiground = (function () {
             else {
                 if (wrapElements.handTop) {
                     wrapElements.handTop.innerHTML = '';
+                    wrapElements.handTop.classList.add('hand-top');
                     wrapElements.handTop.appendChild(handTop);
                 }
                 if (wrapElements.handBottom) {
                     wrapElements.handBottom.innerHTML = '';
+                    wrapElements.handBottom.classList.add('hand-bottom');
                     wrapElements.handBottom.appendChild(handBottom);
                 }
             }
@@ -1896,8 +1895,8 @@ var Shogiground = (function () {
         }
         return squares;
     }
-    function renderHand(color, roles, position) {
-        const hand = createEl('sg-hand', `hand-${position}`);
+    function renderHand(color, roles) {
+        const hand = createEl('sg-hand');
         for (const role of roles) {
             const piece = { role: role, color: color }, pieceEl = createEl('piece', pieceNameOf(piece));
             pieceEl.sgColor = color;
@@ -2301,6 +2300,7 @@ var Shogiground = (function () {
                     pieceBounds: handPiecesBounds,
                     bounds: handsBounds,
                 },
+                wrapElements,
                 redraw: debounceRedraw(redrawNow),
                 redrawNow,
                 unbind: prevUnbind,

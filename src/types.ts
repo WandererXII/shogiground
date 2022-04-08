@@ -63,6 +63,7 @@ export interface DomHands {
 export interface Dom {
   board: DomBoard;
   hands: DomHands;
+  wrapElements: WrapElements;
   redraw: () => void;
   redrawNow: (skipSvg?: boolean) => void;
   unbind?: Unbind;

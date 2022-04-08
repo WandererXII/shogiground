@@ -70,6 +70,7 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
         pieceBounds: handPiecesBounds,
         bounds: handsBounds,
       },
+      wrapElements,
       redraw: debounceRedraw(redrawNow),
       redrawNow,
       unbind: prevUnbind,
