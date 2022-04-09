@@ -133,11 +133,12 @@ export function cancel(state: State): void {
 }
 
 export function clear(state: State): void {
-  if (state.drawable.shapes.length) {
+  const drawableLength = state.drawable.shapes.length;
+  if (drawableLength || state.drawable.piece) {
     state.drawable.shapes = [];
     state.drawable.piece = undefined;
     state.dom.redraw();
-    onChange(state.drawable);
+    if (drawableLength) onChange(state.drawable);
   }
 }
 
