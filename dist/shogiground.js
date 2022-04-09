@@ -567,7 +567,7 @@ var Shogiground = (function () {
             const nb = c.charCodeAt(0);
             if (nb < 58 && nb > 47)
                 cnt = cnt * 10 + nb - 48;
-            else {
+            else if (c !== '+') {
                 filesCnt += cnt + 1;
                 cnt = 0;
             }
