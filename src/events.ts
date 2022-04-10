@@ -3,7 +3,7 @@ import * as drag from './drag.js';
 import * as draw from './draw.js';
 import { eventPosition, getHandPieceAtDomPos, isMiddleButton, isRightButton, samePiece } from './util.js';
 import * as sg from './types.js';
-import { promote } from './promotion.js';
+import { cancelPromotion, promote } from './promotion.js';
 import { removeFromHand } from './board.js';
 
 type MouchBind = (e: sg.MouchEvent) => void;
@@ -51,6 +51,7 @@ function bindHand(s: State, handEl: HTMLElement, onResize: () => void): void {
   handEl.addEventListener('touchstart', onStart as EventListener, {
     passive: false,
   });
+  if (s.dom.board.elements.promotion) handEl.addEventListener('click', () => cancelPromotion(s));
 
   if (s.disableContextMenu || s.drawable.enabled) handEl.addEventListener('contextmenu', e => e.preventDefault());
 }
@@ -114,6 +115,7 @@ function dragOrDraw(s: State, withDrag: StateMouchBind, withDraw: StateMouchBind
 
 function startDragFromHand(s: State): MouchBind {
   return e => {
+    if (s.promotion.active) return;
     const pos = eventPosition(e),
       piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.hands.pieceBounds());
     if (piece) {

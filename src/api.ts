@@ -6,7 +6,7 @@ import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
 import { DrawShape } from './draw.js';
 import * as sg from './types.js';
-import { cancelPromotion, setPromotion } from './promotion.js';
+import { unsetPromotion, setPromotion } from './promotion.js';
 
 export interface Api {
   // reconfigure the instance. Accepts all config options
@@ -158,7 +158,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
     },
 
     stopPromotion(): void {
-      render(state => cancelPromotion(state), state);
+      render(state => unsetPromotion(state), state);
     },
 
     selectSquare(key, force): void {

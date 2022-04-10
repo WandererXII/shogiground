@@ -1512,7 +1512,7 @@ var Shogiground = (function () {
         s.promotion.key = key;
         s.promotion.pieces = pieces;
     }
-    function cancelPromotion(s) {
+    function unsetPromotion(s) {
         s.promotion.active = false;
         s.promotion.key = undefined;
         s.promotion.pieces = undefined;
@@ -1545,8 +1545,17 @@ var Shogiground = (function () {
         }
         else
             callUserFunction(s.promotion.cancel);
-        cancelPromotion(s);
+        unsetPromotion(s);
         setDisplay(s.dom.board.elements.promotion, false);
+        s.dom.redraw();
+    }
+    function cancelPromotion(s) {
+        if (!s.promotion.active)
+            return;
+        callUserFunction(s.promotion.cancel);
+        unsetPromotion(s);
+        if (s.dom.board.elements.promotion)
+            setDisplay(s.dom.board.elements.promotion, false);
         s.dom.redraw();
     }
 
@@ -1609,7 +1618,7 @@ var Shogiground = (function () {
                 render$1(state => setPromotion(state, key, pieces), state);
             },
             stopPromotion() {
-                render$1(state => cancelPromotion(state), state);
+                render$1(state => unsetPromotion(state), state);
             },
             selectSquare(key, force) {
                 if (key)
@@ -1689,7 +1698,7 @@ var Shogiground = (function () {
             activeColor: 'both',
             viewOnly: false,
             squareRatio: [11, 12],
-            disableContextMenu: false,
+            disableContextMenu: true,
             blockTouchScroll: false,
             scaleDownPieces: true,
             coordinates: {
@@ -1950,6 +1959,8 @@ var Shogiground = (function () {
         handEl.addEventListener('touchstart', onStart, {
             passive: false,
         });
+        if (s.dom.board.elements.promotion)
+            handEl.addEventListener('click', () => cancelPromotion(s));
         if (s.disableContextMenu || s.drawable.enabled)
             handEl.addEventListener('contextmenu', e => e.preventDefault());
     }
@@ -2009,6 +2020,8 @@ var Shogiground = (function () {
     function startDragFromHand(s) {
         return e => {
             var _a;
+            if (s.promotion.active)
+                return;
             const pos = eventPosition(e), piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.hands.pieceBounds());
             if (piece) {
                 if (s.drawable.enabled && isMiddleButton(e)) {
@@ -2227,6 +2240,7 @@ var Shogiground = (function () {
     }
     function updateHand(s, handEl) {
         var _a;
+        handEl.classList.toggle('promotion', s.promotion.active);
         let pieceEl = handEl.firstElementChild;
         while (pieceEl) {
             const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };

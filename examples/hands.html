@@ -27,6 +27,7 @@
       </div>
     </div>
     <button onclick="flip()">flip</button>
+    <button onclick="prom()">prom</button>
     <button onclick="sp()">sp</button>
     <button onclick="sq()">sq</button>
     <div class="slidecontainer">
@@ -57,6 +58,12 @@
       );
       function flip() {
         sg.toggleOrientation();
+      }
+      function prom() {
+        sg.startPromotion('5c', [
+          { role: 'tokin', color: 'sente' },
+          { role: 'pawn', color: 'sente' },
+        ]);
       }
       function sp() {
         sg.selectPiece({ role: 'pawn', color: 'sente' });

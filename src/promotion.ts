@@ -9,7 +9,7 @@ export function setPromotion(s: State, key: sg.Key, pieces: sg.Piece[]): void {
   s.promotion.pieces = pieces;
 }
 
-export function cancelPromotion(s: State): void {
+export function unsetPromotion(s: State): void {
   s.promotion.active = false;
   s.promotion.key = undefined;
   s.promotion.pieces = undefined;
@@ -50,8 +50,17 @@ export function promote(s: State, e: sg.MouchEvent): void {
     board.callUserFunction(s.promotion.after, piece);
   } else board.callUserFunction(s.promotion.cancel);
 
-  cancelPromotion(s);
+  unsetPromotion(s);
   setDisplay(s.dom.board.elements.promotion!, false);
+
+  s.dom.redraw();
+}
+
+export function cancelPromotion(s: State): void {
+  if (!s.promotion.active) return;
+  board.callUserFunction(s.promotion.cancel);
+  unsetPromotion(s);
+  if (s.dom.board.elements.promotion) setDisplay(s.dom.board.elements.promotion, false);
 
   s.dom.redraw();
 }
