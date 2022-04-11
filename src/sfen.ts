@@ -110,9 +110,9 @@ export function readBoard(sfen: sg.BoardSfen, dims: sg.Dimensions): sg.Pieces {
 }
 
 export function writeBoard(pieces: sg.Pieces, dims: sg.Dimensions): sg.BoardSfen {
-  const reversedFiles = sg.files.slice(dims.files).reverse();
+  const reversedFiles = sg.files.slice(0, dims.files).reverse();
   return sg.ranks
-    .slice(dims.ranks)
+    .slice(0, dims.ranks)
     .map(y =>
       reversedFiles
         .map(x => {

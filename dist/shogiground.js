@@ -617,9 +617,9 @@ var Shogiground = (function () {
         return pieces;
     }
     function writeBoard(pieces, dims) {
-        const reversedFiles = files.slice(dims.files).reverse();
+        const reversedFiles = files.slice(0, dims.files).reverse();
         return ranks
-            .slice(dims.ranks)
+            .slice(0, dims.ranks)
             .map(y => reversedFiles
             .map(x => {
             const piece = pieces.get((x + y));
