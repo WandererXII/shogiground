@@ -1720,7 +1720,10 @@ var Shogiground = (function () {
             },
             hands: {
                 inlined: false,
-                handMap: new Map(),
+                handMap: new Map([
+                    ['sente', new Map()],
+                    ['gote', new Map()],
+                ]),
                 roles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
             },
             movable: {
