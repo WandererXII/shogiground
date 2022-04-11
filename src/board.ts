@@ -153,6 +153,10 @@ export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): bool
   return false;
 }
 
+export function deletePiece(state: HeadlessState, key: sg.Key): void {
+  if (state.pieces.delete(key)) callUserFunction(state.events.change);
+}
+
 export function addToHand(state: HeadlessState, piece: sg.Piece, cnt = 1): void {
   const hand = state.hands.handMap.get(piece.color);
   if (hand && state.hands.roles.includes(piece.role)) hand.set(piece.role, (hand.get(piece.role) || 0) + cnt);
@@ -186,10 +190,10 @@ export function selectSquare(state: HeadlessState, key: sg.Key, force?: boolean)
 export function selectPiece(state: HeadlessState, piece: sg.Piece, spare?: boolean): void {
   callUserFunction(state.events.pieceSelect, piece);
 
-  state.droppable.spare = !!spare;
   if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) unselect(state);
   else if (isDroppable(state, piece) || isPredroppable(state, piece)) {
     setSelectedPiece(state, piece);
+    state.droppable.spare = !!spare;
   }
 }
 

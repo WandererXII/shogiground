@@ -361,6 +361,10 @@ var Shogiground = (function () {
         unselect(state);
         return false;
     }
+    function deletePiece(state, key) {
+        if (state.pieces.delete(key))
+            callUserFunction(state.events.change);
+    }
     function addToHand(state, piece, cnt = 1) {
         const hand = state.hands.handMap.get(piece.color);
         if (hand && state.hands.roles.includes(piece.role))
@@ -395,11 +399,11 @@ var Shogiground = (function () {
     }
     function selectPiece(state, piece, spare) {
         callUserFunction(state.events.pieceSelect, piece);
-        state.droppable.spare = !!spare;
         if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece))
             unselect(state);
         else if (isDroppable(state, piece) || isPredroppable(state, piece)) {
             setSelectedPiece(state, piece);
+            state.droppable.spare = !!spare;
         }
     }
     function setSelected(state, key) {
@@ -1286,7 +1290,7 @@ var Shogiground = (function () {
         const hadPremove = !!s.premovable.current;
         const hadPredrop = !!s.predroppable.current;
         if (s.selectable.deleteOnTouch)
-            s.pieces.delete(orig);
+            deletePiece(s, orig);
         else if ((s.selectedPiece && canDrop(s, s.selectedPiece, orig)) ||
             (s.selected && canMove(s, s.selected, orig))) {
             anim(state => selectSquare(state, orig), s);

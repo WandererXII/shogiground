@@ -46,7 +46,7 @@ export function start(s: State, e: sg.MouchEvent): void {
     e.preventDefault();
   const hadPremove = !!s.premovable.current;
   const hadPredrop = !!s.predroppable.current;
-  if (s.selectable.deleteOnTouch) s.pieces.delete(orig);
+  if (s.selectable.deleteOnTouch) board.deletePiece(s, orig);
   else if (
     (s.selectedPiece && board.canDrop(s, s.selectedPiece, orig)) ||
     (s.selected && board.canMove(s, s.selected, orig))
