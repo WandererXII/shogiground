@@ -122,7 +122,7 @@ export function defaults(): HeadlessState {
     activeColor: 'both',
     viewOnly: false,
     squareRatio: [11, 12],
-    disableContextMenu: false,
+    disableContextMenu: true,
     blockTouchScroll: false,
     scaleDownPieces: true,
     coordinates: {
