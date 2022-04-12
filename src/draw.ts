@@ -142,6 +142,12 @@ export function clear(state: State): void {
   }
 }
 
+export function setDrawPiece(state: State, piece: sg.Piece): void {
+  if (state.drawable.piece && samePiece(state.drawable.piece, piece)) state.drawable.piece = undefined;
+  else state.drawable.piece = piece;
+  state.dom.redraw();
+}
+
 function eventBrush(e: sg.MouchEvent): string {
   const modA = (e.shiftKey || e.ctrlKey) && isRightButton(e);
   const modB = e.altKey || e.metaKey || e.getModifierState?.('AltGraph');

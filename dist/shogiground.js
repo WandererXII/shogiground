@@ -398,8 +398,10 @@ var Shogiground = (function () {
         }
     }
     function selectPiece(state, piece, spare) {
+        var _a;
         callUserFunction(state.events.pieceSelect, piece);
-        if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece))
+        if ((!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) ||
+            (!spare && !((_a = state.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role))))
             unselect(state);
         else if (isDroppable(state, piece) || isPredroppable(state, piece)) {
             setSelectedPiece(state, piece);
@@ -1241,6 +1243,13 @@ var Shogiground = (function () {
                 onChange(state.drawable);
         }
     }
+    function setDrawPiece(state, piece) {
+        if (state.drawable.piece && samePiece(state.drawable.piece, piece))
+            state.drawable.piece = undefined;
+        else
+            state.drawable.piece = piece;
+        state.dom.redraw();
+    }
     function eventBrush(e) {
         var _a;
         const modA = (e.shiftKey || e.ctrlKey) && isRightButton(e);
@@ -1339,16 +1348,17 @@ var Shogiground = (function () {
     }
     function dragNewPiece(s, piece, e, spare) {
         const previouslySelectedPiece = s.selectedPiece, draggedEl = s.dom.board.elements.dragged, position = eventPosition(e), touch = e.type === 'touchstart';
-        if (!draggedEl)
-            return;
         if (!previouslySelectedPiece && !spare && s.drawable.enabled && s.drawable.eraseOnClick)
             clear(s);
-        selectPiece(s, piece, spare);
+        if (!spare && s.selectable.deleteOnTouch)
+            removeFromHand(s, piece);
+        else
+            selectPiece(s, piece, spare);
         const hadPremove = !!s.premovable.current;
         const hadPredrop = !!s.predroppable.current;
-        if (isDraggable(s, piece)) {
+        if (draggedEl && s.selectedPiece && isDraggable(s, piece)) {
             s.draggable.current = {
-                piece,
+                piece: s.selectedPiece,
                 pos: position,
                 origPos: position,
                 touch,
@@ -1463,7 +1473,7 @@ var Shogiground = (function () {
         else if (s.draggable.deleteOnDropOff && !dest) {
             if (cur.fromBoard)
                 s.pieces.delete(cur.fromBoard.orig);
-            else if (cur.fromOutside)
+            else if (cur.fromOutside && !s.droppable.spare)
                 removeFromHand(s, cur.piece);
             if (s.draggable.addToHandOnDropOff) {
                 const handBounds = s.dom.hands.bounds(), handBoundsTop = handBounds.get('top'), handBoundsBottom = handBounds.get('bottom');
@@ -2026,32 +2036,26 @@ var Shogiground = (function () {
     }
     function startDragFromHand(s) {
         return e => {
-            var _a;
             if (s.promotion.active)
                 return;
             const pos = eventPosition(e), piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.hands.pieceBounds());
             if (piece) {
-                if (s.drawable.enabled && isMiddleButton(e)) {
-                    if (s.drawable.piece && samePiece(s.drawable.piece, piece))
-                        s.drawable.piece = undefined;
-                    else
-                        s.drawable.piece = piece;
-                    s.dom.redraw();
+                if (s.draggable.current)
+                    cancel(s);
+                else if (s.drawable.current)
+                    cancel$1(s);
+                else if (isMiddleButton(e)) {
+                    if (s.drawable.enabled)
+                        setDrawPiece(s, piece);
                 }
-                else if (s.drawable.enabled && (e.shiftKey || isRightButton(e))) {
-                    startFromHand(s, piece, e);
+                else if (e.shiftKey || isRightButton(e)) {
+                    if (s.drawable.enabled)
+                        startFromHand(s, piece, e);
                 }
                 else if (!s.viewOnly && !unwantedEvent(e)) {
-                    if (s.selectable.deleteOnTouch) {
-                        removeFromHand(s, piece);
-                        s.dom.redraw();
-                    }
-                    else if ((s.activeColor === 'both' || s.activeColor === piece.color) &&
-                        ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role))) {
-                        if (e.cancelable !== false)
-                            e.preventDefault();
-                        dragNewPiece(s, piece, e);
-                    }
+                    if (e.cancelable !== false)
+                        e.preventDefault();
+                    dragNewPiece(s, piece, e);
                 }
             }
         };

@@ -190,7 +190,11 @@ export function selectSquare(state: HeadlessState, key: sg.Key, force?: boolean)
 export function selectPiece(state: HeadlessState, piece: sg.Piece, spare?: boolean): void {
   callUserFunction(state.events.pieceSelect, piece);
 
-  if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) unselect(state);
+  if (
+    (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) ||
+    (!spare && !state.hands.handMap.get(piece.color)?.get(piece.role))
+  )
+    unselect(state);
   else if (isDroppable(state, piece) || isPredroppable(state, piece)) {
     setSelectedPiece(state, piece);
     state.droppable.spare = !!spare;
@@ -247,7 +251,7 @@ function isPremovable(state: HeadlessState, orig: sg.Key): boolean {
   return !!piece && state.premovable.enabled && state.activeColor === piece.color && state.turnColor !== piece.color;
 }
 
-export function isPredroppable(state: HeadlessState, piece: sg.Piece): boolean {
+function isPredroppable(state: HeadlessState, piece: sg.Piece): boolean {
   return state.predroppable.enabled && state.activeColor === piece.color && state.turnColor !== piece.color;
 }
 

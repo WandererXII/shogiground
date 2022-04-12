@@ -1,10 +1,9 @@
 import { State } from './state.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
-import { eventPosition, getHandPieceAtDomPos, isMiddleButton, isRightButton, samePiece } from './util.js';
+import { eventPosition, getHandPieceAtDomPos, isMiddleButton, isRightButton } from './util.js';
 import * as sg from './types.js';
 import { cancelPromotion, promote } from './promotion.js';
-import { removeFromHand } from './board.js';
 
 type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
@@ -116,26 +115,20 @@ function dragOrDraw(s: State, withDrag: StateMouchBind, withDraw: StateMouchBind
 function startDragFromHand(s: State): MouchBind {
   return e => {
     if (s.promotion.active) return;
+
     const pos = eventPosition(e),
       piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.hands.pieceBounds());
+
     if (piece) {
-      if (s.drawable.enabled && isMiddleButton(e)) {
-        if (s.drawable.piece && samePiece(s.drawable.piece, piece)) s.drawable.piece = undefined;
-        else s.drawable.piece = piece;
-        s.dom.redraw();
-      } else if (s.drawable.enabled && (e.shiftKey || isRightButton(e))) {
-        draw.startFromHand(s, piece, e);
+      if (s.draggable.current) drag.cancel(s);
+      else if (s.drawable.current) draw.cancel(s);
+      else if (isMiddleButton(e)) {
+        if (s.drawable.enabled) draw.setDrawPiece(s, piece);
+      } else if (e.shiftKey || isRightButton(e)) {
+        if (s.drawable.enabled) draw.startFromHand(s, piece, e);
       } else if (!s.viewOnly && !drag.unwantedEvent(e)) {
-        if (s.selectable.deleteOnTouch) {
-          removeFromHand(s, piece);
-          s.dom.redraw();
-        } else if (
-          (s.activeColor === 'both' || s.activeColor === piece.color) &&
-          s.hands.handMap.get(piece.color)?.get(piece.role)
-        ) {
-          if (e.cancelable !== false) e.preventDefault();
-          drag.dragNewPiece(s, piece, e);
-        }
+        if (e.cancelable !== false) e.preventDefault();
+        drag.dragNewPiece(s, piece, e);
       }
     }
   };
