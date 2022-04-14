@@ -48,6 +48,8 @@ sg-promotion {
   width: 100%;
   height: 100%;
   line-height: 0;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
   user-select: none;
   box-sizing: border-box;
 }
@@ -71,6 +73,9 @@ sg-promotion sg-promotion-square {
   left: 0;
   width: calc(100% / 9);
   height: calc(100% / 9);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 sg-promotion sg-promotion-choices {
@@ -82,6 +87,9 @@ sg-promotion sg-promotion-choices {
   cursor: pointer;
   width: 100%;
   height: 200%;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
 }
 
 .orientation-gote sg-promotion sg-promotion-choices {
@@ -100,6 +108,9 @@ sg-promotion sg-promotion-choices piece {
   border-radius: 10px;
   transition: all 200ms;
   background-color: #2e2e2e;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 sg-promotion sg-promotion-choices piece:hover {
@@ -231,6 +242,8 @@ sg-square-over {
   pointer-events: none;
   opacity: 0.8;
   font-size: 9px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
   user-select: none;
 }
 .sg-wrap coords.ranks {

@@ -22,3 +22,16 @@ nav a {
   font-weight: bold;
   color: #b0b0b0;
 }
+
+@media (max-width: 680px) {
+  .main {
+    flex-direction: column;
+  }
+  .main-board {
+    width: 100%;
+    padding-bottom: 100%;
+  }
+  .sg-wrap {
+    padding-bottom: calc(100% / 11 * 12);
+  }
+}
