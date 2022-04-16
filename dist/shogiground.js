@@ -253,7 +253,7 @@ var Shogiground = (function () {
     }
     function setPremove(state, orig, dest) {
         unsetPredrop(state);
-        state.premovable.current = [orig, dest];
+        state.premovable.current = { orig, dest };
         callUserFunction(state.premovable.events.set, orig, dest);
     }
     function unsetPremove(state) {
@@ -465,7 +465,7 @@ var Shogiground = (function () {
         const move = state.premovable.current;
         if (!move)
             return false;
-        const orig = move[0], dest = move[1];
+        const orig = move.orig, dest = move.dest;
         let success = false;
         if (canMove(state, orig, dest)) {
             const result = baseUserMove(state, orig, dest);
@@ -845,8 +845,8 @@ var Shogiground = (function () {
     function animate(mutation, state) {
         // clone state before mutating it
         const prevPieces = new Map(state.pieces), prevHands = new Map([
-            ['sente', new Map(state.hands.handMap.get('sente') || new Map())],
-            ['gote', new Map(state.hands.handMap.get('gote') || new Map())],
+            ['sente', new Map(state.hands.handMap.get('sente'))],
+            ['gote', new Map(state.hands.handMap.get('gote'))],
         ]);
         const result = mutation(state), plan = computePlan(prevPieces, prevHands, state);
         if (plan.anims.size || plan.fadings.size) {
@@ -1531,46 +1531,51 @@ var Shogiground = (function () {
         s.promotion.key = undefined;
         s.promotion.pieces = undefined;
     }
-    function renderPromotions(s) {
+    function renderPromotion(s) {
         const promotionEl = s.dom.board.elements.promotion;
-        if (!s.promotion.active || !s.promotion.key || !s.promotion.pieces || !promotionEl)
-            return;
-        const asSente = sentePov(s), initPos = key2pos(s.promotion.key);
-        const promotionSquare = createEl('sg-promotion-square'), promotionChoices = createEl('sg-promotion-choices');
-        translateRel(promotionSquare, posToTranslateRel(s.dimensions)(initPos, asSente), 1);
-        s.promotion.pieces.forEach(p => {
-            const pieceNode = createEl('piece', pieceNameOf(p));
-            pieceNode.sgColor = p.color;
-            pieceNode.sgRole = p.role;
-            promotionChoices.appendChild(pieceNode);
-        });
-        promotionEl.innerHTML = '';
-        promotionSquare.appendChild(promotionChoices);
-        promotionEl.appendChild(promotionSquare);
-        setDisplay(promotionEl, s.promotion.active);
+        if (promotionEl && s.promotion.active && s.promotion.key && s.promotion.pieces) {
+            const asSente = sentePov(s), initPos = key2pos(s.promotion.key), promotionSquare = createEl('sg-promotion-square'), promotionChoices = createEl('sg-promotion-choices');
+            translateRel(promotionSquare, posToTranslateRel(s.dimensions)(initPos, asSente), 1);
+            for (const p of s.promotion.pieces) {
+                const pieceNode = createEl('piece', pieceNameOf(p));
+                pieceNode.sgColor = p.color;
+                pieceNode.sgRole = p.role;
+                promotionChoices.appendChild(pieceNode);
+            }
+            promotionEl.innerHTML = '';
+            promotionSquare.appendChild(promotionChoices);
+            promotionEl.appendChild(promotionSquare);
+            setDisplay(promotionEl, s.promotion.active);
+        }
+        else if (promotionEl) {
+            setDisplay(promotionEl, false);
+        }
     }
     function promote(s, e) {
-        e.preventDefault();
-        const key = s.promotion.key, target = e.target;
-        if (s.promotion.active && key && target && isPieceNode(target)) {
+        e.stopPropagation();
+        const target = e.target, key = s.promotion.key;
+        if (target && isPieceNode(target) && key && s.promotion.active) {
             const piece = { color: target.sgColor, role: target.sgRole };
-            s.pieces.set(key, piece);
+            if (s.activeColor === 'both' || s.activeColor === s.turnColor)
+                s.pieces.set(key, piece);
             callUserFunction(s.promotion.after, piece);
         }
         else
             callUserFunction(s.promotion.cancel);
         unsetPromotion(s);
-        setDisplay(s.dom.board.elements.promotion, false);
         s.dom.redraw();
     }
-    function cancelPromotion(s) {
-        if (!s.promotion.active)
+    function startPromotion(s, key, pieces) {
+        if (s.viewOnly)
             return;
-        callUserFunction(s.promotion.cancel);
+        unselect(s);
+        setPromotion(s, key, pieces);
+    }
+    function cancelPromotion(s) {
+        if (!s.promotion.active || !s.dom.board.elements.promotion)
+            return;
         unsetPromotion(s);
-        if (s.dom.board.elements.promotion)
-            setDisplay(s.dom.board.elements.promotion, false);
-        s.dom.redraw();
+        callUserFunction(s.promotion.cancel);
     }
 
     // see API types and documentations in api.d.ts
@@ -1585,11 +1590,6 @@ var Shogiground = (function () {
                 let toRedraw = false;
                 if (config.orientation && config.orientation !== state.orientation) {
                     toggleOrientation(state);
-                    toRedraw = true;
-                }
-                if (config.viewOnly !== undefined && config.viewOnly !== state.viewOnly) {
-                    state.viewOnly = config.viewOnly;
-                    reset(state);
                     toRedraw = true;
                 }
                 if (config.viewOnly !== undefined && config.viewOnly !== state.viewOnly) {
@@ -1629,10 +1629,10 @@ var Shogiground = (function () {
                 render$1(state => removeFromHand(state, piece, count), state);
             },
             startPromotion(key, pieces) {
-                render$1(state => setPromotion(state, key, pieces), state);
+                render$1(state => startPromotion(state, key, pieces), state);
             },
-            stopPromotion() {
-                render$1(state => unsetPromotion(state), state);
+            cancelPromotion() {
+                render$1(state => cancelPromotion(state), state);
             },
             selectSquare(key, force) {
                 if (key)
@@ -1661,9 +1661,10 @@ var Shogiground = (function () {
             },
             playPredrop() {
                 if (state.predroppable.current) {
-                    const result = playPredrop(state);
+                    if (anim(playPredrop, state))
+                        return true;
+                    // if the predrop couldn't be played, redraw to clear it up
                     state.dom.redraw();
-                    return result;
                 }
                 return false;
             },
@@ -1953,9 +1954,7 @@ var Shogiground = (function () {
             piecesEl.addEventListener('contextmenu', e => e.preventDefault());
         if (promotionEl) {
             const pieceSelection = (e) => promote(s, e);
-            promotionEl.addEventListener('click', pieceSelection, {
-                passive: false,
-            });
+            promotionEl.addEventListener('click', pieceSelection);
             if (s.disableContextMenu)
                 promotionEl.addEventListener('contextmenu', e => e.preventDefault());
         }
@@ -1977,7 +1976,12 @@ var Shogiground = (function () {
             passive: false,
         });
         if (s.dom.board.elements.promotion)
-            handEl.addEventListener('click', () => cancelPromotion(s));
+            handEl.addEventListener('click', () => {
+                if (s.promotion.active) {
+                    cancelPromotion(s);
+                    s.dom.redraw();
+                }
+            });
         if (s.disableContextMenu || s.drawable.enabled)
             handEl.addEventListener('contextmenu', e => e.preventDefault());
     }
@@ -2235,9 +2239,10 @@ var Shogiground = (function () {
             }
         }
         const premove = s.premovable.current;
-        if (premove)
-            for (const k of premove)
-                addSquare(squares, k, 'current-pre');
+        if (premove) {
+            addSquare(squares, premove.orig, 'current-pre');
+            addSquare(squares, premove.dest, 'current-pre');
+        }
         else if (s.predroppable.current)
             addSquare(squares, s.predroppable.current.key, 'current-pre');
         return squares;
@@ -2306,7 +2311,7 @@ var Shogiground = (function () {
                 return handPiecesRects;
             }), redrawNow = (skipShapes) => {
                 render(state);
-                renderPromotions(state);
+                renderPromotion(state);
                 if (!skipShapes && boardElements.svg)
                     renderShapes(state, boardElements.svg, boardElements.customSvg, boardElements.freePieces);
             }, onResize = () => {

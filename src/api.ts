@@ -182,9 +182,9 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     playPredrop(): boolean {
       if (state.predroppable.current) {
-        const result = board.playPredrop(state);
+        if (anim(board.playPredrop, state)) return true;
+        // if the predrop couldn't be played, redraw to clear it up
         state.dom.redraw();
-        return result;
       }
       return false;
     },
