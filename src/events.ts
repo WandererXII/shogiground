@@ -50,7 +50,7 @@ function bindHand(s: State, handEl: HTMLElement, onResize: () => void): void {
   });
   if (s.dom.board.elements.promotion)
     handEl.addEventListener('click', () => {
-      if (s.promotion.active) {
+      if (s.promotion.current) {
         cancelPromotion(s);
         s.dom.redraw();
       }
@@ -118,7 +118,7 @@ function dragOrDraw(s: State, withDrag: StateMouchBind, withDraw: StateMouchBind
 
 function startDragFromHand(s: State): MouchBind {
   return e => {
-    if (s.promotion.active) return;
+    if (s.promotion.current) return;
 
     const pos = eventPosition(e),
       piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.hands.pieceBounds());

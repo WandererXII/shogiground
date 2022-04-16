@@ -46,7 +46,7 @@ export function wrapBoard(wrapElements: WrapElements, s: HeadlessState): DomBoar
     board.appendChild(dragged);
 
     promotion = createEl('sg-promotion');
-    setDisplay(promotion, s.promotion.active);
+    setDisplay(promotion, !!s.promotion.current);
     board.appendChild(promotion);
 
     squareOver = createEl('sg-square-over');

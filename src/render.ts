@@ -215,7 +215,7 @@ function addSquare(squares: SquareClasses, key: sg.Key, klass: string): void {
 }
 
 function updateHand(s: State, handEl: HTMLElement): void {
-  handEl.classList.toggle('promotion', s.promotion.active);
+  handEl.classList.toggle('promotion', !!s.promotion.current);
   let pieceEl = handEl.firstElementChild as sg.PieceNode | undefined;
   while (pieceEl) {
     const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
