@@ -200,8 +200,10 @@ function computeSquareClasses(s: State): SquareClasses {
     }
   }
   const premove = s.premovable.current;
-  if (premove) for (const k of premove) addSquare(squares, k, 'current-pre');
-  else if (s.predroppable.current) addSquare(squares, s.predroppable.current.key, 'current-pre');
+  if (premove) {
+    addSquare(squares, premove.orig, 'current-pre');
+    addSquare(squares, premove.dest, 'current-pre');
+  } else if (s.predroppable.current) addSquare(squares, s.predroppable.current.key, 'current-pre');
 
   return squares;
 }

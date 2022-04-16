@@ -20,7 +20,7 @@ export interface Config {
   squareRatio?: sg.NumberPair; // ratio of a single square [width, height]
   disableContextMenu?: boolean; // because who needs a context menu on a board, only without viewOnly
   blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
-  scaleDownPieces?: boolean; // helpful for pgns - https://ctidd.com/2015/svg-background-scaling
+  scaleDownPieces?: boolean; // helpful for pngs - https://ctidd.com/2015/svg-background-scaling
   coordinates?: {
     enabled?: boolean; // include coords attributes
     notation?: sg.Notation;

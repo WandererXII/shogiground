@@ -41,7 +41,7 @@ export function setCheck(state: HeadlessState, color: sg.Color | boolean): void 
 
 function setPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): void {
   unsetPredrop(state);
-  state.premovable.current = [orig, dest];
+  state.premovable.current = { orig, dest };
   callUserFunction(state.premovable.events.set, orig, dest);
 }
 
@@ -279,8 +279,8 @@ export function isDraggable(state: HeadlessState, piece: sg.Piece): boolean {
 export function playPremove(state: HeadlessState): boolean {
   const move = state.premovable.current;
   if (!move) return false;
-  const orig = move[0],
-    dest = move[1];
+  const orig = move.orig,
+    dest = move.dest;
   let success = false;
   if (canMove(state, orig, dest)) {
     const result = baseUserMove(state, orig, dest);

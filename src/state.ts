@@ -59,7 +59,10 @@ export interface HeadlessState {
     enabled: boolean; // allow premoves for color that can not move
     showDests: boolean; // whether to add the pre-dest class on squares
     dests?: sg.Key[]; // premove destinations for the current selection
-    current?: sg.KeyPair; // keys of the current saved premove ["5f" "5d"]
+    current?: {
+      orig: sg.Key;
+      dest: sg.Key;
+    };
     events: {
       set?: (orig: sg.Key, dest: sg.Key) => void; // called after the premove has been set
       unset?: () => void; // called after the premove has been unset

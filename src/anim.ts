@@ -151,8 +151,8 @@ function animate<A>(mutation: Mutation<A>, state: State): A {
   // clone state before mutating it
   const prevPieces: sg.Pieces = new Map(state.pieces),
     prevHands: sg.Hands = new Map([
-      ['sente', new Map(state.hands.handMap.get('sente') || new Map())],
-      ['gote', new Map(state.hands.handMap.get('gote') || new Map())],
+      ['sente', new Map(state.hands.handMap.get('sente'))],
+      ['gote', new Map(state.hands.handMap.get('gote'))],
     ]);
 
   const result = mutation(state),

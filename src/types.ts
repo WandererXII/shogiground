@@ -60,6 +60,7 @@ export interface DomHands {
   pieceBounds: Memo<Map<PieceName, DOMRect>>;
   bounds: Memo<Map<'top' | 'bottom', DOMRect>>;
 }
+
 export interface Dom {
   board: DomBoard;
   hands: DomHands;

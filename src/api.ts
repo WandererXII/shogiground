@@ -6,7 +6,7 @@ import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
 import { DrawShape } from './draw.js';
 import * as sg from './types.js';
-import { unsetPromotion, setPromotion } from './promotion.js';
+import { startPromotion, cancelPromotion } from './promotion.js';
 
 export interface Api {
   // reconfigure the instance. Accepts all config options
@@ -43,8 +43,8 @@ export interface Api {
   // places pieces on separate layer, selected piece will be placed on key
   startPromotion(key: sg.Key, pieces: sg.Piece[]): void;
 
-  // stops the current promotion, if promotion is active
-  stopPromotion(): void;
+  // cancels the current promotion, if promotion is active
+  cancelPromotion(): void;
 
   // click a square programmatically
   selectSquare(key: sg.Key | null, spare?: boolean, force?: boolean): void;
@@ -106,12 +106,6 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
         board.reset(state);
         toRedraw = true;
       }
-      if (config.viewOnly !== undefined && config.viewOnly !== state.viewOnly) {
-        state.viewOnly = config.viewOnly;
-        board.reset(state);
-        toRedraw = true;
-      }
-
       if (config.hands?.roles !== undefined && config.hands.roles !== state.hands.roles) {
         state.hands.roles = config.hands.roles;
         toRedraw = true;
@@ -154,11 +148,11 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
     },
 
     startPromotion(key: sg.Key, pieces: sg.Piece[]): void {
-      render(state => setPromotion(state, key, pieces), state);
+      render(state => startPromotion(state, key, pieces), state);
     },
 
-    stopPromotion(): void {
-      render(state => unsetPromotion(state), state);
+    cancelPromotion(): void {
+      render(state => cancelPromotion(state), state);
     },
 
     selectSquare(key, force): void {

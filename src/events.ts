@@ -28,9 +28,7 @@ export function bindBoard(s: State, onResize: () => void): void {
 
   if (promotionEl) {
     const pieceSelection = (e: sg.MouchEvent) => promote(s, e);
-    promotionEl.addEventListener('click', pieceSelection as EventListener, {
-      passive: false,
-    });
+    promotionEl.addEventListener('click', pieceSelection as EventListener);
     if (s.disableContextMenu) promotionEl.addEventListener('contextmenu', e => e.preventDefault());
   }
 }
@@ -50,7 +48,13 @@ function bindHand(s: State, handEl: HTMLElement, onResize: () => void): void {
   handEl.addEventListener('touchstart', onStart as EventListener, {
     passive: false,
   });
-  if (s.dom.board.elements.promotion) handEl.addEventListener('click', () => cancelPromotion(s));
+  if (s.dom.board.elements.promotion)
+    handEl.addEventListener('click', () => {
+      if (s.promotion.active) {
+        cancelPromotion(s);
+        s.dom.redraw();
+      }
+    });
 
   if (s.disableContextMenu || s.drawable.enabled) handEl.addEventListener('contextmenu', e => e.preventDefault());
 }

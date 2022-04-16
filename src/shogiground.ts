@@ -6,7 +6,7 @@ import * as events from './events.js';
 import { render } from './render.js';
 import * as shapes from './shapes.js';
 import * as util from './util.js';
-import { renderPromotions } from './promotion.js';
+import { renderPromotion } from './promotion.js';
 import { PieceNode, WrapElements } from './types.js';
 
 export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
@@ -47,7 +47,7 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
       }),
       redrawNow = (skipShapes?: boolean): void => {
         render(state);
-        renderPromotions(state);
+        renderPromotion(state);
         if (!skipShapes && boardElements.svg)
           shapes.renderShapes(state, boardElements.svg, boardElements.customSvg!, boardElements.freePieces!);
       },
