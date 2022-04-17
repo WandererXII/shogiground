@@ -13,9 +13,12 @@ export type AnimVectors = Map<sg.Key, AnimVector>;
 
 export type AnimFadings = Map<sg.Key, sg.Piece>;
 
+export type AnimPromotions = Map<sg.Key, sg.Piece>;
+
 export interface AnimPlan {
   anims: AnimVectors;
   fadings: AnimFadings;
+  promotions: AnimPromotions;
 }
 
 export interface AnimCurrent {
@@ -59,6 +62,7 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
   const anims: AnimVectors = new Map(),
     animedOrigs: sg.Key[] = [],
     fadings: AnimFadings = new Map(),
+    promotions: AnimPromotions = new Map(),
     missings: AnimPiece[] = [],
     news: AnimPiece[] = [],
     prePieces: AnimPieces = new Map();
@@ -107,12 +111,18 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
   for (const newP of news) {
     const preP = closer(
       newP,
-      missings.filter(p => util.samePiece(newP.piece, p.piece))
+      missings.filter(p => {
+        if (util.samePiece(newP.piece, p.piece)) return true;
+        const promotedRole = current.promotion.promotesTo(p.piece.role),
+          promotedPiece: sg.Piece | undefined = promotedRole && { color: p.piece.color, role: promotedRole };
+        return !!promotedPiece && util.samePiece(newP.piece, promotedPiece);
+      })
     );
     if (preP) {
       const vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];
       anims.set(newP.key!, vector.concat(vector) as AnimVector);
       if (preP.key) animedOrigs.push(preP.key);
+      if (!util.samePiece(newP.piece, preP.piece) && newP.key) promotions.set(newP.key, preP.piece);
     }
   }
   for (const p of missings) {
@@ -122,6 +132,7 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
   return {
     anims: anims,
     fadings: fadings,
+    promotions: promotions,
   };
 }
 

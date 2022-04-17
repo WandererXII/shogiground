@@ -10,7 +10,6 @@ export type Pos = [number, number];
 export interface Piece {
   role: Role;
   color: Color;
-  promoted?: boolean;
 }
 export type PieceName = string; // `$color $role`
 export type Pieces = Map<Key, Piece>;

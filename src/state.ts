@@ -96,9 +96,11 @@ export interface HeadlessState {
     deleteOnTouch: boolean; // selecting a piece on the board or in hand will remove it - board editor
   };
   promotion: {
-    active: boolean;
-    key?: sg.Key; // key at which promotion will occur
-    pieces?: sg.Piece[]; // piece options
+    current?: {
+      key: sg.Key; // key at which promotion will occur
+      pieces: sg.Piece[]; // piece options
+    };
+    promotesTo: (role: sg.Role) => sg.Role | undefined;
     after?: (piece: sg.Piece) => void; // called after user selects a piece
     cancel?: () => void; // called after user cancels the selection
   };
@@ -184,7 +186,7 @@ export function defaults(): HeadlessState {
       deleteOnTouch: false,
     },
     promotion: {
-      active: false,
+      promotesTo: () => undefined,
     },
     events: {},
     drawable: {

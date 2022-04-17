@@ -1,7 +1,7 @@
 import { State } from './state.js';
 import { key2pos, createEl, setDisplay, posToTranslateRel, translateRel, pieceNameOf, samePiece } from './util.js';
 import { sentePov } from './board.js';
-import { AnimCurrent, AnimVectors, AnimVector, AnimFadings } from './anim.js';
+import { AnimCurrent, AnimVectors, AnimVector, AnimFadings, AnimPromotions } from './anim.js';
 import { DragCurrent } from './drag.js';
 import * as sg from './types.js';
 
@@ -21,6 +21,7 @@ export function render(s: State): void {
     curAnim: AnimCurrent | undefined = s.animation.current,
     anims: AnimVectors = curAnim ? curAnim.plan.anims : new Map(),
     fadings: AnimFadings = curAnim ? curAnim.plan.fadings : new Map(),
+    promotions: AnimPromotions = curAnim ? curAnim.plan.promotions : new Map(),
     curDrag: DragCurrent | undefined = s.draggable.current,
     squares: SquareClasses = computeSquareClasses(s),
     samePieces: Set<sg.Key> = new Set(),
@@ -39,6 +40,7 @@ export function render(s: State): void {
     elPieceName: sg.PieceName,
     anim: AnimVector | undefined,
     fading: sg.Piece | undefined,
+    promotion: sg.Piece | undefined,
     pMvdset: sg.PieceNode[] | undefined,
     pMvd: sg.PieceNode | undefined;
 
@@ -50,6 +52,7 @@ export function render(s: State): void {
       pieceAtKey = pieces.get(k);
       anim = anims.get(k);
       fading = fadings.get(k);
+      promotion = promotions.get(k);
       elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
 
       // if piece dragged add or remove ghost class
@@ -67,9 +70,13 @@ export function render(s: State): void {
       }
       // there is now a piece at this dom key
       if (pieceAtKey) {
-        // continue animation if already animating and same piece
+        // continue animation if already animating and same piece or promoting piece
         // (otherwise it could animate a captured piece)
-        if (anim && el.sgAnimating && elPieceName === pieceNameOf(pieceAtKey)) {
+        if (
+          anim &&
+          el.sgAnimating &&
+          (elPieceName === pieceNameOf(pieceAtKey) || (promotion && elPieceName === pieceNameOf(promotion)))
+        ) {
           const pos = key2pos(k);
           pos[0] += anim[2];
           pos[1] += anim[3];
@@ -84,11 +91,13 @@ export function render(s: State): void {
         if (elPieceName === pieceNameOf(pieceAtKey) && (!fading || !el.sgFading)) {
           samePieces.add(k);
         }
-        // different piece: flag as moved unless it is a fading piece
+        // different piece: flag as moved unless it is a fading piece or an animated promoting piece
         else {
           if (fading && elPieceName === pieceNameOf(fading)) {
             el.classList.add('fading');
             el.sgFading = true;
+          } else if (promotion && elPieceName === pieceNameOf(promotion)) {
+            samePieces.add(k);
           } else {
             appendValue(movedPieces, elPieceName, el);
           }
@@ -112,9 +121,10 @@ export function render(s: State): void {
   // walk over all pieces in current set, apply dom changes to moved pieces
   // or append new pieces
   for (const [k, p] of pieces) {
+    const piece = promotions.get(k) || p;
     anim = anims.get(k);
     if (!samePieces.has(k)) {
-      pMvdset = movedPieces.get(pieceNameOf(p));
+      pMvdset = movedPieces.get(pieceNameOf(piece));
       pMvd = pMvdset && pMvdset.pop();
       // a same piece was moved
       if (pMvd) {
@@ -134,7 +144,6 @@ export function render(s: State): void {
         translateRel(pMvd, posToTranslate(pos, asSente), scaleDown);
       }
       // no piece in moved obj: insert the new piece
-      // assumes the new piece is not being dragged
       else {
         const pieceNode = createEl('piece', pieceNameOf(p)) as sg.PieceNode,
           pos = key2pos(k);
@@ -153,12 +162,11 @@ export function render(s: State): void {
       }
     }
   }
+  // remove any element that remains in the moved sets
+  for (const nodes of movedPieces.values()) removeNodes(s, nodes);
 
   if (handTopEl) updateHand(s, handTopEl);
   if (handBotEl) updateHand(s, handBotEl);
-
-  // remove any element that remains in the moved sets
-  for (const nodes of movedPieces.values()) removeNodes(s, nodes);
 }
 
 function removeNodes(s: State, nodes: HTMLElement[]): void {

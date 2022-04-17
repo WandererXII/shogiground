@@ -764,7 +764,7 @@ var Shogiground = (function () {
         })[0];
     }
     function computePlan(prevPieces, prevHands, current) {
-        const anims = new Map(), animedOrigs = [], fadings = new Map(), missings = [], news = [], prePieces = new Map();
+        const anims = new Map(), animedOrigs = [], fadings = new Map(), promotions = new Map(), missings = [], news = [], prePieces = new Map();
         for (const [k, p] of prevPieces) {
             prePieces.set(k, makePiece(k, p));
         }
@@ -802,12 +802,19 @@ var Shogiground = (function () {
             }
         }
         for (const newP of news) {
-            const preP = closer(newP, missings.filter(p => samePiece(newP.piece, p.piece)));
+            const preP = closer(newP, missings.filter(p => {
+                if (samePiece(newP.piece, p.piece))
+                    return true;
+                const promotedRole = current.promotion.promotesTo(p.piece.role), promotedPiece = promotedRole && { color: p.piece.color, role: promotedRole };
+                return !!promotedPiece && samePiece(newP.piece, promotedPiece);
+            }));
             if (preP) {
                 const vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];
                 anims.set(newP.key, vector.concat(vector));
                 if (preP.key)
                     animedOrigs.push(preP.key);
+                if (!samePiece(newP.piece, preP.piece) && newP.key)
+                    promotions.set(newP.key, preP.piece);
             }
         }
         for (const p of missings) {
@@ -817,6 +824,7 @@ var Shogiground = (function () {
         return {
             anims: anims,
             fadings: fadings,
+            promotions: promotions,
         };
     }
     function step(state, now) {
@@ -1522,21 +1530,17 @@ var Shogiground = (function () {
     }
 
     function setPromotion(s, key, pieces) {
-        s.promotion.active = true;
-        s.promotion.key = key;
-        s.promotion.pieces = pieces;
+        s.promotion.current = { key, pieces };
     }
     function unsetPromotion(s) {
-        s.promotion.active = false;
-        s.promotion.key = undefined;
-        s.promotion.pieces = undefined;
+        s.promotion.current = undefined;
     }
     function renderPromotion(s) {
-        const promotionEl = s.dom.board.elements.promotion;
-        if (promotionEl && s.promotion.active && s.promotion.key && s.promotion.pieces) {
-            const asSente = sentePov(s), initPos = key2pos(s.promotion.key), promotionSquare = createEl('sg-promotion-square'), promotionChoices = createEl('sg-promotion-choices');
+        const promotionEl = s.dom.board.elements.promotion, cur = s.promotion.current;
+        if (promotionEl && cur) {
+            const asSente = sentePov(s), initPos = key2pos(cur.key), promotionSquare = createEl('sg-promotion-square'), promotionChoices = createEl('sg-promotion-choices');
             translateRel(promotionSquare, posToTranslateRel(s.dimensions)(initPos, asSente), 1);
-            for (const p of s.promotion.pieces) {
+            for (const p of cur.pieces) {
                 const pieceNode = createEl('piece', pieceNameOf(p));
                 pieceNode.sgColor = p.color;
                 pieceNode.sgRole = p.role;
@@ -1545,16 +1549,17 @@ var Shogiground = (function () {
             promotionEl.innerHTML = '';
             promotionSquare.appendChild(promotionChoices);
             promotionEl.appendChild(promotionSquare);
-            setDisplay(promotionEl, s.promotion.active);
+            setDisplay(promotionEl, true);
         }
         else if (promotionEl) {
             setDisplay(promotionEl, false);
         }
     }
     function promote(s, e) {
+        var _a;
         e.stopPropagation();
-        const target = e.target, key = s.promotion.key;
-        if (target && isPieceNode(target) && key && s.promotion.active) {
+        const target = e.target, key = (_a = s.promotion.current) === null || _a === void 0 ? void 0 : _a.key;
+        if (target && isPieceNode(target) && key) {
             const piece = { color: target.sgColor, role: target.sgRole };
             if (s.activeColor === 'both' || s.activeColor === s.turnColor)
                 s.pieces.set(key, piece);
@@ -1572,7 +1577,7 @@ var Shogiground = (function () {
         setPromotion(s, key, pieces);
     }
     function cancelPromotion(s) {
-        if (!s.promotion.active || !s.dom.board.elements.promotion)
+        if (!s.promotion.current || !s.dom.board.elements.promotion)
             return;
         unsetPromotion(s);
         callUserFunction(s.promotion.cancel);
@@ -1772,7 +1777,7 @@ var Shogiground = (function () {
                 deleteOnTouch: false,
             },
             promotion: {
-                active: false,
+                promotesTo: () => undefined,
             },
             events: {},
             drawable: {
@@ -1814,7 +1819,7 @@ var Shogiground = (function () {
             setDisplay(dragged, !!s.draggable.current);
             board.appendChild(dragged);
             promotion = createEl('sg-promotion');
-            setDisplay(promotion, s.promotion.active);
+            setDisplay(promotion, !!s.promotion.current);
             board.appendChild(promotion);
             squareOver = createEl('sg-square-over');
             setDisplay(squareOver, !!((_a = s.draggable.current) === null || _a === void 0 ? void 0 : _a.touch));
@@ -1977,7 +1982,7 @@ var Shogiground = (function () {
         });
         if (s.dom.board.elements.promotion)
             handEl.addEventListener('click', () => {
-                if (s.promotion.active) {
+                if (s.promotion.current) {
                     cancelPromotion(s);
                     s.dom.redraw();
                 }
@@ -2040,7 +2045,7 @@ var Shogiground = (function () {
     }
     function startDragFromHand(s) {
         return e => {
-            if (s.promotion.active)
+            if (s.promotion.current)
                 return;
             const pos = eventPosition(e), piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.hands.pieceBounds());
             if (piece) {
@@ -2067,7 +2072,7 @@ var Shogiground = (function () {
 
     function render(s) {
         var _a, _b;
-        const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = posToTranslateRel(s.dimensions), squaresEl = s.dom.board.elements.squares, piecesEl = s.dom.board.elements.pieces, draggedEl = s.dom.board.elements.dragged, squareOverEl = s.dom.board.elements.squareOver, handTopEl = s.dom.hands.elements.top, handBotEl = s.dom.hands.elements.bottom, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), curDrag = s.draggable.current, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
+        const asSente = sentePov(s), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = posToTranslateRel(s.dimensions), squaresEl = s.dom.board.elements.squares, piecesEl = s.dom.board.elements.pieces, draggedEl = s.dom.board.elements.dragged, squareOverEl = s.dom.board.elements.squareOver, handTopEl = s.dom.hands.elements.top, handBotEl = s.dom.hands.elements.bottom, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), promotions = curAnim ? curAnim.plan.promotions : new Map(), curDrag = s.draggable.current, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
         // if piece not being dragged anymore, hide it
         if (!curDrag && (draggedEl === null || draggedEl === void 0 ? void 0 : draggedEl.sgDragging)) {
             draggedEl.sgDragging = false;
@@ -2075,7 +2080,7 @@ var Shogiground = (function () {
             if (squareOverEl)
                 setDisplay(squareOverEl, false);
         }
-        let k, el, pieceAtKey, elPieceName, anim, fading, pMvdset, pMvd;
+        let k, el, pieceAtKey, elPieceName, anim, fading, promotion, pMvdset, pMvd;
         // walk over all board dom elements, apply animations and flag moved pieces
         el = piecesEl.firstElementChild;
         while (el) {
@@ -2084,6 +2089,7 @@ var Shogiground = (function () {
                 pieceAtKey = pieces.get(k);
                 anim = anims.get(k);
                 fading = fadings.get(k);
+                promotion = promotions.get(k);
                 elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
                 // if piece dragged add or remove ghost class
                 if ((curDrag === null || curDrag === void 0 ? void 0 : curDrag.started) && ((_a = curDrag.fromBoard) === null || _a === void 0 ? void 0 : _a.orig) === k) {
@@ -2101,9 +2107,11 @@ var Shogiground = (function () {
                 }
                 // there is now a piece at this dom key
                 if (pieceAtKey) {
-                    // continue animation if already animating and same piece
+                    // continue animation if already animating and same piece or promoting piece
                     // (otherwise it could animate a captured piece)
-                    if (anim && el.sgAnimating && elPieceName === pieceNameOf(pieceAtKey)) {
+                    if (anim &&
+                        el.sgAnimating &&
+                        (elPieceName === pieceNameOf(pieceAtKey) || (promotion && elPieceName === pieceNameOf(promotion)))) {
                         const pos = key2pos(k);
                         pos[0] += anim[2];
                         pos[1] += anim[3];
@@ -2119,11 +2127,14 @@ var Shogiground = (function () {
                     if (elPieceName === pieceNameOf(pieceAtKey) && (!fading || !el.sgFading)) {
                         samePieces.add(k);
                     }
-                    // different piece: flag as moved unless it is a fading piece
+                    // different piece: flag as moved unless it is a fading piece or an animated promoting piece
                     else {
                         if (fading && elPieceName === pieceNameOf(fading)) {
                             el.classList.add('fading');
                             el.sgFading = true;
+                        }
+                        else if (promotion && elPieceName === pieceNameOf(promotion)) {
+                            samePieces.add(k);
                         }
                         else {
                             appendValue(movedPieces, elPieceName, el);
@@ -2146,9 +2157,10 @@ var Shogiground = (function () {
         // walk over all pieces in current set, apply dom changes to moved pieces
         // or append new pieces
         for (const [k, p] of pieces) {
+            const piece = promotions.get(k) || p;
             anim = anims.get(k);
             if (!samePieces.has(k)) {
-                pMvdset = movedPieces.get(pieceNameOf(p));
+                pMvdset = movedPieces.get(pieceNameOf(piece));
                 pMvd = pMvdset && pMvdset.pop();
                 // a same piece was moved
                 if (pMvd) {
@@ -2168,7 +2180,6 @@ var Shogiground = (function () {
                     translateRel(pMvd, posToTranslate(pos, asSente), scaleDown);
                 }
                 // no piece in moved obj: insert the new piece
-                // assumes the new piece is not being dragged
                 else {
                     const pieceNode = createEl('piece', pieceNameOf(p)), pos = key2pos(k);
                     pieceNode.sgColor = p.color;
@@ -2184,13 +2195,13 @@ var Shogiground = (function () {
                 }
             }
         }
+        // remove any element that remains in the moved sets
+        for (const nodes of movedPieces.values())
+            removeNodes(s, nodes);
         if (handTopEl)
             updateHand(s, handTopEl);
         if (handBotEl)
             updateHand(s, handBotEl);
-        // remove any element that remains in the moved sets
-        for (const nodes of movedPieces.values())
-            removeNodes(s, nodes);
     }
     function removeNodes(s, nodes) {
         for (const node of nodes)
@@ -2256,7 +2267,7 @@ var Shogiground = (function () {
     }
     function updateHand(s, handEl) {
         var _a;
-        handEl.classList.toggle('promotion', s.promotion.active);
+        handEl.classList.toggle('promotion', !!s.promotion.current);
         let pieceEl = handEl.firstElementChild;
         while (pieceEl) {
             const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
