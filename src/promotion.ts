@@ -1,13 +1,13 @@
 import * as board from './board.js';
 import * as sg from './types.js';
-import { State } from './state.js';
+import { HeadlessState, State } from './state.js';
 import { createEl, key2pos, pieceNameOf, posToTranslateRel, setDisplay, translateRel } from './util';
 
-function setPromotion(s: State, key: sg.Key, pieces: sg.Piece[]): void {
+function setPromotion(s: HeadlessState, key: sg.Key, pieces: sg.Piece[]): void {
   s.promotion.current = { key, pieces };
 }
 
-function unsetPromotion(s: State): void {
+function unsetPromotion(s: HeadlessState): void {
   s.promotion.current = undefined;
 }
 
@@ -52,14 +52,14 @@ export function promote(s: State, e: sg.MouchEvent): void {
   s.dom.redraw();
 }
 
-export function startPromotion(s: State, key: sg.Key, pieces: sg.Piece[]): void {
+export function startPromotion(s: HeadlessState, key: sg.Key, pieces: sg.Piece[]): void {
   if (s.viewOnly) return;
   board.unselect(s);
   setPromotion(s, key, pieces);
 }
 
-export function cancelPromotion(s: State): void {
-  if (!s.promotion.current || !s.dom.board.elements.promotion) return;
+export function cancelPromotion(s: HeadlessState): void {
+  if (!s.promotion.current) return;
   unsetPromotion(s);
   board.callUserFunction(s.promotion.cancel);
 }
