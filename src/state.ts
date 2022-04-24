@@ -99,8 +99,10 @@ export interface HeadlessState {
   };
   promotion: {
     promotesTo: (role: sg.Role) => sg.Role | undefined;
-    canMovePromote: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => boolean;
-    canDropPromote: (piece: sg.Piece, key: sg.Key) => boolean;
+    movePromotionDialog: (orig: sg.Key, dest: sg.Key) => boolean;
+    forceMovePromotion: (orig: sg.Key, dest: sg.Key) => boolean;
+    dropPromotionDialog: (piece: sg.Piece, key: sg.Key) => boolean;
+    forceDropPromotion: (piece: sg.Piece, key: sg.Key) => boolean;
     current?: {
       piece: sg.Piece;
       promotedPiece: sg.Piece;
@@ -196,8 +198,10 @@ export function defaults(): HeadlessState {
       deleteOnTouch: false,
     },
     promotion: {
-      canMovePromote: () => false,
-      canDropPromote: () => false,
+      movePromotionDialog: () => false,
+      forceMovePromotion: () => false,
+      dropPromotionDialog: () => false,
+      forceDropPromotion: () => false,
       promotesTo: () => undefined,
       events: {},
       prevPromotionHash: '',

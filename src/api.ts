@@ -119,13 +119,13 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
     toggleOrientation,
 
     move(orig, dest, prom): void {
-      anim(state => board.baseMove(state, orig, dest, !!prom), state);
+      anim(state => board.baseMove(state, orig, dest, prom || state.promotion.forceMovePromotion(orig, dest)), state);
     },
 
     drop(piece, key, prom, spare): void {
       anim(state => {
         state.droppable.spare = !!spare;
-        board.baseDrop(state, piece, key, !!prom);
+        board.baseDrop(state, piece, key, prom || state.promotion.forceDropPromotion(piece, key));
       }, state);
     },
 

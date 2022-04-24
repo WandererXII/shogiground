@@ -73,14 +73,17 @@
           promotesTo: (role) => {
             if (role === 'bishop') return 'horse';
             if (role === 'pawn') return 'tokin';
-            if (role === 'knight') return 'promotedKnight';
-            if (role === 'silver') return 'promotedSilver';
+            if (role === 'knight') return 'promotedknight';
+            if (role === 'silver') return 'promotedsilver';
             if (role === 'rook') return 'dragon';
-            if (role === 'lance') return 'promotedLance';
+            if (role === 'lance') return 'promotedlance';
           },
-          canMovePromote: (_orig, dest) => {
-            return dest.endsWith('c') || dest.endsWith('b') || dest.endsWith('a');
+          movePromotionDialog: (_orig, dest) => {
+            return dest.endsWith('c') || dest.endsWith('b');
           },
+          forceMovePromotion: (_orig, dest) => {
+            return dest.endsWith('a');
+          }
         },
       };
       const ground = Shogiground({ board: document.getElementById('dirty') }, config);

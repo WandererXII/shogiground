@@ -106,8 +106,10 @@ export interface Config {
   };
   promotion?: {
     promotesTo?: (role: sg.Role) => sg.Role | undefined;
-    canMovePromote?: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => boolean;
-    canDropPromote?: (piece: sg.Key, key: sg.Key) => boolean;
+    movePromotionDialog: (orig: sg.Key, dest: sg.Key) => boolean; // activate promotion dialog
+    forceMovePromotion: (orig: sg.Key, dest: sg.Key) => boolean; // auto promote after move
+    dropPromotionDialog: (piece: sg.Piece, key: sg.Key) => boolean; // activate promotion dialog
+    forceDropPromotion: (piece: sg.Piece, key: sg.Key) => boolean; // auto promote after drop
     events?: {
       initiated?: () => void; // called when promotion dialog is started
       after?: (piece: sg.Piece) => void; // called after user selects a piece

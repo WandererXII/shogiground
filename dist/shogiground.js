@@ -361,19 +361,20 @@ var Shogiground = (function () {
         }
         return result;
     }
-    function userDrop(state, piece, dest, prom) {
-        if (canDrop(state, piece, dest)) {
-            const result = baseUserDrop(state, piece, dest, !!prom);
+    function userDrop(state, piece, key, prom) {
+        const realProm = prom || state.promotion.forceDropPromotion(piece, key);
+        if (canDrop(state, piece, key)) {
+            const result = baseUserDrop(state, piece, key, realProm);
             if (result) {
                 unselect(state);
-                callUserFunction(state.droppable.events.after, piece, dest, !!prom, {
+                callUserFunction(state.droppable.events.after, piece, key, realProm, {
                     premade: false,
                 });
                 return true;
             }
         }
-        else if (canPredrop(state, piece, dest)) {
-            setPredrop(state, piece, dest, !!prom);
+        else if (canPredrop(state, piece, key)) {
+            setPredrop(state, piece, key, realProm);
             unselect(state);
             return true;
         }
@@ -381,8 +382,9 @@ var Shogiground = (function () {
         return false;
     }
     function userMove(state, orig, dest, prom) {
+        const realProm = prom || state.promotion.forceMovePromotion(orig, dest);
         if (canMove(state, orig, dest)) {
-            const result = baseUserMove(state, orig, dest, !!prom);
+            const result = baseUserMove(state, orig, dest, realProm);
             if (result) {
                 unselect(state);
                 const metadata = {
@@ -390,12 +392,12 @@ var Shogiground = (function () {
                 };
                 if (result !== true)
                     metadata.captured = result;
-                callUserFunction(state.movable.events.after, orig, dest, !!prom, metadata);
+                callUserFunction(state.movable.events.after, orig, dest, realProm, metadata);
                 return true;
             }
         }
         else if (canPremove(state, orig, dest)) {
-            setPremove(state, orig, dest, !!prom);
+            setPremove(state, orig, dest, realProm);
             unselect(state);
             return true;
         }
@@ -414,19 +416,19 @@ var Shogiground = (function () {
         };
         return true;
     }
-    function promotionDialogMove(state, orig, dest) {
-        if (canMovePromote(state, orig, dest) && (canMove(state, orig, dest) || canPremove(state, orig, dest))) {
-            const piece = state.pieces.get(orig);
-            if (piece && basePromotionDialog(state, piece, dest)) {
+    function promotionDialogDrop(state, piece, key) {
+        if (canDropPromote(state, piece, key) && (canDrop(state, piece, key) || canPredrop(state, piece, key))) {
+            if (basePromotionDialog(state, piece, key)) {
                 callUserFunction(state.promotion.events.initiated);
                 return true;
             }
         }
         return false;
     }
-    function promotionDialogDrop(state, piece, key) {
-        if (canDropPromote(state, piece, key) && (canDrop(state, piece, key) || canPredrop(state, piece, key))) {
-            if (basePromotionDialog(state, piece, key)) {
+    function promotionDialogMove(state, orig, dest) {
+        if (canMovePromote(state, orig, dest) && (canMove(state, orig, dest) || canPremove(state, orig, dest))) {
+            const piece = state.pieces.get(orig);
+            if (piece && basePromotionDialog(state, piece, dest)) {
                 callUserFunction(state.promotion.events.initiated);
                 return true;
             }
@@ -516,10 +518,10 @@ var Shogiground = (function () {
     }
     function canMovePromote(state, orig, dest) {
         const piece = state.pieces.get(orig);
-        return !!piece && state.promotion.canMovePromote(orig, dest, state.pieces.get(dest));
+        return !!piece && state.promotion.movePromotionDialog(orig, dest);
     }
     function canDropPromote(state, piece, key) {
-        return !state.droppable.spare && state.promotion.canDropPromote(piece, key);
+        return !state.droppable.spare && state.promotion.dropPromotionDialog(piece, key);
     }
     function isPremovable(state, orig) {
         const piece = state.pieces.get(orig);
@@ -1658,12 +1660,12 @@ var Shogiground = (function () {
             getHandsSfen: () => writeHands(state.hands.handMap, state.hands.roles),
             toggleOrientation: toggleOrientation$1,
             move(orig, dest, prom) {
-                anim(state => baseMove(state, orig, dest, !!prom), state);
+                anim(state => baseMove(state, orig, dest, prom || state.promotion.forceMovePromotion(orig, dest)), state);
             },
             drop(piece, key, prom, spare) {
                 anim(state => {
                     state.droppable.spare = !!spare;
-                    baseDrop(state, piece, key, !!prom);
+                    baseDrop(state, piece, key, prom || state.promotion.forceDropPromotion(piece, key));
                 }, state);
             },
             setPieces(pieces) {
@@ -1813,8 +1815,10 @@ var Shogiground = (function () {
                 deleteOnTouch: false,
             },
             promotion: {
-                canMovePromote: () => false,
-                canDropPromote: () => false,
+                movePromotionDialog: () => false,
+                forceMovePromotion: () => false,
+                dropPromotionDialog: () => false,
+                forceDropPromotion: () => false,
                 promotesTo: () => undefined,
                 events: {},
                 prevPromotionHash: '',

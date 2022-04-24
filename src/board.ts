@@ -118,18 +118,19 @@ function baseUserDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, prom: 
   return result;
 }
 
-export function userDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key, prom?: boolean): boolean {
-  if (canDrop(state, piece, dest)) {
-    const result = baseUserDrop(state, piece, dest, !!prom);
+export function userDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, prom?: boolean): boolean {
+  const realProm = prom || state.promotion.forceDropPromotion(piece, key);
+  if (canDrop(state, piece, key)) {
+    const result = baseUserDrop(state, piece, key, realProm);
     if (result) {
       unselect(state);
-      callUserFunction(state.droppable.events.after, piece, dest, !!prom, {
+      callUserFunction(state.droppable.events.after, piece, key, realProm, {
         premade: false,
       });
       return true;
     }
-  } else if (canPredrop(state, piece, dest)) {
-    setPredrop(state, piece, dest, !!prom);
+  } else if (canPredrop(state, piece, key)) {
+    setPredrop(state, piece, key, realProm);
     unselect(state);
     return true;
   }
@@ -138,19 +139,20 @@ export function userDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key, pr
 }
 
 export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom?: boolean): boolean {
+  const realProm = prom || state.promotion.forceMovePromotion(orig, dest);
   if (canMove(state, orig, dest)) {
-    const result = baseUserMove(state, orig, dest, !!prom);
+    const result = baseUserMove(state, orig, dest, realProm);
     if (result) {
       unselect(state);
       const metadata: sg.MoveMetadata = {
         premade: false,
       };
       if (result !== true) metadata.captured = result;
-      callUserFunction(state.movable.events.after, orig, dest, !!prom, metadata);
+      callUserFunction(state.movable.events.after, orig, dest, realProm, metadata);
       return true;
     }
   } else if (canPremove(state, orig, dest)) {
-    setPremove(state, orig, dest, !!prom);
+    setPremove(state, orig, dest, realProm);
     unselect(state);
     return true;
   }
@@ -172,10 +174,9 @@ export function basePromotionDialog(state: HeadlessState, piece: sg.Piece, key: 
   return true;
 }
 
-export function promotionDialogMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
-  if (canMovePromote(state, orig, dest) && (canMove(state, orig, dest) || canPremove(state, orig, dest))) {
-    const piece = state.pieces.get(orig);
-    if (piece && basePromotionDialog(state, piece, dest)) {
+export function promotionDialogDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key): boolean {
+  if (canDropPromote(state, piece, key) && (canDrop(state, piece, key) || canPredrop(state, piece, key))) {
+    if (basePromotionDialog(state, piece, key)) {
       callUserFunction(state.promotion.events.initiated);
       return true;
     }
@@ -183,9 +184,10 @@ export function promotionDialogMove(state: HeadlessState, orig: sg.Key, dest: sg
   return false;
 }
 
-export function promotionDialogDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key): boolean {
-  if (canDropPromote(state, piece, key) && (canDrop(state, piece, key) || canPredrop(state, piece, key))) {
-    if (basePromotionDialog(state, piece, key)) {
+export function promotionDialogMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
+  if (canMovePromote(state, orig, dest) && (canMove(state, orig, dest) || canPremove(state, orig, dest))) {
+    const piece = state.pieces.get(orig);
+    if (piece && basePromotionDialog(state, piece, dest)) {
       callUserFunction(state.promotion.events.initiated);
       return true;
     }
@@ -291,11 +293,11 @@ export function canDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): bo
 
 function canMovePromote(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
   const piece = state.pieces.get(orig);
-  return !!piece && state.promotion.canMovePromote(orig, dest, state.pieces.get(dest));
+  return !!piece && state.promotion.movePromotionDialog(orig, dest);
 }
 
 function canDropPromote(state: HeadlessState, piece: sg.Piece, key: sg.Key): boolean {
-  return !state.droppable.spare && state.promotion.canDropPromote(piece, key);
+  return !state.droppable.spare && state.promotion.dropPromotionDialog(piece, key);
 }
 
 function isPremovable(state: HeadlessState, orig: sg.Key): boolean {
