@@ -2143,7 +2143,7 @@ var Shogiground = (function () {
             if (squareOverEl)
                 setDisplay(squareOverEl, false);
         }
-        let k, el, pieceAtKey, elPieceName, anim, fading, promotion, pMvdset, pMvd;
+        let k, el, pieceAtKey, elPieceName, anim, fading, prom, pMvdset, pMvd;
         // walk over all board dom elements, apply animations and flag moved pieces
         el = piecesEl.firstElementChild;
         while (el) {
@@ -2152,7 +2152,7 @@ var Shogiground = (function () {
                 pieceAtKey = pieces.get(k);
                 anim = anims.get(k);
                 fading = fadings.get(k);
-                promotion = promotions.get(k);
+                prom = promotions.get(k);
                 elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
                 // if piece dragged add or remove ghost class or if promotion dialog is active for the piece add prom class
                 if ((((curDrag === null || curDrag === void 0 ? void 0 : curDrag.started) && ((_b = curDrag.fromBoard) === null || _b === void 0 ? void 0 : _b.orig) === k) || (curPromKey && curPromKey === k)) && !el.sgGhost) {
@@ -2174,7 +2174,7 @@ var Shogiground = (function () {
                     // (otherwise it could animate a captured piece)
                     if (anim &&
                         el.sgAnimating &&
-                        (elPieceName === pieceNameOf(pieceAtKey) || (promotion && elPieceName === pieceNameOf(promotion)))) {
+                        (elPieceName === pieceNameOf(pieceAtKey) || (prom && elPieceName === pieceNameOf(prom)))) {
                         const pos = key2pos(k);
                         pos[0] += anim[2];
                         pos[1] += anim[3];
@@ -2195,7 +2195,7 @@ var Shogiground = (function () {
                             el.sgFading = true;
                             el.classList.add('fading');
                         }
-                        else if (promotion && elPieceName === pieceNameOf(promotion)) {
+                        else if (prom && elPieceName === pieceNameOf(prom)) {
                             samePieces.add(k);
                         }
                         else {

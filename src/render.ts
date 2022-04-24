@@ -39,7 +39,7 @@ export function render(s: State): void {
     elPieceName: sg.PieceName,
     anim: AnimVector | undefined,
     fading: sg.Piece | undefined,
-    promotion: sg.Piece | undefined,
+    prom: sg.Piece | undefined,
     pMvdset: sg.PieceNode[] | undefined,
     pMvd: sg.PieceNode | undefined;
 
@@ -51,7 +51,7 @@ export function render(s: State): void {
       pieceAtKey = pieces.get(k);
       anim = anims.get(k);
       fading = fadings.get(k);
-      promotion = promotions.get(k);
+      prom = promotions.get(k);
       elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
 
       // if piece dragged add or remove ghost class or if promotion dialog is active for the piece add prom class
@@ -74,7 +74,7 @@ export function render(s: State): void {
         if (
           anim &&
           el.sgAnimating &&
-          (elPieceName === pieceNameOf(pieceAtKey) || (promotion && elPieceName === pieceNameOf(promotion)))
+          (elPieceName === pieceNameOf(pieceAtKey) || (prom && elPieceName === pieceNameOf(prom)))
         ) {
           const pos = key2pos(k);
           pos[0] += anim[2];
@@ -94,7 +94,7 @@ export function render(s: State): void {
           if (fading && elPieceName === pieceNameOf(fading)) {
             el.sgFading = true;
             el.classList.add('fading');
-          } else if (promotion && elPieceName === pieceNameOf(promotion)) {
+          } else if (prom && elPieceName === pieceNameOf(prom)) {
             samePieces.add(k);
           } else {
             appendValue(movedPieces, elPieceName, el);
