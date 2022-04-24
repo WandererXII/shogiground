@@ -1,8 +1,16 @@
 import { State } from './state.js';
-import { createEl, key2pos, pieceNameOf, posToTranslateRel, samePiece, translateRel, posOfOutsideEl } from './util.js';
+import {
+  createEl,
+  key2pos,
+  pieceNameOf,
+  posToTranslateRel,
+  samePiece,
+  translateRel,
+  posOfOutsideEl,
+  sentePov,
+} from './util.js';
 import { DrawShape, DrawShapePiece, DrawCurrent } from './draw.js';
 import * as sg from './types.js';
-import { sentePov } from './board.js';
 
 export function createSVGElement(tagName: string): SVGElement {
   return document.createElementNS('http://www.w3.org/2000/svg', tagName);
@@ -306,7 +314,7 @@ export function renderPiece(state: State, { shape, hash }: Shape): sg.PieceNode 
   pieceEl.setAttribute('sgHash', hash);
   pieceEl.sgKey = orig;
   pieceEl.sgScale = scale;
-  translateRel(pieceEl, posToTranslateRel(state.dimensions)(key2pos(orig), sentePov(state)), scale);
+  translateRel(pieceEl, posToTranslateRel(state.dimensions)(key2pos(orig), sentePov(state.orientation)), scale);
 
   return pieceEl;
 }
@@ -371,13 +379,13 @@ function arrowMargin(shorten: boolean, ratio: sg.NumberPair): number {
 function pieceOrKeyToPos(kp: sg.Key | sg.Piece, state: State): sg.Pos | undefined {
   if (isPiece(kp)) {
     const pieceBounds = state.dom.hands.pieceBounds().get(pieceNameOf(kp)),
-      offset = sentePov(state) ? [0.5, -0.5] : [-0.5, 0.5],
+      offset = sentePov(state.orientation) ? [0.5, -0.5] : [-0.5, 0.5],
       pos =
         pieceBounds &&
         posOfOutsideEl(
           pieceBounds.left + pieceBounds.width / 2,
           pieceBounds.top + pieceBounds.height / 2,
-          sentePov(state),
+          sentePov(state.orientation),
           state.dimensions,
           state.dom.board.bounds()
         );

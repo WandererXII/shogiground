@@ -22,7 +22,13 @@ export function memo<A>(f: () => A): sg.Memo<A> {
   return ret;
 }
 
+export function callUserFunction<T extends (...args: any[]) => void>(f: T | undefined, ...args: Parameters<T>): void {
+  if (f) setTimeout(() => f(...args), 1);
+}
+
 export const opposite = (c: sg.Color): sg.Color => (c === 'sente' ? 'gote' : 'sente');
+
+export const sentePov = (o: sg.Color): boolean => o === 'sente';
 
 export const distanceSq = (pos1: sg.Pos, pos2: sg.Pos): number => {
   const dx = pos1[0] - pos2[0],

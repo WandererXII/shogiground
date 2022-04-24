@@ -1,5 +1,6 @@
 import { State } from './state.js';
 import * as board from './board.js';
+import { addToHand, removeFromHand } from './hands.js';
 import * as util from './util.js';
 import { clear as drawClear } from './draw.js';
 import * as sg from './types.js';
@@ -28,7 +29,7 @@ export interface DragCurrent {
 export function start(s: State, e: sg.MouchEvent): void {
   const bounds = s.dom.board.bounds(),
     position = util.eventPosition(e),
-    orig = position && util.getKeyAtDomPos(position, board.sentePov(s), s.dimensions, bounds);
+    orig = position && util.getKeyAtDomPos(position, util.sentePov(s.orientation), s.dimensions, bounds);
 
   if (!orig) return;
 
@@ -47,11 +48,16 @@ export function start(s: State, e: sg.MouchEvent): void {
   const hadPremove = !!s.premovable.current;
   const hadPredrop = !!s.predroppable.current;
   if (s.selectable.deleteOnTouch) board.deletePiece(s, orig);
-  else if (
-    (s.selectedPiece && board.canDrop(s, s.selectedPiece, orig)) ||
-    (s.selected && board.canMove(s, s.selected, orig))
-  ) {
-    anim(state => board.selectSquare(state, orig), s);
+  else if (s.selected) {
+    if (!board.promotionDialogMove(s, s.selected, orig)) {
+      if (board.canMove(s, s.selected, orig)) anim(state => board.selectSquare(state, orig), s);
+      else board.selectSquare(s, orig);
+    }
+  } else if (s.selectedPiece) {
+    if (!board.promotionDialogDrop(s, s.selectedPiece, orig)) {
+      if (board.canDrop(s, s.selectedPiece, orig)) anim(state => board.selectSquare(state, orig), s);
+      else board.selectSquare(s, orig);
+    }
   } else {
     board.selectSquare(s, orig);
   }
@@ -90,7 +96,7 @@ export function start(s: State, e: sg.MouchEvent): void {
 }
 
 function pieceCloseTo(s: State, pos: sg.NumberPair): boolean {
-  const asSente = board.sentePov(s),
+  const asSente = util.sentePov(s.orientation),
     bounds = s.dom.board.bounds(),
     radiusSq = Math.pow(bounds.width / s.dimensions.files, 2);
   for (const key of s.pieces.keys()) {
@@ -108,7 +114,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
 
   if (!previouslySelectedPiece && !spare && s.drawable.enabled && s.drawable.eraseOnClick) drawClear(s);
 
-  if (!spare && s.selectable.deleteOnTouch) board.removeFromHand(s, piece);
+  if (!spare && s.selectable.deleteOnTouch) removeFromHand(s, piece);
   else board.selectPiece(s, piece, spare);
 
   const hadPremove = !!s.premovable.current;
@@ -173,7 +179,7 @@ function processDrag(s: State): void {
           draggedEl.sgDragging = true;
           util.setDisplay(draggedEl, true);
         }
-        const hover = util.getKeyAtDomPos(cur.pos, board.sentePov(s), s.dimensions, bounds);
+        const hover = util.getKeyAtDomPos(cur.pos, util.sentePov(s.orientation), s.dimensions, bounds);
 
         if (cur.fromBoard) cur.fromBoard.keyHasChanged = cur.fromBoard.keyHasChanged || cur.fromBoard.orig !== hover;
         else if (cur.fromOutside)
@@ -190,7 +196,7 @@ function processDrag(s: State): void {
             if (hover && s.draggable.showTouchSquareOverlay) {
               util.translateAbs(
                 s.dom.board.elements.squareOver,
-                util.posToTranslateAbs(s.dimensions, bounds)(util.key2pos(hover), board.sentePov(s)),
+                util.posToTranslateAbs(s.dimensions, bounds)(util.key2pos(hover), util.sentePov(s.orientation)),
                 1
               );
               util.setDisplay(s.dom.board.elements.squareOver, true);
@@ -227,24 +233,25 @@ export function end(s: State, e: sg.MouchEvent): void {
   board.unsetPredrop(s);
   // touchend has no position; so use the last touchmove position instead
   const eventPos = util.eventPosition(e) || cur.pos;
-  const dest = util.getKeyAtDomPos(eventPos, board.sentePov(s), s.dimensions, s.dom.board.bounds());
+  const dest = util.getKeyAtDomPos(eventPos, util.sentePov(s.orientation), s.dimensions, s.dom.board.bounds());
   if (dest && cur.started && cur.fromBoard?.orig !== dest) {
-    if (cur.fromOutside) board.userDrop(s, cur.piece, dest);
-    else if (cur.fromBoard) board.userMove(s, cur.fromBoard.orig, dest);
+    if (cur.fromOutside && !board.promotionDialogDrop(s, cur.piece, dest)) board.userDrop(s, cur.piece, dest);
+    else if (cur.fromBoard && !board.promotionDialogMove(s, cur.fromBoard.orig, dest))
+      board.userMove(s, cur.fromBoard.orig, dest);
   } else if (s.draggable.deleteOnDropOff && !dest) {
     if (cur.fromBoard) s.pieces.delete(cur.fromBoard.orig);
-    else if (cur.fromOutside && !s.droppable.spare) board.removeFromHand(s, cur.piece);
+    else if (cur.fromOutside && !s.droppable.spare) removeFromHand(s, cur.piece);
 
     if (s.draggable.addToHandOnDropOff) {
       const handBounds = s.dom.hands.bounds(),
         handBoundsTop = handBounds.get('top'),
         handBoundsBottom = handBounds.get('bottom');
       if (handBoundsTop && util.isInsideRect(handBoundsTop, cur.pos))
-        board.addToHand(s, { color: util.opposite(s.orientation), role: cur.piece.role });
+        addToHand(s, { color: util.opposite(s.orientation), role: cur.piece.role });
       else if (handBoundsBottom && util.isInsideRect(handBoundsBottom, cur.pos))
-        board.addToHand(s, { color: s.orientation, role: cur.piece.role });
+        addToHand(s, { color: s.orientation, role: cur.piece.role });
     }
-    board.callUserFunction(s.events.change);
+    util.callUserFunction(s.events.change);
   }
 
   if (
@@ -281,7 +288,7 @@ export function unwantedEvent(e: sg.MouchEvent): boolean {
 }
 
 function updateHovers(s: State, prevHover?: sg.Key): void {
-  const asSente = board.sentePov(s),
+  const asSente = util.sentePov(s.orientation),
     sqaureEls = s.dom.board.elements.squares.children;
 
   const curIndex =

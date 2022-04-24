@@ -1,5 +1,5 @@
 import { State } from './state.js';
-import { unselect, cancelMoveOrDrop, sentePov } from './board.js';
+import { unselect, cancelMoveOrDrop } from './board.js';
 import {
   eventPosition,
   isRightButton,
@@ -7,6 +7,7 @@ import {
   samePiece,
   getHandPieceAtDomPos,
   getKeyAtDomPos,
+  sentePov,
 } from './util.js';
 import * as sg from './types.js';
 import { isPiece, pos2user, samePieceOrKey, setAttributes } from './shapes.js';
@@ -55,7 +56,7 @@ export function start(state: State, e: sg.MouchEvent): void {
   e.preventDefault();
   e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
   const pos = eventPosition(e),
-    orig = pos && getKeyAtDomPos(pos, sentePov(state), state.dimensions, state.dom.board.bounds()),
+    orig = pos && getKeyAtDomPos(pos, sentePov(state.orientation), state.dimensions, state.dom.board.bounds()),
     piece = state.drawable.piece;
   if (!orig) return;
   state.drawable.current = {
@@ -92,7 +93,7 @@ export function processDraw(state: State): void {
     if (cur) {
       const bounds = state.dom.board.bounds(),
         dest =
-          getKeyAtDomPos(cur.pos, sentePov(state), state.dimensions, bounds) ||
+          getKeyAtDomPos(cur.pos, sentePov(state.orientation), state.dimensions, bounds) ||
           getHandPieceAtDomPos(cur.pos, state.hands.roles, state.dom.hands.pieceBounds());
       if (cur.dest !== dest && !(cur.dest && dest && samePieceOrKey(dest, cur.dest))) {
         cur.dest = dest;
@@ -100,7 +101,7 @@ export function processDraw(state: State): void {
       }
       if (!cur.dest && cur.arrow) {
         const dest = pos2user(
-          posOfOutsideEl(cur.pos[0], cur.pos[1], sentePov(state), state.dimensions, bounds),
+          posOfOutsideEl(cur.pos[0], cur.pos[1], sentePov(state.orientation), state.dimensions, bounds),
           state.orientation,
           state.dimensions,
           state.squareRatio

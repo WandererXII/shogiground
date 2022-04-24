@@ -4,9 +4,9 @@ import { HeadlessState, State, defaults } from './state.js';
 import { wrapBoard, wrapHands } from './wrap.js';
 import * as events from './events.js';
 import { render } from './render.js';
+import { renderHands } from './hands.js';
 import * as shapes from './shapes.js';
 import * as util from './util.js';
-import { renderPromotion } from './promotion.js';
 import { PieceNode, WrapElements } from './types.js';
 
 export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
@@ -47,9 +47,9 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
       }),
       redrawNow = (skipShapes?: boolean): void => {
         render(state);
-        renderPromotion(state);
         if (!skipShapes && boardElements.svg)
           shapes.renderShapes(state, boardElements.svg, boardElements.customSvg!, boardElements.freePieces!);
+        renderHands(state);
       },
       onResize = (): void => {
         boardBounds.clear();
@@ -76,6 +76,7 @@ export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
       unbind: prevUnbind,
     };
     state.drawable.prevSvgHash = '';
+    state.promotion.prevPromotionHash = '';
     redrawNow(false);
     events.bindBoard(state, onResize);
     events.bindHands(state, onResize);

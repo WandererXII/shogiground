@@ -1,12 +1,12 @@
 import { State } from './state.js';
 import * as board from './board.js';
+import { addToHand, removeFromHand } from './hands.js';
 import { writeBoard, writeHands } from './sfen.js';
 import { applyAnimation, Config, configure } from './config.js';
 import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
 import { DrawShape } from './draw.js';
 import * as sg from './types.js';
-import { startPromotion, cancelPromotion } from './promotion.js';
 
 export interface Api {
   // reconfigure the instance. Accepts all config options
@@ -26,10 +26,10 @@ export interface Api {
   toggleOrientation(): void;
 
   // perform a move programmatically
-  move(orig: sg.Key, dest: sg.Key): void;
+  move(orig: sg.Key, dest: sg.Key, prom?: boolean): void;
 
   // perform a drop programmatically, by default piece is taken from hand
-  drop(piece: sg.Piece, key: sg.Key, spare?: boolean): void;
+  drop(piece: sg.Piece, key: sg.Key, prom?: boolean, spare?: boolean): void;
 
   // add and/or remove arbitrary pieces on the board
   setPieces(pieces: sg.PiecesDiff): void;
@@ -40,14 +40,8 @@ export interface Api {
   // remove piece.role from hand of piece.color
   removeFromHand(piece: sg.Piece, count?: number): void;
 
-  // places pieces on separate layer, selected piece will be placed on key
-  startPromotion(key: sg.Key, pieces: sg.Piece[]): void;
-
-  // cancels the current promotion, if promotion is active
-  cancelPromotion(): void;
-
   // click a square programmatically
-  selectSquare(key: sg.Key | null, spare?: boolean, force?: boolean): void;
+  selectSquare(key: sg.Key | null, prom?: boolean, force?: boolean): void;
 
   // select a piece from hand to drop programatically, by default piece in hand is selected
   selectPiece(piece: sg.Piece | null, spare?: boolean): void;
@@ -124,14 +118,14 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     toggleOrientation,
 
-    move(orig, dest): void {
-      anim(state => board.baseMove(state, orig, dest), state);
+    move(orig, dest, prom): void {
+      anim(state => board.baseMove(state, orig, dest, !!prom), state);
     },
 
-    drop(piece, key, spare): void {
+    drop(piece, key, prom, spare): void {
       anim(state => {
         state.droppable.spare = !!spare;
-        board.baseDrop(state, piece, key);
+        board.baseDrop(state, piece, key, !!prom);
       }, state);
     },
 
@@ -140,23 +134,15 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
     },
 
     addToHand(piece: sg.Piece, count: number): void {
-      render(state => board.addToHand(state, piece, count), state);
+      render(state => addToHand(state, piece, count), state);
     },
 
     removeFromHand(piece: sg.Piece, count: number): void {
-      render(state => board.removeFromHand(state, piece, count), state);
+      render(state => removeFromHand(state, piece, count), state);
     },
 
-    startPromotion(key: sg.Key, pieces: sg.Piece[]): void {
-      render(state => startPromotion(state, key, pieces), state);
-    },
-
-    cancelPromotion(): void {
-      render(state => cancelPromotion(state), state);
-    },
-
-    selectSquare(key, force): void {
-      if (key) anim(state => board.selectSquare(state, key, force), state);
+    selectSquare(key, prom, force): void {
+      if (key) anim(state => board.selectSquare(state, key, prom, force), state);
       else if (state.selected) {
         board.unselect(state);
         state.dom.redraw();

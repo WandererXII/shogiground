@@ -42,15 +42,15 @@ export function wrapBoard(wrapElements: WrapElements, s: HeadlessState): DomBoar
   let dragged, promotion, squareOver;
   if (!s.viewOnly) {
     dragged = createEl('piece') as PieceNode;
-    setDisplay(dragged, !!s.draggable.current);
+    setDisplay(dragged, false);
     board.appendChild(dragged);
 
     promotion = createEl('sg-promotion');
-    setDisplay(promotion, !!s.promotion.current);
+    setDisplay(promotion, false);
     board.appendChild(promotion);
 
     squareOver = createEl('sg-square-over');
-    setDisplay(squareOver, !!s.draggable.current?.touch);
+    setDisplay(squareOver, false);
     board.appendChild(squareOver);
   }
 

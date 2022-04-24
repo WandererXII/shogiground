@@ -1,12 +1,9 @@
 import { HeadlessState } from './state.js';
-import { opposite, samePiece } from './util.js';
+import { callUserFunction, opposite, samePiece } from './util.js';
 import { premove } from './premove.js';
 import * as sg from './types.js';
 import { predrop } from './predrop.js';
-
-export function callUserFunction<T extends (...args: any[]) => void>(f: T | undefined, ...args: Parameters<T>): void {
-  if (f) setTimeout(() => f(...args), 1);
-}
+import { removeFromHand } from './hands.js';
 
 export function toggleOrientation(state: HeadlessState): void {
   state.orientation = opposite(state.orientation);
@@ -14,11 +11,11 @@ export function toggleOrientation(state: HeadlessState): void {
 }
 
 export function reset(state: HeadlessState): void {
-  state.lastDests = undefined;
-  state.animation.current = state.draggable.current = undefined;
   unselect(state);
   unsetPremove(state);
   unsetPredrop(state);
+  cancelPromotion(state);
+  state.animation.current = state.draggable.current = undefined;
 }
 
 export function setPieces(state: HeadlessState, pieces: sg.PiecesDiff): void {
@@ -39,10 +36,10 @@ export function setCheck(state: HeadlessState, color: sg.Color | boolean): void 
     }
 }
 
-function setPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): void {
+function setPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom: boolean): void {
   unsetPredrop(state);
-  state.premovable.current = { orig, dest };
-  callUserFunction(state.premovable.events.set, orig, dest);
+  state.premovable.current = { orig, dest, prom };
+  callUserFunction(state.premovable.events.set, orig, dest, prom);
 }
 
 export function unsetPremove(state: HeadlessState): void {
@@ -52,10 +49,10 @@ export function unsetPremove(state: HeadlessState): void {
   }
 }
 
-function setPredrop(state: HeadlessState, piece: sg.Piece, key: sg.Key): void {
+function setPredrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, prom: boolean): void {
   unsetPremove(state);
-  state.predroppable.current = { piece, key };
-  callUserFunction(state.predroppable.events.set, piece, key);
+  state.predroppable.current = { piece, key, prom };
+  callUserFunction(state.predroppable.events.set, piece, key, prom);
 }
 
 export function unsetPredrop(state: HeadlessState): void {
@@ -65,14 +62,15 @@ export function unsetPredrop(state: HeadlessState): void {
   }
 }
 
-export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.Piece | boolean {
+export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom: boolean): sg.Piece | boolean {
   const origPiece = state.pieces.get(orig),
     destPiece = state.pieces.get(dest);
   if (orig === dest || !origPiece) return false;
-  const captured = destPiece && destPiece.color !== origPiece.color ? destPiece : undefined;
-  if (dest === state.selected) unselect(state);
-  callUserFunction(state.events.move, orig, dest, captured);
-  state.pieces.set(dest, origPiece);
+  const captured = destPiece && destPiece.color !== origPiece.color ? destPiece : undefined,
+    promPiece = prom && promotePiece(state, origPiece);
+  if (dest === state.selected || orig === state.selected) unselect(state);
+  callUserFunction(state.events.move, orig, dest, prom, captured);
+  state.pieces.set(dest, promPiece || origPiece);
   state.pieces.delete(orig);
   state.lastDests = [orig, dest];
   state.check = undefined;
@@ -80,19 +78,26 @@ export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.P
   return captured || true;
 }
 
-export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key): boolean {
-  if (state.pieces.has(key) && !state.droppable.free) return false;
-  callUserFunction(state.events.drop, piece, key);
-  state.pieces.set(key, piece);
+export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, prom: boolean): boolean {
+  const pieceCount = state.hands.handMap.get(piece.color)?.get(piece.role) || 0;
+  if (!pieceCount && !state.droppable.spare) return false;
+  const promPiece = prom && promotePiece(state, piece);
+  if (
+    key === state.selected ||
+    (!state.droppable.spare && pieceCount === 1 && state.selectedPiece && samePiece(state.selectedPiece, piece))
+  )
+    unselect(state);
+  callUserFunction(state.events.drop, piece, key, prom);
+  state.pieces.set(key, promPiece || piece);
   state.lastDests = [key];
-  if (!state.droppable.spare) removeFromHand(state, piece);
   state.check = undefined;
+  if (!state.droppable.spare) removeFromHand(state, piece);
   callUserFunction(state.events.change);
   return true;
 }
 
-function baseUserMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.Piece | boolean {
-  const result = baseMove(state, orig, dest);
+function baseUserMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom: boolean): sg.Piece | boolean {
+  const result = baseMove(state, orig, dest, prom);
   if (result) {
     state.movable.dests = undefined;
     state.droppable.dests = undefined;
@@ -102,8 +107,8 @@ function baseUserMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): sg.Piec
   return result;
 }
 
-function baseUserDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key): boolean {
-  const result = baseDrop(state, piece, key);
+function baseUserDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, prom: boolean): boolean {
+  const result = baseDrop(state, piece, key, prom);
   if (result) {
     state.movable.dests = undefined;
     state.droppable.dests = undefined;
@@ -113,18 +118,18 @@ function baseUserDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key): boole
   return result;
 }
 
-export function userDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
+export function userDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key, prom?: boolean): boolean {
   if (canDrop(state, piece, dest)) {
-    const result = baseUserDrop(state, piece, dest);
+    const result = baseUserDrop(state, piece, dest, !!prom);
     if (result) {
       unselect(state);
-      callUserFunction(state.droppable.events.after, piece, dest, {
+      callUserFunction(state.droppable.events.after, piece, dest, !!prom, {
         premade: false,
       });
       return true;
     }
   } else if (canPredrop(state, piece, dest)) {
-    setPredrop(state, piece, dest);
+    setPredrop(state, piece, dest, !!prom);
     unselect(state);
     return true;
   }
@@ -132,20 +137,20 @@ export function userDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): b
   return false;
 }
 
-export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
+export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom?: boolean): boolean {
   if (canMove(state, orig, dest)) {
-    const result = baseUserMove(state, orig, dest);
+    const result = baseUserMove(state, orig, dest, !!prom);
     if (result) {
       unselect(state);
       const metadata: sg.MoveMetadata = {
         premade: false,
       };
       if (result !== true) metadata.captured = result;
-      callUserFunction(state.movable.events.after, orig, dest, metadata);
+      callUserFunction(state.movable.events.after, orig, dest, !!prom, metadata);
       return true;
     }
   } else if (canPremove(state, orig, dest)) {
-    setPremove(state, orig, dest);
+    setPremove(state, orig, dest, !!prom);
     unselect(state);
     return true;
   }
@@ -153,31 +158,60 @@ export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): bool
   return false;
 }
 
+export function basePromotionDialog(state: HeadlessState, piece: sg.Piece, key: sg.Key): boolean {
+  const promotedPiece = promotePiece(state, piece);
+  if (state.viewOnly || state.promotion.current || !promotedPiece) return false;
+
+  state.promotion.current = {
+    piece,
+    promotedPiece,
+    key,
+    dragged: !!state.draggable.current,
+  };
+
+  return true;
+}
+
+export function promotionDialogMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
+  if (canMovePromote(state, orig, dest) && (canMove(state, orig, dest) || canPremove(state, orig, dest))) {
+    const piece = state.pieces.get(orig);
+    if (piece && basePromotionDialog(state, piece, dest)) {
+      callUserFunction(state.promotion.events.initiated);
+      return true;
+    }
+  }
+  return false;
+}
+
+export function promotionDialogDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key): boolean {
+  if (canDropPromote(state, piece, key) && (canDrop(state, piece, key) || canPredrop(state, piece, key))) {
+    if (basePromotionDialog(state, piece, key)) {
+      callUserFunction(state.promotion.events.initiated);
+      return true;
+    }
+  }
+  return false;
+}
+
+function promotePiece(s: HeadlessState, piece: sg.Piece): sg.Piece | undefined {
+  const promRole = s.promotion.promotesTo(piece.role);
+  return promRole && { color: piece.color, role: promRole };
+}
+
 export function deletePiece(state: HeadlessState, key: sg.Key): void {
   if (state.pieces.delete(key)) callUserFunction(state.events.change);
 }
 
-export function addToHand(state: HeadlessState, piece: sg.Piece, cnt = 1): void {
-  const hand = state.hands.handMap.get(piece.color);
-  if (hand && state.hands.roles.includes(piece.role)) hand.set(piece.role, (hand.get(piece.role) || 0) + cnt);
-}
-
-export function removeFromHand(state: HeadlessState, piece: sg.Piece, cnt = 1): void {
-  const hand = state.hands.handMap.get(piece.color);
-  const num = hand?.get(piece.role);
-  if (hand && num) hand.set(piece.role, Math.max(num - cnt, 0));
-}
-
-export function selectSquare(state: HeadlessState, key: sg.Key, force?: boolean): void {
+export function selectSquare(state: HeadlessState, key: sg.Key, prom?: boolean, force?: boolean): void {
   callUserFunction(state.events.select, key);
   if ((state.selectable.enabled || force) && state.selectedPiece) {
-    if (userDrop(state, state.selectedPiece, key)) return;
+    if (userDrop(state, state.selectedPiece, key, prom)) return;
   } else if (state.selected) {
     if (state.selected === key && !state.draggable.enabled) {
       unselect(state);
       return;
     } else if ((state.selectable.enabled || force) && state.selected !== key) {
-      if (userMove(state, state.selected, key)) {
+      if (userMove(state, state.selected, key, prom)) {
         return;
       }
     }
@@ -204,23 +238,31 @@ export function selectPiece(state: HeadlessState, piece: sg.Piece, spare?: boole
 export function setSelected(state: HeadlessState, key: sg.Key): void {
   unselect(state);
   state.selected = key;
-
-  if (isPremovable(state, key)) {
-    state.premovable.dests = premove(state.pieces, key, state.dimensions);
-  }
+  setPreDests(state);
 }
 
 export function setSelectedPiece(state: HeadlessState, piece: sg.Piece): void {
   unselect(state);
   state.selectedPiece = piece;
+  setPreDests(state);
+}
 
-  if (isPredroppable(state, piece)) {
-    state.predroppable.dests = predrop(state.pieces, piece, state.dimensions);
-  }
+export function setPreDests(state: HeadlessState): void {
+  state.premovable.dests = state.predroppable.dests = undefined;
+
+  if (state.selected && isPremovable(state, state.selected))
+    state.premovable.dests = premove(state.pieces, state.selected, state.dimensions);
+  else if (state.selectedPiece && isPredroppable(state, state.selectedPiece))
+    state.predroppable.dests = predrop(state.pieces, state.selectedPiece, state.dimensions);
 }
 
 export function unselect(state: HeadlessState): void {
-  state.selected = state.selectedPiece = state.premovable.dests = state.predroppable.dests = undefined;
+  state.selected =
+    state.selectedPiece =
+    state.premovable.dests =
+    state.predroppable.dests =
+    state.promotion.current =
+      undefined;
 }
 
 function isMovable(state: HeadlessState, orig: sg.Key): boolean {
@@ -242,8 +284,18 @@ export function canMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boole
 
 export function canDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   return (
-    isDroppable(state, piece) && (state.droppable.free || !!state.droppable.dests?.get(piece.role)?.includes(dest))
+    isDroppable(state, piece) &&
+    (state.droppable.free || state.droppable.spare || !!state.droppable.dests?.get(piece.role)?.includes(dest))
   );
+}
+
+function canMovePromote(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
+  const piece = state.pieces.get(orig);
+  return !!piece && state.promotion.canMovePromote(orig, dest, state.pieces.get(dest));
+}
+
+function canDropPromote(state: HeadlessState, piece: sg.Piece, key: sg.Key): boolean {
+  return !state.droppable.spare && state.promotion.canDropPromote(piece, key);
 }
 
 function isPremovable(state: HeadlessState, orig: sg.Key): boolean {
@@ -280,14 +332,15 @@ export function playPremove(state: HeadlessState): boolean {
   const move = state.premovable.current;
   if (!move) return false;
   const orig = move.orig,
-    dest = move.dest;
+    dest = move.dest,
+    prom = move.prom;
   let success = false;
   if (canMove(state, orig, dest)) {
-    const result = baseUserMove(state, orig, dest);
+    const result = baseUserMove(state, orig, dest, prom);
     if (result) {
       const metadata: sg.MoveMetadata = { premade: true };
       if (result !== true) metadata.captured = result;
-      callUserFunction(state.movable.events.after, orig, dest, metadata);
+      callUserFunction(state.movable.events.after, orig, dest, prom, metadata);
       success = true;
     }
   }
@@ -297,11 +350,14 @@ export function playPremove(state: HeadlessState): boolean {
 
 export function playPredrop(state: HeadlessState): boolean {
   const drop = state.predroppable.current;
-  let success = false;
   if (!drop) return false;
-  if (canDrop(state, drop.piece, drop.key)) {
-    if (baseUserDrop(state, drop.piece, drop.key)) {
-      callUserFunction(state.droppable.events.after, drop.piece, drop.key, {
+  const piece = drop.piece,
+    key = drop.key,
+    prom = drop.prom;
+  let success = false;
+  if (canDrop(state, piece, key)) {
+    if (baseUserDrop(state, piece, key, prom)) {
+      callUserFunction(state.droppable.events.after, piece, key, prom, {
         premade: true,
       });
       success = true;
@@ -317,16 +373,21 @@ export function cancelMoveOrDrop(state: HeadlessState): void {
   unselect(state);
 }
 
+export function cancelPromotion(state: HeadlessState): void {
+  if (!state.promotion.current) return;
+
+  unselect(state);
+  state.promotion.current = undefined;
+  callUserFunction(state.promotion.events.cancel);
+}
+
 export function stop(state: HeadlessState): void {
   state.activeColor =
     state.movable.dests =
     state.droppable.dests =
     state.draggable.current =
     state.animation.current =
+    state.promotion.current =
       undefined;
   cancelMoveOrDrop(state);
-}
-
-export function sentePov(s: HeadlessState): boolean {
-  return s.orientation === 'sente';
 }

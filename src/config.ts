@@ -1,5 +1,5 @@
 import { HeadlessState } from './state.js';
-import { setCheck, setSelected, setSelectedPiece } from './board.js';
+import { setCheck, setPreDests } from './board.js';
 import { inferDimensions, readBoard as sfenRead, readHands } from './sfen.js';
 import { DrawShape } from './draw.js';
 import * as sg from './types.js';
@@ -105,11 +105,14 @@ export interface Config {
     onChange?: (shapes: DrawShape[]) => void; // called after drawable shapes change
   };
   promotion?: {
-    active?: boolean;
-    key?: sg.Key; // key at which promotion will occur
-    pieces?: sg.Piece[]; // piece options
-    after?: (piece: sg.Piece) => void; // called after user selects a piece
-    cancel?: () => void; // called after user cancels the selection
+    promotesTo?: (role: sg.Role) => sg.Role | undefined;
+    canMovePromote?: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => boolean;
+    canDropPromote?: (piece: sg.Key, key: sg.Key) => boolean;
+    events?: {
+      initiated?: () => void; // called when promotion dialog is started
+      after?: (piece: sg.Piece) => void; // called after user selects a piece
+      cancel?: () => void; // called after user cancels the selection
+    };
   };
 }
 
@@ -149,8 +152,7 @@ export function configure(state: HeadlessState, config: Config): void {
   else if (config.lastDests) state.lastDests = config.lastDests;
 
   // fix move/premove dests
-  if (state.selected) setSelected(state, state.selected);
-  if (state.selectedPiece) setSelectedPiece(state, state.selectedPiece);
+  setPreDests(state);
 
   applyAnimation(state, config);
 }

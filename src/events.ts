@@ -1,9 +1,17 @@
 import { State } from './state.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
-import { eventPosition, getHandPieceAtDomPos, isMiddleButton, isRightButton } from './util.js';
+import {
+  callUserFunction,
+  eventPosition,
+  getHandPieceAtDomPos,
+  isMiddleButton,
+  isRightButton,
+  samePiece,
+} from './util.js';
 import * as sg from './types.js';
-import { cancelPromotion, promote } from './promotion.js';
+import { anim } from './anim.js';
+import { userDrop, userMove, cancelPromotion, selectSquare } from './board.js';
 
 type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
@@ -136,4 +144,24 @@ function startDragFromHand(s: State): MouchBind {
       }
     }
   };
+}
+
+export function promote(s: State, e: sg.MouchEvent): void {
+  e.stopPropagation();
+
+  const target = e.target as HTMLElement | null,
+    cur = s.promotion.current;
+  if (target && sg.isPieceNode(target) && cur) {
+    const piece = { color: target.sgColor, role: target.sgRole },
+      prom = !samePiece(cur.piece, piece);
+    if (cur.dragged || (s.turnColor !== s.activeColor && s.activeColor !== 'both')) {
+      if (s.selected) userMove(s, s.selected, cur.key, prom);
+      else if (s.selectedPiece) userDrop(s, s.selectedPiece, cur.key, prom);
+    } else anim(s => selectSquare(s, cur.key, prom), s);
+
+    callUserFunction(s.promotion.events.after, piece);
+  } else anim(s => cancelPromotion(s), s);
+  s.promotion.current = undefined;
+
+  s.dom.redraw();
 }

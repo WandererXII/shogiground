@@ -31,6 +31,7 @@
       <button onclick="move()">MOVE</button>
       <button onclick="promote()">PROMOTION</button>
       <button onclick="setPieces()">PIECES</button>
+      <button onclick="premove()">PREMOVE</button>
       <button onclick="tmout(1500)">TIMEOUT</button>
     </div>
     <script src="../dist/shogiground.js"></script>
@@ -48,14 +49,37 @@
         },
         movable: {
           events: {
-            after: (orig, dest, metadata) => {
-              console.log(orig, dest, metadata);
+            after: (orig, dest, prom, metadata) => {
+              console.log('MOVEAFTER', orig, dest, prom, metadata);
+            },
+          },
+        },
+        droppable: {
+          events: {
+            after: (piece, key, prom, metadata) => {
+              console.log('DROPAFTER', piece, key, prom, metadata);
             },
           },
         },
         events: {
-          select: key => {
-            console.log(key);
+          move: () => {
+            console.log('move');
+          },
+          drop: () => {
+            console.log('drop');
+          },
+        },
+        promotion: {
+          promotesTo: (role) => {
+            if (role === 'bishop') return 'horse';
+            if (role === 'pawn') return 'tokin';
+            if (role === 'knight') return 'promotedKnight';
+            if (role === 'silver') return 'promotedSilver';
+            if (role === 'rook') return 'dragon';
+            if (role === 'lance') return 'promotedLance';
+          },
+          canMovePromote: (_orig, dest) => {
+            return dest.endsWith('c') || dest.endsWith('b') || dest.endsWith('a');
           },
         },
       };
@@ -76,7 +100,9 @@
         ground.setShapes([shape]);
       }
       function move() {
-        ground.move('1g', '1e');
+        ground.move('8h', '2b', true);
+        ground.set({turnColor: 'gote'});
+        //ground.playPremove();
       }
       function promote() {
         ground.startPromotion('5c', [
@@ -116,6 +142,10 @@
       }
       function tmout(ms) {
         setTimeout(pieceSVG, ms);
+      }
+      function premove() {
+        ground.set({turnColor: 'sente'});
+        ground.playPremove();
       }
     </script>
     <script>

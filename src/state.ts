@@ -43,7 +43,7 @@ export interface HeadlessState {
     dests?: sg.Dests; // valid moves. {"7g" ["7f"] "5i" ["4h" "5h" "6h"]}
     showDests: boolean; // whether to add the dest class on squares
     events: {
-      after?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
+      after?: (orig: sg.Key, dest: sg.Key, prom: boolean, metadata: sg.MoveMetadata) => void; // called after the move has been played
     };
   };
   droppable: {
@@ -52,7 +52,7 @@ export interface HeadlessState {
     showDests: boolean; // whether to add the dest class on squares
     spare: boolean; // whether to remove dropped piece from hand after drop - board editor
     events: {
-      after?: (role: sg.Piece, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after the drop has been played
+      after?: (role: sg.Piece, key: sg.Key, prom: boolean, metadata: sg.MoveMetadata) => void; // called after the drop has been played
     };
   };
   premovable: {
@@ -62,9 +62,10 @@ export interface HeadlessState {
     current?: {
       orig: sg.Key;
       dest: sg.Key;
+      prom: boolean;
     };
     events: {
-      set?: (orig: sg.Key, dest: sg.Key) => void; // called after the premove has been set
+      set?: (orig: sg.Key, dest: sg.Key, prom: boolean) => void; // called after the premove has been set
       unset?: () => void; // called after the premove has been unset
     };
   };
@@ -75,9 +76,10 @@ export interface HeadlessState {
     current?: {
       piece: sg.Piece;
       key: sg.Key;
+      prom: boolean;
     };
     events: {
-      set?: (piece: sg.Piece, key: sg.Key) => void; // called after the predrop has been set
+      set?: (piece: sg.Piece, key: sg.Key, prom: boolean) => void; // called after the predrop has been set
       unset?: () => void; // called after the predrop has been unset
     };
   };
@@ -96,18 +98,26 @@ export interface HeadlessState {
     deleteOnTouch: boolean; // selecting a piece on the board or in hand will remove it - board editor
   };
   promotion: {
-    current?: {
-      key: sg.Key; // key at which promotion will occur
-      pieces: sg.Piece[]; // piece options
-    };
     promotesTo: (role: sg.Role) => sg.Role | undefined;
-    after?: (piece: sg.Piece) => void; // called after user selects a piece
-    cancel?: () => void; // called after user cancels the selection
+    canMovePromote: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => boolean;
+    canDropPromote: (piece: sg.Piece, key: sg.Key) => boolean;
+    current?: {
+      piece: sg.Piece;
+      promotedPiece: sg.Piece;
+      key: sg.Key;
+      dragged: boolean; // no animations with drag
+    };
+    events: {
+      initiated?: () => void; // called when promotion dialog is started
+      after?: (piece: sg.Piece) => void; // called after user selects a piece
+      cancel?: () => void; // called after user cancels the selection
+    };
+    prevPromotionHash: string;
   };
   events: {
     change?: () => void; // called after the situation changes on the board
-    move?: (orig: sg.Key, dest: sg.Key, capturedPiece?: sg.Piece) => void;
-    drop?: (piece: sg.Piece, key: sg.Key) => void;
+    move?: (orig: sg.Key, dest: sg.Key, promotion: boolean, capturedPiece?: sg.Piece) => void;
+    drop?: (piece: sg.Piece, key: sg.Key, promotion: boolean) => void;
     select?: (key: sg.Key) => void; // called when a square is selected
     pieceSelect?: (piece: sg.Piece) => void; // called when a piece in hand is selected
     insert?: (boardElements: sg.DomBoardElements, handElements: sg.DomHandsElements) => void; // when the board (and hands) DOM has been (re)inserted
@@ -186,7 +196,11 @@ export function defaults(): HeadlessState {
       deleteOnTouch: false,
     },
     promotion: {
+      canMovePromote: () => false,
+      canDropPromote: () => false,
       promotesTo: () => undefined,
+      events: {},
+      prevPromotionHash: '',
     },
     events: {},
     drawable: {

@@ -1,7 +1,6 @@
 import { State } from './state.js';
 import * as util from './util.js';
 import * as sg from './types.js';
-import { sentePov } from './board.js';
 
 export type Mutation<A> = (state: State) => A;
 
@@ -97,7 +96,7 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
                 pos: util.posOfOutsideEl(
                   handPieceOffset.left,
                   handPieceOffset.top,
-                  sentePov(current),
+                  util.sentePov(current.orientation),
                   current.dimensions,
                   current.dom.board.bounds()
                 ),

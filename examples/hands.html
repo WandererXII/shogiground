@@ -47,6 +47,16 @@
           deleteOnDropOff: false,
           addToHandOnDropOff: false,
         },
+        promotion: {
+          promotesTo: (role) => {
+            if (role === 'bishop') return 'horse';
+            if (role === 'pawn') return 'tokin';
+            if (role === 'knight') return 'promotedKnight';
+            if (role === 'silver') return 'promotedSilver';
+            if (role === 'rook') return 'dragon';
+            if (role === 'lance') return 'promotedLance';
+          },
+        },
       };
       const sg = Shogiground(
         {
