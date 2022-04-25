@@ -43,7 +43,7 @@ export interface Config {
     dests?: sg.Dests; // valid moves. {"2a" ["3a" "4a"] "1b" ["3a" "3c"]}
     showDests?: boolean; // whether to add the dest class on squares
     events?: {
-      after?: (orig: sg.Key, dest: sg.Key, metadata: sg.MoveMetadata) => void; // called after the move has been played
+      after?: (orig: sg.Key, dest: sg.Key, prom: boolean, metadata: sg.MoveMetadata) => void; // called after the move has been played
     };
   };
   droppable?: {
@@ -52,7 +52,7 @@ export interface Config {
     showDests?: boolean; // whether to add the dest class on squares
     spare?: boolean; // whether to remove dropped piece from hand after drop - board editor
     events?: {
-      after?: (role: sg.Piece, key: sg.Key, metadata: sg.MoveMetadata) => void; // called after the drop has been played
+      after?: (role: sg.Piece, key: sg.Key, prom: boolean, metadata: sg.MoveMetadata) => void; // called after the drop has been played
     };
   };
   premovable?: {
@@ -60,7 +60,7 @@ export interface Config {
     showDests?: boolean; // whether to add the pre-dest class on squares
     dests?: sg.Key[]; // premove destinations for the current selection
     events?: {
-      set?: (orig: sg.Key, dest: sg.Key) => void; // called after the premove has been set
+      set?: (orig: sg.Key, dest: sg.Key, prom: boolean) => void; // called after the premove has been set
       unset?: () => void; // called after the premove has been unset
     };
   };
@@ -69,7 +69,7 @@ export interface Config {
     showDests?: boolean; // whether to add the pre-dest class on squares for drops
     dests?: sg.Key[]; // premove destinations for the drop selection
     events?: {
-      set?: (piece: sg.Piece, key: sg.Key) => void; // called after the predrop has been set
+      set?: (piece: sg.Piece, key: sg.Key, prom: boolean) => void; // called after the predrop has been set
       unset?: () => void; // called after the predrop has been unset
     };
   };
