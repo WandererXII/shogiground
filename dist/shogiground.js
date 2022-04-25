@@ -893,8 +893,10 @@ var Shogiground = (function () {
             const preP = closer(newP, missings.filter(p => {
                 if (samePiece(newP.piece, p.piece))
                     return true;
-                const promotedRole = current.promotion.promotesTo(p.piece.role), promotedPiece = promotedRole && { color: p.piece.color, role: promotedRole };
-                return !!promotedPiece && samePiece(newP.piece, promotedPiece);
+                // checking whether promoted pieces are the same
+                const pRole = current.promotion.promotesTo(p.piece.role), pPiece = pRole && { color: p.piece.color, role: pRole };
+                const nRole = current.promotion.promotesTo(newP.piece.role), nPiece = nRole && { color: newP.piece.color, role: nRole };
+                return (!!pPiece && samePiece(newP.piece, pPiece)) || (!!nPiece && samePiece(nPiece, p.piece));
             }));
             if (preP) {
                 const vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];

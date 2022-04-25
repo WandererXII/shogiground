@@ -112,9 +112,12 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
       newP,
       missings.filter(p => {
         if (util.samePiece(newP.piece, p.piece)) return true;
-        const promotedRole = current.promotion.promotesTo(p.piece.role),
-          promotedPiece: sg.Piece | undefined = promotedRole && { color: p.piece.color, role: promotedRole };
-        return !!promotedPiece && util.samePiece(newP.piece, promotedPiece);
+        // checking whether promoted pieces are the same
+        const pRole = current.promotion.promotesTo(p.piece.role),
+          pPiece = pRole && { color: p.piece.color, role: pRole };
+        const nRole = current.promotion.promotesTo(newP.piece.role),
+          nPiece = nRole && { color: newP.piece.color, role: nRole };
+        return (!!pPiece && util.samePiece(newP.piece, pPiece)) || (!!nPiece && util.samePiece(nPiece, p.piece));
       })
     );
     if (preP) {
