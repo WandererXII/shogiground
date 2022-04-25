@@ -20,6 +20,11 @@ export interface DrawShape {
   brush: string; // css class to be appended
 }
 
+export interface SquareHighlight {
+  key: sg.Key;
+  className: string;
+}
+
 export interface DrawShapePiece {
   role: sg.Role;
   color: sg.Color;
@@ -33,6 +38,7 @@ export interface Drawable {
   onChange?: (shapes: DrawShape[]) => void;
   shapes: DrawShape[]; // user shapes
   autoShapes: DrawShape[]; // computer shapes
+  squares: SquareHighlight[];
   current?: DrawCurrent;
   prevSvgHash: string;
   piece?: sg.Piece;

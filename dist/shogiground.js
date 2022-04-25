@@ -785,22 +785,24 @@ var Shogiground = (function () {
         }
     }
     function configure(state, config) {
-        var _a, _b, _c, _d, _e;
-        // don't merge destinations and autoShapes. Just override.
+        var _a, _b, _c, _d, _e, _f;
+        // don't merge destinations, autoShapes and square highlights. Just override.
         if ((_a = config.movable) === null || _a === void 0 ? void 0 : _a.dests)
             state.movable.dests = undefined;
         if ((_b = config.droppable) === null || _b === void 0 ? void 0 : _b.dests)
             state.droppable.dests = undefined;
         if ((_c = config.drawable) === null || _c === void 0 ? void 0 : _c.autoShapes)
             state.drawable.autoShapes = [];
+        if ((_d = config.drawable) === null || _d === void 0 ? void 0 : _d.squares)
+            state.drawable.squares = [];
         deepMerge(state, config);
         // if a sfen was provided, replace the pieces, except the currently dragged one
-        if ((_d = config.sfen) === null || _d === void 0 ? void 0 : _d.board) {
+        if ((_e = config.sfen) === null || _e === void 0 ? void 0 : _e.board) {
             state.dimensions = inferDimensions(config.sfen.board);
             state.pieces = readBoard(config.sfen.board, state.dimensions);
             state.drawable.shapes = [];
         }
-        if ((_e = config.sfen) === null || _e === void 0 ? void 0 : _e.hands) {
+        if ((_f = config.sfen) === null || _f === void 0 ? void 0 : _f.hands) {
             state.hands.handMap = readHands(config.sfen.hands);
         }
         // apply config values that could be undefined yet meaningful
@@ -1735,6 +1737,9 @@ var Shogiground = (function () {
             setShapes(shapes) {
                 render$1(state => (state.drawable.shapes = shapes), state);
             },
+            setSquareHighlights(squares) {
+                render$1(state => (state.drawable.squares = squares), state);
+            },
             redrawAll,
             dragNewPiece(piece, event, spare) {
                 dragNewPiece(state, piece, event, spare);
@@ -1830,6 +1835,7 @@ var Shogiground = (function () {
                 eraseOnClick: true,
                 shapes: [],
                 autoShapes: [],
+                squares: [],
                 prevSvgHash: '',
             },
         };
@@ -2323,6 +2329,9 @@ var Shogiground = (function () {
         }
         else if (s.predroppable.current)
             addSquare(squares, s.predroppable.current.key, 'current-pre' + (s.predroppable.current.prom ? ' prom' : ''));
+        for (const sqh of s.drawable.squares) {
+            addSquare(squares, sqh.key, sqh.className);
+        }
         return squares;
     }
     function addSquare(squares, key, klass) {

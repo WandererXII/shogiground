@@ -32,3 +32,7 @@
 .sg-wrap .sg-shapes marker#arrowhead-primary path {
   fill: #f08a04;
 }
+
+sg-squares sq.orange {
+  background-color: rgba(185, 129, 25, 0.5);
+}

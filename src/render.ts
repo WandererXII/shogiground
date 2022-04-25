@@ -217,6 +217,10 @@ function computeSquareClasses(s: State): SquareClasses {
   } else if (s.predroppable.current)
     addSquare(squares, s.predroppable.current.key, 'current-pre' + (s.predroppable.current.prom ? ' prom' : ''));
 
+  for (const sqh of s.drawable.squares) {
+    addSquare(squares, sqh.key, sqh.className);
+  }
+
   return squares;
 }
 

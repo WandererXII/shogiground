@@ -213,6 +213,7 @@ export function defaults(): HeadlessState {
       eraseOnClick: true,
       shapes: [],
       autoShapes: [],
+      squares: [],
       prevSvgHash: '',
     },
   };

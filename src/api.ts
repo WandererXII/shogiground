@@ -5,7 +5,7 @@ import { writeBoard, writeHands } from './sfen.js';
 import { applyAnimation, Config, configure } from './config.js';
 import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
-import { DrawShape } from './draw.js';
+import { DrawShape, SquareHighlight } from './draw.js';
 import * as sg from './types.js';
 
 export interface Api {
@@ -69,6 +69,9 @@ export interface Api {
 
   // programmatically draw auto shapes
   setAutoShapes(shapes: DrawShape[]): void;
+
+  // programmatically highlight squares
+  setSquareHighlights(squares: SquareHighlight[]): void;
 
   // only useful when CSS changes the board width/height ratio (for ratio change)
   redrawAll: sg.Redraw;
@@ -203,6 +206,10 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     setShapes(shapes: DrawShape[]): void {
       render(state => (state.drawable.shapes = shapes), state);
+    },
+
+    setSquareHighlights(squares: SquareHighlight[]): void {
+      render(state => (state.drawable.squares = squares), state);
     },
 
     redrawAll,

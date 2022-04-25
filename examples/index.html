@@ -100,7 +100,8 @@
             color: 'sente',
           },
         };
-        ground.setShapes([shape]);
+        ground.setAutoShapes([shape]);
+        ground.setSquareHighlights([{key: '5e', className: 'orange'}]);
       }
       function move() {
         ground.move('8h', '2b', true);

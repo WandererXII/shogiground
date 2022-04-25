@@ -1,7 +1,7 @@
 import { HeadlessState } from './state.js';
 import { setCheck, setPreDests } from './board.js';
 import { inferDimensions, readBoard as sfenRead, readHands } from './sfen.js';
-import { DrawShape } from './draw.js';
+import { DrawShape, SquareHighlight } from './draw.js';
 import * as sg from './types.js';
 
 export interface Config {
@@ -99,9 +99,7 @@ export interface Config {
     eraseOnClick?: boolean;
     shapes?: DrawShape[];
     autoShapes?: DrawShape[];
-    pieces?: {
-      baseUrl?: string;
-    };
+    squares?: SquareHighlight[];
     onChange?: (shapes: DrawShape[]) => void; // called after drawable shapes change
   };
   promotion?: {
@@ -127,10 +125,11 @@ export function applyAnimation(state: HeadlessState, config: Config): void {
 }
 
 export function configure(state: HeadlessState, config: Config): void {
-  // don't merge destinations and autoShapes. Just override.
+  // don't merge destinations, autoShapes and square highlights. Just override.
   if (config.movable?.dests) state.movable.dests = undefined;
   if (config.droppable?.dests) state.droppable.dests = undefined;
   if (config.drawable?.autoShapes) state.drawable.autoShapes = [];
+  if (config.drawable?.squares) state.drawable.squares = [];
 
   deepMerge(state, config);
 
