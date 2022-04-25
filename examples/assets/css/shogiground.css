@@ -92,7 +92,7 @@ sg-promotion sg-promotion-choices {
   -webkit-user-select: none;
 }
 
-.orientation-gote sg-promotion sg-promotion-choices {
+sg-promotion sg-promotion-choices.reversed {
   margin: calc(-100% / 11 * 12) 0;
   flex-direction: column-reverse;
 }

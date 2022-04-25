@@ -237,8 +237,10 @@ function renderPromotion(s: State, promotionEl: HTMLElement): void {
   if (key) {
     const asSente = sentePov(s.orientation),
       initPos = key2pos(key),
+      color = cur.piece.color,
       promotionSquare = createEl('sg-promotion-square'),
       promotionChoices = createEl('sg-promotion-choices');
+    if (s.orientation !== color) promotionChoices.classList.add('reversed');
     translateRel(promotionSquare, posToTranslateRel(s.dimensions)(initPos, asSente), 1);
 
     for (const p of pieces) {

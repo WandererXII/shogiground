@@ -2338,7 +2338,9 @@ var Shogiground = (function () {
             return;
         s.promotion.prevPromotionHash = hash;
         if (key) {
-            const asSente = sentePov(s.orientation), initPos = key2pos(key), promotionSquare = createEl('sg-promotion-square'), promotionChoices = createEl('sg-promotion-choices');
+            const asSente = sentePov(s.orientation), initPos = key2pos(key), color = cur.piece.color, promotionSquare = createEl('sg-promotion-square'), promotionChoices = createEl('sg-promotion-choices');
+            if (s.orientation !== color)
+                promotionChoices.classList.add('reversed');
             translateRel(promotionSquare, posToTranslateRel(s.dimensions)(initPos, asSente), 1);
             for (const p of pieces) {
                 const pieceNode = createEl('piece', pieceNameOf(p));
