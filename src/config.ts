@@ -125,11 +125,12 @@ export function applyAnimation(state: HeadlessState, config: Config): void {
 }
 
 export function configure(state: HeadlessState, config: Config): void {
-  // don't merge destinations, autoShapes and square highlights. Just override.
+  // don't merge, just override.
   if (config.movable?.dests) state.movable.dests = undefined;
   if (config.droppable?.dests) state.droppable.dests = undefined;
   if (config.drawable?.autoShapes) state.drawable.autoShapes = [];
   if (config.drawable?.squares) state.drawable.squares = [];
+  if (config.hands?.roles) state.hands.roles = [];
 
   deepMerge(state, config);
 
