@@ -785,8 +785,8 @@ var Shogiground = (function () {
         }
     }
     function configure(state, config) {
-        var _a, _b, _c, _d, _e, _f;
-        // don't merge destinations, autoShapes and square highlights. Just override.
+        var _a, _b, _c, _d, _e, _f, _g;
+        // don't merge, just override.
         if ((_a = config.movable) === null || _a === void 0 ? void 0 : _a.dests)
             state.movable.dests = undefined;
         if ((_b = config.droppable) === null || _b === void 0 ? void 0 : _b.dests)
@@ -795,14 +795,16 @@ var Shogiground = (function () {
             state.drawable.autoShapes = [];
         if ((_d = config.drawable) === null || _d === void 0 ? void 0 : _d.squares)
             state.drawable.squares = [];
+        if ((_e = config.hands) === null || _e === void 0 ? void 0 : _e.roles)
+            state.hands.roles = [];
         deepMerge(state, config);
         // if a sfen was provided, replace the pieces, except the currently dragged one
-        if ((_e = config.sfen) === null || _e === void 0 ? void 0 : _e.board) {
+        if ((_f = config.sfen) === null || _f === void 0 ? void 0 : _f.board) {
             state.dimensions = inferDimensions(config.sfen.board);
             state.pieces = readBoard(config.sfen.board, state.dimensions);
             state.drawable.shapes = [];
         }
-        if ((_f = config.sfen) === null || _f === void 0 ? void 0 : _f.hands) {
+        if ((_g = config.sfen) === null || _g === void 0 ? void 0 : _g.hands) {
             state.hands.handMap = readHands(config.sfen.hands);
         }
         // apply config values that could be undefined yet meaningful
@@ -1927,8 +1929,10 @@ var Shogiground = (function () {
             handTop = renderHand(opposite(s.orientation), s.hands.roles);
             handBottom = renderHand(s.orientation, s.hands.roles);
             if (s.hands.inlined && wrapElements.board.firstElementChild) {
-                wrapElements.board.insertBefore(handTop, wrapElements.board.firstElementChild);
+                handBottom.classList.add('hand-bottom');
+                handTop.classList.add('hand-top');
                 wrapElements.board.insertBefore(handBottom, wrapElements.board.firstElementChild.nextElementSibling);
+                wrapElements.board.insertBefore(handTop, wrapElements.board.firstElementChild);
             }
             else {
                 if (wrapElements.handTop) {

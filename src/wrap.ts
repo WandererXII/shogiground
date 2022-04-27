@@ -123,8 +123,10 @@ export function wrapHands(wrapElements: WrapElements, s: HeadlessState): DomHand
     handTop = renderHand(opposite(s.orientation), s.hands.roles);
     handBottom = renderHand(s.orientation, s.hands.roles);
     if (s.hands.inlined && wrapElements.board.firstElementChild) {
-      wrapElements.board.insertBefore(handTop, wrapElements.board.firstElementChild);
+      handBottom.classList.add('hand-bottom');
+      handTop.classList.add('hand-top');
       wrapElements.board.insertBefore(handBottom, wrapElements.board.firstElementChild.nextElementSibling);
+      wrapElements.board.insertBefore(handTop, wrapElements.board.firstElementChild);
     } else {
       if (wrapElements.handTop) {
         wrapElements.handTop.innerHTML = '';
