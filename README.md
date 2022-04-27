@@ -5,8 +5,8 @@
 
 ![Shogiground](/screenshot/board1.png)
 
-_Shogiground_ is a free/libre open source shogi UI developed for
-[lishogi.org](https://lishogi.org). Forked from [Chessground](https://github.com/lichess-org/chessground).
+_Shogiground_ is a free/libre open source shogi UI forked from [Chessground](https://github.com/lichess-org/chessground) rewritten for
+[lishogi.org](https://lishogi.org).
 It targets modern browsers, as well as mobile development using Cordova.
 
 ## License
@@ -35,7 +35,7 @@ Shogiground is designed to fulfill all lishogi.org web and mobile apps needs, so
 
 - Well typed with TypeScript
 - Fast. Uses a custom DOM diff algorithm to reduce DOM writes to the absolute minimum.
-- Small footprint: cca 38K unzipped. No dependencies.
+- Small footprint: cca 40K unzipped. No dependencies.
 - SVG drawing of circles and arrows on the board and hands
 - Individual square elements for styling
 - Entirely configurable and reconfigurable at any time
@@ -48,6 +48,7 @@ Shogiground is designed to fulfill all lishogi.org web and mobile apps needs, so
   - Centralisation of the piece under the cursor
   - Piece ghost element
   - Drop off revert or trash
+- Supports shogi-like promotions
 - Premove or predrop by click or drag
 - Animation of pieces: moving and fading away both on board and from hands
 - Display last move, check, move destinations, and premove destinations (hover effects possible)
@@ -68,7 +69,7 @@ npm install --save shogiground
 const Shogiground = require('shogiground').Shogiground;
 
 const config = {};
-const ground = Shogiground(document.body, config);
+const ground = Shogiground({ board: document.body }, config);
 ```
 
 ## Documentation
@@ -76,7 +77,7 @@ const ground = Shogiground(document.body, config);
 - [Config types](https://github.com/WandererXII/shogiground/tree/master/src/config.ts)
 - [Default config values](https://github.com/WandererXII/shogiground/tree/master/src/state.ts)
 - [API type signatures](https://github.com/WandererXII/shogiground/tree/master/src/api.ts)
-- [Examples repo](https://github.com/WandererXII/shogiground/tree/master/examples/index.html)
+- [Quick examples](https://github.com/WandererXII/shogiground/tree/master/examples/index.html)
 - [Base CSS](https://github.com/WandererXII/shogiground/tree/master/assets/css/shogiground.css)
 
 ## Development
