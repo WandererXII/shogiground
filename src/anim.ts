@@ -87,10 +87,10 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
       const curH = current.hands.handMap.get(color),
         preH = prevHands.get(color);
       if (preH && curH) {
-        for (const [role, n] of curH) {
+        for (const [role, n] of preH) {
           const piece: sg.Piece = { role, color },
-            preN = preH.get(role);
-          if (preN && preN > n) {
+            curN = curH.get(role) || 0;
+          if (curN < n) {
             const handPieceOffset = current.dom.bounds.hands.pieceBounds().get(util.pieceNameOf(piece)),
               bounds = current.dom.bounds.board.bounds();
             if (handPieceOffset && bounds)
