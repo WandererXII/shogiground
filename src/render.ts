@@ -1,20 +1,20 @@
-import { State } from './state.js';
+import type { State } from './state.js';
+import type { AnimCurrent, AnimVectors, AnimVector, AnimFadings, AnimPromotions } from './anim.js';
+import type { DragCurrent } from './drag.js';
 import { key2pos, createEl, setDisplay, posToTranslateRel, translateRel, pieceNameOf, sentePov } from './util.js';
-import { AnimCurrent, AnimVectors, AnimVector, AnimFadings, AnimPromotions } from './anim.js';
-import { DragCurrent } from './drag.js';
 import * as sg from './types.js';
 
 type SquareClasses = Map<sg.Key, string>;
 
-export function render(s: State): void {
+export function render(s: State, boardEls: sg.BoardElements): void {
   const asSente: boolean = sentePov(s.orientation),
     scaleDown = s.scaleDownPieces ? 0.5 : 1,
     posToTranslate = posToTranslateRel(s.dimensions),
-    squaresEl: HTMLElement = s.dom.board.elements.squares,
-    piecesEl: HTMLElement = s.dom.board.elements.pieces,
-    draggedEl: sg.PieceNode | undefined = s.dom.board.elements.dragged,
-    squareOverEl: HTMLElement | undefined = s.dom.board.elements.squareOver,
-    promotionEl: HTMLElement | undefined = s.dom.board.elements.promotion,
+    squaresEl: HTMLElement = boardEls.squares,
+    piecesEl: HTMLElement = boardEls.pieces,
+    draggedEl: sg.PieceNode | undefined = boardEls.dragged,
+    squareOverEl: HTMLElement | undefined = boardEls.squareOver,
+    promotionEl: HTMLElement | undefined = boardEls.promotion,
     pieces: sg.Pieces = s.pieces,
     curAnim: AnimCurrent | undefined = s.animation.current,
     anims: AnimVectors = curAnim ? curAnim.plan.anims : new Map(),
@@ -167,7 +167,7 @@ export function render(s: State): void {
 }
 
 function removeNodes(s: State, nodes: HTMLElement[]): void {
-  for (const node of nodes) s.dom.board.elements.pieces.removeChild(node);
+  for (const node of nodes) s.dom.elements.board!.pieces.removeChild(node);
 }
 
 function appendValue<K, V>(map: Map<K, V[]>, key: K, value: V): void {

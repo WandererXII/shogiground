@@ -12,17 +12,32 @@ import {
 import * as sg from './types.js';
 import { anim } from './anim.js';
 import { userDrop, userMove, cancelPromotion, selectSquare } from './board.js';
+import { redraw, redrawShapes } from './redraw.js';
+import { usesBounds } from './shapes.js';
 
 type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
 
-export function bindBoard(s: State, onResize: () => void): void {
-  if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(s.dom.board.elements.board);
+function clearBounds(s: State): void {
+  s.dom.bounds.board.bounds.clear();
+  s.dom.bounds.hands.bounds.clear();
+  s.dom.bounds.hands.pieceBounds.clear();
+}
+
+function onResize(s: State): () => void {
+  return () => {
+    clearBounds(s);
+    if (usesBounds(s.drawable.shapes.concat(s.drawable.autoShapes))) redrawShapes(s);
+  };
+}
+
+export function bindBoard(s: State, boardEls: sg.BoardElements): void {
+  if ('ResizeObserver' in window) new ResizeObserver(onResize(s)).observe(boardEls.board);
 
   if (s.viewOnly) return;
 
-  const piecesEl = s.dom.board.elements.pieces;
-  const promotionEl = s.dom.board.elements.promotion;
+  const piecesEl = boardEls.pieces;
+  const promotionEl = boardEls.promotion;
 
   // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
   const onStart = startDragOrDraw(s);
@@ -41,13 +56,8 @@ export function bindBoard(s: State, onResize: () => void): void {
   }
 }
 
-export function bindHands(s: State, onResize: () => void): void {
-  if (s.dom.hands.elements.top) bindHand(s, s.dom.hands.elements.top, onResize);
-  if (s.dom.hands.elements.bottom) bindHand(s, s.dom.hands.elements.bottom, onResize);
-}
-
-function bindHand(s: State, handEl: HTMLElement, onResize: () => void): void {
-  if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(handEl);
+export function bindHand(s: State, handEl: HTMLElement): void {
+  if ('ResizeObserver' in window) new ResizeObserver(onResize(s)).observe(handEl);
 
   if (s.viewOnly) return;
 
@@ -56,25 +66,24 @@ function bindHand(s: State, handEl: HTMLElement, onResize: () => void): void {
   handEl.addEventListener('touchstart', onStart as EventListener, {
     passive: false,
   });
-  if (s.dom.board.elements.promotion)
-    handEl.addEventListener('click', () => {
-      if (s.promotion.current) {
-        cancelPromotion(s);
-        s.dom.redraw();
-      }
-    });
+  handEl.addEventListener('click', () => {
+    if (s.promotion.current) {
+      cancelPromotion(s);
+      redraw(s);
+    }
+  });
 
   if (s.disableContextMenu || s.drawable.enabled) handEl.addEventListener('contextmenu', e => e.preventDefault());
 }
 
 // returns the unbind function
-export function bindDocument(s: State, onResize: () => void): sg.Unbind {
+export function bindDocument(s: State): sg.Unbind {
   const unbinds: sg.Unbind[] = [];
 
   // Old versions of Edge and Safari do not support ResizeObserver. Send
   // shogiground.resize if a user action has changed the bounds of the board.
   if (!('ResizeObserver' in window)) {
-    unbinds.push(unbindable(document.body, 'shogiground.resize', onResize));
+    unbinds.push(unbindable(document.body, 'shogiground.resize', onResize(s)));
   }
 
   if (!s.viewOnly) {
@@ -84,13 +93,8 @@ export function bindDocument(s: State, onResize: () => void): sg.Unbind {
     for (const ev of ['touchmove', 'mousemove']) unbinds.push(unbindable(document, ev, onmove as EventListener));
     for (const ev of ['touchend', 'mouseup']) unbinds.push(unbindable(document, ev, onend as EventListener));
 
-    const onScroll = () => {
-      s.dom.board.bounds.clear();
-      s.dom.hands.bounds.clear();
-      s.dom.hands.pieceBounds.clear();
-    };
-    unbinds.push(unbindable(document, 'scroll', onScroll, { capture: true, passive: true }));
-    unbinds.push(unbindable(window, 'resize', onScroll, { passive: true }));
+    unbinds.push(unbindable(document, 'scroll', () => clearBounds(s), { capture: true, passive: true }));
+    unbinds.push(unbindable(window, 'resize', () => clearBounds(s), { passive: true }));
   }
 
   return () => unbinds.forEach(f => f());
@@ -129,7 +133,7 @@ function startDragFromHand(s: State): MouchBind {
     if (s.promotion.current) return;
 
     const pos = eventPosition(e),
-      piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.hands.pieceBounds());
+      piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.bounds.hands.pieceBounds());
 
     if (piece) {
       if (s.draggable.current) drag.cancel(s);
@@ -163,5 +167,5 @@ export function promote(s: State, e: sg.MouchEvent): void {
   } else anim(s => cancelPromotion(s), s);
   s.promotion.current = undefined;
 
-  s.dom.redraw();
+  redraw(s);
 }

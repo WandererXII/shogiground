@@ -19,15 +19,15 @@
         <a href="d12x12.html">Big Board (12x12)</a>
       </nav>
       <div class="wrap" style="display: flex">
-        <div id="hand-top" class="hand-wrap"></div>
+        <div id="hand-top" class="sg-hand-wrap"></div>
         <div style="width: 500px; height: calc(500px / 11 * 12)" id="main-wrap" class="main-board">
           <div id="dirty" class="sg-wrap"></div>
         </div>
-        <div id="hand-bottom" class="hand-wrap"></div>
+        <div id="hand-bottom" class="sg-hand-wrap"></div>
       </div>
     </div>
     <button onclick="flip()">flip</button>
-    <button onclick="prom()">prom</button>
+    <button onclick="drop()">drop</button>
     <button onclick="sp()">sp</button>
     <button onclick="sq()">sq</button>
     <div class="slidecontainer">
@@ -37,8 +37,8 @@
     <script>
       const config = {
         sfen: {
-          board: 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL',
-          hands: 'G10NLb',
+          board: 'lnsgkg1nl/1r5s1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/7R1/LNSGKGSNL b Bb 5',
+          hands: 'Bb',
         },
         activeColor: 'sente',
         orientation: 'sente',
@@ -48,7 +48,7 @@
           addToHandOnDropOff: false,
         },
         promotion: {
-          promotesTo: (role) => {
+          promotesTo: role => {
             if (role === 'bishop') return 'horse';
             if (role === 'pawn') return 'tokin';
             if (role === 'knight') return 'promotedKnight';
@@ -58,22 +58,30 @@
           },
         },
       };
-      const sg = Shogiground(
-        {
-          board: document.getElementById('dirty'),
-          handTop: document.getElementById('hand-top'),
-          handBottom: document.getElementById('hand-bottom'),
-        },
-        config
-      );
+      const sg = Shogiground({}, config);
+      sg.wrap({
+        board: document.getElementById('dirty'),
+      });
+     sg.wrap({
+       hands: {
+         bottom: document.getElementById('hand-bottom'),
+       },
+     });
+     sg.wrap({
+       hands: {
+         top: document.getElementById('hand-top'),
+       },
+     });
       function flip() {
         sg.toggleOrientation();
       }
-      function prom() {
-        sg.startPromotion('5c', [
-          { role: 'tokin', color: 'sente' },
-          { role: 'pawn', color: 'sente' },
-        ]);
+      function drop() {
+        sg.set({
+          sfen: {
+            board: 'lnsgkg1nl/1r5s1/pppppp1pp/6p2/5B3/2P6/PP1PPPPPP/7R1/LNSGKGSNL w b 6',
+            hands: 'b'
+          }
+        });
       }
       function sp() {
         sg.selectPiece({ role: 'pawn', color: 'sente' });

@@ -29,12 +29,14 @@ export type Dests = Map<Key, Key[]>;
 export type DropDests = Map<Role, Key[]>;
 
 export interface WrapElements {
-  board: HTMLElement;
-  handTop?: HTMLElement;
-  handBottom?: HTMLElement;
+  board?: HTMLElement;
+  hands?: {
+    top?: HTMLElement;
+    bottom?: HTMLElement;
+  };
 }
 
-export interface DomBoardElements {
+export interface BoardElements {
   board: HTMLElement;
   squares: HTMLElement;
   pieces: HTMLElement;
@@ -44,30 +46,35 @@ export interface DomBoardElements {
   svg?: SVGElement;
   customSvg?: SVGElement;
   freePieces?: HTMLElement;
-}
-export interface DomBoard {
-  elements: DomBoardElements;
-  bounds: Memo<DOMRect>;
+  hands?: HandElements; // for inlined hands
 }
 
-export interface DomHandsElements {
+export interface HandElements {
   top?: HTMLElement;
   bottom?: HTMLElement;
 }
-export interface DomHands {
-  elements: DomHandsElements;
-  pieceBounds: Memo<Map<PieceName, DOMRect>>;
-  bounds: Memo<Map<'top' | 'bottom', DOMRect>>;
+
+export interface Elements {
+  board?: BoardElements;
+  hands?: HandElements;
+}
+
+export interface Bounds {
+  board: {
+    bounds: Memo<DOMRect | undefined>;
+  };
+  hands: {
+    bounds: Memo<Map<'top' | 'bottom', DOMRect>>;
+    pieceBounds: Memo<Map<PieceName, DOMRect>>;
+  };
 }
 
 export interface Dom {
-  board: DomBoard;
-  hands: DomHands;
   wrapElements: WrapElements;
-  redraw: () => void;
-  redrawNow: (skipSvg?: boolean) => void;
-  unbind?: Unbind;
-  destroyed?: boolean;
+  elements: Elements;
+  bounds: Bounds;
+  unbind: Unbind;
+  destroyed: boolean;
 }
 
 export interface MoveMetadata {

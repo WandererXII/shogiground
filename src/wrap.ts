@@ -1,4 +1,4 @@
-import { HeadlessState } from './state.js';
+import { State } from './state.js';
 import { createEl, opposite, pieceNameOf, pos2key, setDisplay } from './util.js';
 import {
   colors,
@@ -8,13 +8,12 @@ import {
   Color,
   PieceNode,
   Role,
-  WrapElements,
-  DomBoardElements,
-  DomHandsElements,
+  HandElements,
+  BoardElements,
 } from './types.js';
 import { createSVGElement, setAttributes } from './shapes.js';
 
-export function wrapBoard(wrapElements: WrapElements, s: HeadlessState): DomBoardElements {
+export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   // .sg-wrap (element passed to Shogiground)
   //     sg-board
   //       sg-squares
@@ -94,15 +93,27 @@ export function wrapBoard(wrapElements: WrapElements, s: HeadlessState): DomBoar
     );
   }
 
-  wrapElements.board.innerHTML = '';
+  boardWrap.innerHTML = '';
 
   // ensure the sg-wrap class and dimensions class i set beforehand to avoid recomputing style
-  wrapElements.board.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
+  boardWrap.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
 
-  for (const c of colors) wrapElements.board.classList.toggle('orientation-' + c, s.orientation === c);
-  wrapElements.board.classList.toggle('manipulable', !s.viewOnly);
+  for (const c of colors) boardWrap.classList.toggle('orientation-' + c, s.orientation === c);
+  boardWrap.classList.toggle('manipulable', !s.viewOnly);
 
-  wrapElements.board.appendChild(board);
+  boardWrap.appendChild(board);
+
+  let hands: HandElements | undefined;
+  if (s.hands.inlined) {
+    const handWrapTop = createEl('sg-hand-wrap'),
+      handWrapBottom = createEl('sg-hand-wrap');
+    boardWrap.insertBefore(handWrapBottom, board.nextElementSibling);
+    boardWrap.insertBefore(handWrapTop, board);
+    hands = {
+      top: handWrapTop,
+      bottom: handWrapBottom,
+    };
+  }
 
   return {
     board,
@@ -114,36 +125,17 @@ export function wrapBoard(wrapElements: WrapElements, s: HeadlessState): DomBoar
     svg,
     customSvg,
     freePieces,
+    hands,
   };
 }
 
-export function wrapHands(wrapElements: WrapElements, s: HeadlessState): DomHandsElements {
-  let handTop, handBottom;
-  if (s.hands.inlined || wrapElements.handTop || wrapElements.handBottom) {
-    handTop = renderHand(opposite(s.orientation), s.hands.roles);
-    handBottom = renderHand(s.orientation, s.hands.roles);
-    if (s.hands.inlined && wrapElements.board.firstElementChild) {
-      handBottom.classList.add('hand-bottom');
-      handTop.classList.add('hand-top');
-      wrapElements.board.insertBefore(handBottom, wrapElements.board.firstElementChild.nextElementSibling);
-      wrapElements.board.insertBefore(handTop, wrapElements.board.firstElementChild);
-    } else {
-      if (wrapElements.handTop) {
-        wrapElements.handTop.innerHTML = '';
-        wrapElements.handTop.classList.add('hand-top');
-        wrapElements.handTop.appendChild(handTop);
-      }
-      if (wrapElements.handBottom) {
-        wrapElements.handBottom.innerHTML = '';
-        wrapElements.handBottom.classList.add('hand-bottom');
-        wrapElements.handBottom.appendChild(handBottom);
-      }
-    }
-  }
-  return {
-    top: handTop,
-    bottom: handBottom,
-  };
+export function wrapHand(handWrap: HTMLElement, pos: 'top' | 'bottom', s: State): HTMLElement {
+  const hand = renderHand(pos === 'top' ? opposite(s.orientation) : s.orientation, s.hands.roles);
+  handWrap.innerHTML = '';
+  handWrap.classList.add(`hand-${pos}`);
+  handWrap.appendChild(hand);
+
+  return hand;
 }
 
 function ranksByNotation(notation: Notation): string[] {

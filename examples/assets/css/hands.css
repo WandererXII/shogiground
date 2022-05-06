@@ -31,7 +31,7 @@ piece[data-nb='0']:not(.selected):not(.drawing)::after {
   align-self: center;
 }
 
-.hand-wrap {
+.sg-hand-wrap {
   position: relative;
   width: 200px;
   height: 200px;
@@ -40,7 +40,7 @@ piece[data-nb='0']:not(.selected):not(.drawing)::after {
   margin: 0 1rem;
   border: 1px solid black;
 }
-.hand-wrap sg-hand {
+.sg-hand-wrap sg-hand {
   display: flex;
   flex-wrap: wrap;
   position: absolute;

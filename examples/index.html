@@ -29,7 +29,6 @@
       <button onclick="flip()">FLIP</button>
       <button onclick="pieceSVG()">PIECE</button>
       <button onclick="move()">MOVE</button>
-      <button onclick="promote()">PROMOTION</button>
       <button onclick="setPieces()">PIECES</button>
       <button onclick="premove()">PREMOVE</button>
       <button onclick="tmout(1500)">TIMEOUT</button>
@@ -70,7 +69,7 @@
           },
         },
         promotion: {
-          promotesTo: (role) => {
+          promotesTo: role => {
             if (role === 'bishop') return 'horse';
             if (role === 'pawn') return 'tokin';
             if (role === 'knight') return 'promotedknight';
@@ -83,7 +82,7 @@
           },
           forceMovePromotion: (_orig, dest) => {
             return dest.endsWith('a');
-          }
+          },
         },
       };
       const ground = Shogiground({ board: document.getElementById('dirty') }, config);
@@ -101,18 +100,12 @@
           },
         };
         ground.setAutoShapes([shape]);
-        ground.setSquareHighlights([{key: '5e', className: 'orange'}]);
+        ground.setSquareHighlights([{ key: '5e', className: 'orange' }]);
       }
       function move() {
         ground.move('8h', '2b', true);
-        ground.set({turnColor: 'gote'});
+        ground.set({ turnColor: 'gote' });
         //ground.playPremove();
-      }
-      function promote() {
-        ground.startPromotion('5c', [
-          { role: 'tokin', color: 'sente' },
-          { role: 'pawn', color: 'sente' },
-        ]);
       }
       function setPieces() {
         ground.setPieces(
@@ -148,7 +141,7 @@
         setTimeout(pieceSVG, ms);
       }
       function premove() {
-        ground.set({turnColor: 'sente'});
+        ground.set({ turnColor: 'sente' });
         ground.playPremove();
       }
     </script>

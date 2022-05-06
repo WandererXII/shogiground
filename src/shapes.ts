@@ -38,8 +38,8 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
 
   const hashBounds = () => {
     // todo also possible piece bounds
-    const bounds = state.dom.board.bounds();
-    return bounds.width.toString() + bounds.height;
+    const bounds = state.dom.bounds.board.bounds();
+    return (bounds && bounds.width.toString() + bounds.height) || '';
   };
 
   for (const s of d.shapes.concat(d.autoShapes).concat(cur ? [cur] : [])) {
@@ -228,9 +228,9 @@ function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDest
     } else if (samePieceOrKey(shape.dest, shape.orig)) {
       let ratio: sg.NumberPair = state.squareRatio;
       if (isPiece(shape.orig)) {
-        const pieceBounds = state.dom.hands.pieceBounds().get(pieceNameOf(shape.orig)),
-          bounds = state.dom.board.bounds();
-        if (pieceBounds) {
+        const pieceBounds = state.dom.bounds.hands.pieceBounds().get(pieceNameOf(shape.orig)),
+          bounds = state.dom.bounds.board.bounds();
+        if (pieceBounds && bounds) {
           const heightBase = pieceBounds.height / (bounds.height / state.dimensions.files);
           // we want to keep the ratio that is on the board
           ratio = [heightBase * state.squareRatio[0], heightBase * state.squareRatio[1]];
@@ -356,6 +356,10 @@ export function samePieceOrKey(kp1: sg.Key | sg.Piece, kp2: sg.Key | sg.Piece): 
   return (isPiece(kp1) && isPiece(kp2) && samePiece(kp1, kp2)) || kp1 === kp2;
 }
 
+export function usesBounds(shapes: DrawShape[]): boolean {
+  return shapes.some(s => isPiece(s.orig) || isPiece(s.dest));
+}
+
 function shapeClass(brush: string, current: boolean, outside: boolean): string {
   return brush + (current ? ' current' : '') + (outside ? ' outside' : '');
 }
@@ -378,16 +382,18 @@ function arrowMargin(shorten: boolean, ratio: sg.NumberPair): number {
 
 function pieceOrKeyToPos(kp: sg.Key | sg.Piece, state: State): sg.Pos | undefined {
   if (isPiece(kp)) {
-    const pieceBounds = state.dom.hands.pieceBounds().get(pieceNameOf(kp)),
+    const pieceBounds = state.dom.bounds.hands.pieceBounds().get(pieceNameOf(kp)),
+      bounds = state.dom.bounds.board.bounds(),
       offset = sentePov(state.orientation) ? [0.5, -0.5] : [-0.5, 0.5],
       pos =
         pieceBounds &&
+        bounds &&
         posOfOutsideEl(
           pieceBounds.left + pieceBounds.width / 2,
           pieceBounds.top + pieceBounds.height / 2,
           sentePov(state.orientation),
           state.dimensions,
-          state.dom.board.bounds()
+          bounds
         );
     return (
       pos && pos2user([pos[0] + offset[0], pos[1] + offset[1]], state.orientation, state.dimensions, state.squareRatio)

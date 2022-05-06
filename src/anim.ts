@@ -1,6 +1,7 @@
 import { State } from './state.js';
 import * as util from './util.js';
 import * as sg from './types.js';
+import { redraw, redrawNow } from './redraw.js';
 
 export type Mutation<A> = (state: State) => A;
 
@@ -32,7 +33,7 @@ export function anim<A>(mutation: Mutation<A>, state: State): A {
 
 export function render<A>(mutation: Mutation<A>, state: State): A {
   const result = mutation(state);
-  state.dom.redraw();
+  redraw(state);
   return result;
 }
 
@@ -90,15 +91,16 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
           const piece: sg.Piece = { role, color },
             preN = preH.get(role);
           if (preN && preN > n) {
-            const handPieceOffset = current.dom.hands.pieceBounds().get(util.pieceNameOf(piece));
-            if (handPieceOffset)
+            const handPieceOffset = current.dom.bounds.hands.pieceBounds().get(util.pieceNameOf(piece)),
+              bounds = current.dom.bounds.board.bounds();
+            if (handPieceOffset && bounds)
               missings.push({
                 pos: util.posOfOutsideEl(
                   handPieceOffset.left,
                   handPieceOffset.top,
                   util.sentePov(current.orientation),
                   current.dimensions,
-                  current.dom.board.bounds()
+                  bounds
                 ),
                 piece: piece,
               });
@@ -142,20 +144,20 @@ function step(state: State, now: DOMHighResTimeStamp): void {
   const cur = state.animation.current;
   if (cur === undefined) {
     // animation was canceled :(
-    if (!state.dom.destroyed) state.dom.redrawNow();
+    if (!state.dom.destroyed) redrawNow(state);
     return;
   }
   const rest = 1 - (now - cur.start) * cur.frequency;
   if (rest <= 0) {
     state.animation.current = undefined;
-    state.dom.redrawNow();
+    redrawNow(state);
   } else {
     const ease = easing(rest);
     for (const cfg of cur.plan.anims.values()) {
       cfg[2] = cfg[0] * ease;
       cfg[3] = cfg[1] * ease;
     }
-    state.dom.redrawNow(true); // optimisation: don't render SVG changes during animations
+    redrawNow(state, true); // optimisation: don't render SVG changes during animations
     requestAnimationFrame((now = performance.now()) => step(state, now));
   }
 }
@@ -180,7 +182,7 @@ function animate<A>(mutation: Mutation<A>, state: State): A {
     if (!alreadyRunning) step(state, performance.now());
   } else {
     // don't animate, just render right away
-    state.dom.redraw();
+    redraw(state);
   }
   return result;
 }

@@ -1,4 +1,4 @@
-import { HeadlessState, State } from './state.js';
+import { HeadlessState } from './state.js';
 import * as sg from './types.js';
 import { samePiece } from './util.js';
 
@@ -13,12 +13,7 @@ export function removeFromHand(s: HeadlessState, piece: sg.Piece, cnt = 1): void
   if (hand && num) hand.set(piece.role, Math.max(num - cnt, 0));
 }
 
-export function renderHands(s: State): void {
-  if (s.dom.hands.elements.top) updateHand(s, s.dom.hands.elements.top);
-  if (s.dom.hands.elements.bottom) updateHand(s, s.dom.hands.elements.bottom);
-}
-
-function updateHand(s: State, handEl: HTMLElement): void {
+export function renderHand(s: HeadlessState, handEl: HTMLElement): void {
   handEl.classList.toggle('promotion', !!s.promotion.current);
   let pieceEl = handEl.firstElementChild as sg.PieceNode | undefined;
   while (pieceEl) {

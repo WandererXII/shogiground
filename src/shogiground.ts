@@ -1,101 +1,59 @@
 import { Api, start } from './api.js';
 import { Config, configure } from './config.js';
-import { HeadlessState, State, defaults } from './state.js';
-import { wrapBoard, wrapHands } from './wrap.js';
+import { defaults, State } from './state.js';
 import * as events from './events.js';
-import { render } from './render.js';
-import { renderHands } from './hands.js';
-import * as shapes from './shapes.js';
 import * as util from './util.js';
 import { PieceNode, WrapElements } from './types.js';
+import { redrawAll } from './dom.js';
 
-export function Shogiground(wrapElements: WrapElements, config?: Config): Api {
-  const maybeState: State | HeadlessState = defaults();
+export function Shogiground(wrapElements?: WrapElements, config?: Config): Api {
+  const state = defaults() as State;
+  configure(state, config || {});
 
-  configure(maybeState, config || {});
-
-  function redrawAll(): State {
-    const prevUnbind = 'dom' in maybeState ? maybeState.dom.unbind : undefined;
-    const boardElements = wrapBoard(wrapElements, maybeState),
-      handElements = wrapHands(wrapElements, maybeState),
-      boardBounds = util.memo(() => boardElements.pieces.getBoundingClientRect()),
-      handsBounds = util.memo(() => {
-        const handsRects = new Map();
-        if (handElements.top) handsRects.set('top', handElements.top.getBoundingClientRect());
-        if (handElements.bottom) handsRects.set('bottom', handElements.bottom.getBoundingClientRect());
-        return handsRects;
-      }),
-      handPiecesBounds = util.memo(() => {
-        const handPiecesRects = new Map();
-        if (handElements.top) {
-          let el = handElements.top.firstElementChild as PieceNode | undefined;
-          while (el) {
-            const piece = { role: el.sgRole, color: el.sgColor };
-            handPiecesRects.set(util.pieceNameOf(piece), el.getBoundingClientRect());
-            el = el.nextElementSibling as PieceNode | undefined;
-          }
-        }
-        if (handElements.bottom) {
-          let el = handElements.bottom.firstElementChild as PieceNode | undefined;
-          while (el) {
-            const piece = { role: el.sgRole, color: el.sgColor };
-            handPiecesRects.set(util.pieceNameOf(piece), el.getBoundingClientRect());
-            el = el.nextElementSibling as PieceNode | undefined;
-          }
-        }
-        return handPiecesRects;
-      }),
-      redrawNow = (skipShapes?: boolean): void => {
-        render(state);
-        if (!skipShapes && boardElements.svg)
-          shapes.renderShapes(state, boardElements.svg, boardElements.customSvg!, boardElements.freePieces!);
-        renderHands(state);
-      },
-      onResize = (): void => {
-        boardBounds.clear();
-        handsBounds.clear();
-        handPiecesBounds.clear();
-
-        if (maybeState.drawable.shapes.some(s => shapes.isPiece(s.orig) || shapes.isPiece(s.dest)) && boardElements.svg)
-          shapes.renderShapes(state, boardElements.svg, boardElements.customSvg!, boardElements.freePieces!);
-      };
-    const state = maybeState as State;
-    state.dom = {
+  state.dom = {
+    wrapElements: wrapElements || {},
+    elements: {},
+    bounds: {
       board: {
-        elements: boardElements,
-        bounds: boardBounds,
+        bounds: util.memo(() => state.dom.elements.board?.pieces.getBoundingClientRect()),
       },
       hands: {
-        elements: handElements,
-        pieceBounds: handPiecesBounds,
-        bounds: handsBounds,
+        bounds: util.memo(() => {
+          const handsRects = new Map(),
+            handEls = state.dom.elements.hands;
+          if (handEls?.top) handsRects.set('top', handEls.top.getBoundingClientRect());
+          if (handEls?.bottom) handsRects.set('bottom', handEls.bottom.getBoundingClientRect());
+          return handsRects;
+        }),
+        pieceBounds: util.memo(() => {
+          const handPiecesRects = new Map(),
+            handEls = state.dom.elements.hands;
+
+          if (handEls?.top) {
+            let el = handEls.top.firstElementChild as PieceNode | undefined;
+            while (el) {
+              const piece = { role: el.sgRole, color: el.sgColor };
+              handPiecesRects.set(util.pieceNameOf(piece), el.getBoundingClientRect());
+              el = el.nextElementSibling as PieceNode | undefined;
+            }
+          }
+          if (handEls?.bottom) {
+            let el = handEls.bottom.firstElementChild as PieceNode | undefined;
+            while (el) {
+              const piece = { role: el.sgRole, color: el.sgColor };
+              handPiecesRects.set(util.pieceNameOf(piece), el.getBoundingClientRect());
+              el = el.nextElementSibling as PieceNode | undefined;
+            }
+          }
+          return handPiecesRects;
+        }),
       },
-      wrapElements,
-      redraw: debounceRedraw(redrawNow),
-      redrawNow,
-      unbind: prevUnbind,
-    };
-    state.drawable.prevSvgHash = '';
-    state.promotion.prevPromotionHash = '';
-    redrawNow(false);
-    events.bindBoard(state, onResize);
-    events.bindHands(state, onResize);
-    if (!prevUnbind) state.dom.unbind = events.bindDocument(state, onResize);
-    state.events.insert && state.events.insert(boardElements, handElements);
-    return state;
-  }
-
-  return start(redrawAll(), redrawAll);
-}
-
-function debounceRedraw(redrawNow: (skipSvg?: boolean) => void): () => void {
-  let redrawing = false;
-  return () => {
-    if (redrawing) return;
-    redrawing = true;
-    requestAnimationFrame(() => {
-      redrawNow();
-      redrawing = false;
-    });
+    },
+    unbind: events.bindDocument(state),
+    destroyed: false,
   };
+
+  if (wrapElements) redrawAll(wrapElements, state);
+
+  return start(state);
 }

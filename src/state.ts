@@ -122,7 +122,7 @@ export interface HeadlessState {
     drop?: (piece: sg.Piece, key: sg.Key, prom: boolean) => void;
     select?: (key: sg.Key) => void; // called when a square is selected
     pieceSelect?: (piece: sg.Piece) => void; // called when a piece in hand is selected
-    insert?: (boardElements: sg.DomBoardElements, handElements: sg.DomHandsElements) => void; // when the board (and hands) DOM has been (re)inserted
+    insert?: (boardElements?: sg.BoardElements, handElements?: sg.HandElements) => void; // when the board (and hands) DOM has been (re)inserted
   };
   drawable: Drawable;
 }

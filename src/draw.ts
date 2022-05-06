@@ -11,6 +11,7 @@ import {
 } from './util.js';
 import * as sg from './types.js';
 import { isPiece, pos2user, samePieceOrKey, setAttributes } from './shapes.js';
+import { redraw, redrawNow } from './redraw.js';
 
 export interface DrawShape {
   orig: sg.Key | sg.Piece;
@@ -62,7 +63,8 @@ export function start(state: State, e: sg.MouchEvent): void {
   e.preventDefault();
   e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
   const pos = eventPosition(e),
-    orig = pos && getKeyAtDomPos(pos, sentePov(state.orientation), state.dimensions, state.dom.board.bounds()),
+    bounds = state.dom.bounds.board.bounds(),
+    orig = pos && bounds && getKeyAtDomPos(pos, sentePov(state.orientation), state.dimensions, bounds),
     piece = state.drawable.piece;
   if (!orig) return;
   state.drawable.current = {
@@ -94,16 +96,15 @@ export function startFromHand(state: State, piece: sg.Piece, e: sg.MouchEvent): 
 
 export function processDraw(state: State): void {
   requestAnimationFrame(() => {
-    const cur = state.drawable.current;
-
-    if (cur) {
-      const bounds = state.dom.board.bounds(),
-        dest =
-          getKeyAtDomPos(cur.pos, sentePov(state.orientation), state.dimensions, bounds) ||
-          getHandPieceAtDomPos(cur.pos, state.hands.roles, state.dom.hands.pieceBounds());
+    const cur = state.drawable.current,
+      bounds = state.dom.bounds.board.bounds();
+    if (cur && bounds) {
+      const dest =
+        getKeyAtDomPos(cur.pos, sentePov(state.orientation), state.dimensions, bounds) ||
+        getHandPieceAtDomPos(cur.pos, state.hands.roles, state.dom.bounds.hands.pieceBounds());
       if (cur.dest !== dest && !(cur.dest && dest && samePieceOrKey(dest, cur.dest))) {
         cur.dest = dest;
-        state.dom.redrawNow();
+        redrawNow(state);
       }
       if (!cur.dest && cur.arrow) {
         const dest = pos2user(
@@ -135,7 +136,7 @@ export function end(state: State, _: sg.MouchEvent): void {
 export function cancel(state: State): void {
   if (state.drawable.current) {
     state.drawable.current = undefined;
-    state.dom.redraw();
+    redraw(state);
   }
 }
 
@@ -144,7 +145,7 @@ export function clear(state: State): void {
   if (drawableLength || state.drawable.piece) {
     state.drawable.shapes = [];
     state.drawable.piece = undefined;
-    state.dom.redraw();
+    redraw(state);
     if (drawableLength) onChange(state.drawable);
   }
 }
@@ -152,7 +153,7 @@ export function clear(state: State): void {
 export function setDrawPiece(state: State, piece: sg.Piece): void {
   if (state.drawable.piece && samePiece(state.drawable.piece, piece)) state.drawable.piece = undefined;
   else state.drawable.piece = piece;
-  state.dom.redraw();
+  redraw(state);
 }
 
 function eventBrush(e: sg.MouchEvent): string {

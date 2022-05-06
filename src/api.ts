@@ -7,8 +7,13 @@ import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
 import { DrawShape, SquareHighlight } from './draw.js';
 import * as sg from './types.js';
+import { redraw } from './redraw.js';
+import { redrawAll } from './dom.js';
 
 export interface Api {
+  // attach elements to current sg instance
+  wrap(wrapElements: sg.WrapElements): void;
+
   // reconfigure the instance. Accepts all config options
   // board will be animated accordingly, if animations are enabled
   set(config: Config): void;
@@ -73,9 +78,6 @@ export interface Api {
   // programmatically highlight squares
   setSquareHighlights(squares: SquareHighlight[]): void;
 
-  // only useful when CSS changes the board width/height ratio (for ratio change)
-  redrawAll: sg.Redraw;
-
   // for piece dropping and board editors
   dragNewPiece(piece: sg.Piece, event: sg.MouchEvent, spare?: boolean): void;
 
@@ -85,13 +87,12 @@ export interface Api {
 }
 
 // see API types and documentations in api.d.ts
-export function start(state: State, redrawAll: sg.Redraw): Api {
-  function toggleOrientation(): void {
-    board.toggleOrientation(state);
-    redrawAll();
-  }
-
+export function start(state: State): Api {
   return {
+    wrap(wrapElements: sg.WrapElements): void {
+      redrawAll(wrapElements, state);
+    },
+
     set(config): void {
       let toRedraw = false;
       if (config.orientation && config.orientation !== state.orientation) {
@@ -108,7 +109,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
         toRedraw = true;
       }
 
-      if (toRedraw) redrawAll();
+      if (toRedraw) redrawAll(state.dom.wrapElements, state);
       applyAnimation(state, config);
       (config.sfen?.board ? anim : render)(state => configure(state, config), state);
     },
@@ -119,7 +120,10 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
 
     getHandsSfen: () => writeHands(state.hands.handMap, state.hands.roles),
 
-    toggleOrientation,
+    toggleOrientation(): void {
+      board.toggleOrientation(state);
+      redrawAll(state.dom.wrapElements, state);
+    },
 
     move(orig, dest, prom): void {
       anim(state => board.baseMove(state, orig, dest, prom || state.promotion.forceMovePromotion(orig, dest)), state);
@@ -148,7 +152,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       if (key) anim(state => board.selectSquare(state, key, prom, force), state);
       else if (state.selected) {
         board.unselect(state);
-        state.dom.redraw();
+        redraw(state);
       }
     },
 
@@ -156,7 +160,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       if (piece) render(state => board.selectPiece(state, piece, spare), state);
       else if (state.selectedPiece) {
         board.unselect(state);
-        state.dom.redraw();
+        redraw(state);
       }
     },
 
@@ -164,7 +168,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       if (state.premovable.current) {
         if (anim(board.playPremove, state)) return true;
         // if the premove couldn't be played, redraw to clear it up
-        state.dom.redraw();
+        redraw(state);
       }
       return false;
     },
@@ -173,7 +177,7 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       if (state.predroppable.current) {
         if (anim(board.playPredrop, state)) return true;
         // if the predrop couldn't be played, redraw to clear it up
-        state.dom.redraw();
+        redraw(state);
       }
       return false;
     },
@@ -212,15 +216,13 @@ export function start(state: State, redrawAll: sg.Redraw): Api {
       render(state => (state.drawable.squares = squares), state);
     },
 
-    redrawAll,
-
     dragNewPiece(piece, event, spare): void {
       dragNewPiece(state, piece, event, spare);
     },
 
     destroy(): void {
       board.stop(state);
-      state.dom.unbind && state.dom.unbind();
+      state.dom.unbind();
       state.dom.destroyed = true;
     },
   };
