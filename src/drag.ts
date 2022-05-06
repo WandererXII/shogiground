@@ -1,9 +1,9 @@
-import { State } from './state.js';
+import type { State } from './state.js';
+import * as sg from './types.js';
 import * as board from './board.js';
 import { addToHand, removeFromHand } from './hands.js';
 import * as util from './util.js';
 import { clear as drawClear } from './draw.js';
-import * as sg from './types.js';
 import { anim } from './anim.js';
 import { redraw } from './redraw.js';
 

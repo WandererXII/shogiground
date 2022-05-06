@@ -1,4 +1,5 @@
-import { State } from './state.js';
+import type { State } from './state.js';
+import * as sg from './types.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
 import {
@@ -9,7 +10,6 @@ import {
   isRightButton,
   samePiece,
 } from './util.js';
-import * as sg from './types.js';
 import { anim } from './anim.js';
 import { userDrop, userMove, cancelPromotion, selectSquare } from './board.js';
 import { redraw, redrawShapes } from './redraw.js';

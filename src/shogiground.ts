@@ -1,10 +1,10 @@
+import type { PieceNode, WrapElements } from './types.js';
 import { Api, start } from './api.js';
 import { Config, configure } from './config.js';
 import { defaults, State } from './state.js';
-import * as events from './events.js';
 import * as util from './util.js';
-import { PieceNode, WrapElements } from './types.js';
 import { redrawAll } from './dom.js';
+import { bindDocument } from './events.js';
 
 export function Shogiground(wrapElements?: WrapElements, config?: Config): Api {
   const state = defaults() as State;
@@ -49,7 +49,7 @@ export function Shogiground(wrapElements?: WrapElements, config?: Config): Api {
         }),
       },
     },
-    unbind: events.bindDocument(state),
+    unbind: bindDocument(state),
     destroyed: false,
   };
 

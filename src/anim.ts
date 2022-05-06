@@ -1,6 +1,6 @@
-import { State } from './state.js';
-import * as util from './util.js';
+import type { State } from './state.js';
 import * as sg from './types.js';
+import * as util from './util.js';
 import { redraw, redrawNow } from './redraw.js';
 
 export type Mutation<A> = (state: State) => A;

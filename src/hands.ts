@@ -1,4 +1,4 @@
-import { HeadlessState } from './state.js';
+import type { HeadlessState } from './state.js';
 import * as sg from './types.js';
 import { samePiece } from './util.js';
 

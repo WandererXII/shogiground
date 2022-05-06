@@ -1,7 +1,7 @@
-import { HeadlessState } from './state.js';
+import type { HeadlessState } from './state.js';
+import * as sg from './types.js';
 import { callUserFunction, opposite, samePiece } from './util.js';
 import { premove } from './premove.js';
-import * as sg from './types.js';
 import { predrop } from './predrop.js';
 import { removeFromHand } from './hands.js';
 

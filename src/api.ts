@@ -1,12 +1,12 @@
-import { State } from './state.js';
+import type { State } from './state.js';
+import type { DrawShape, SquareHighlight } from './draw.js';
+import * as sg from './types.js';
 import * as board from './board.js';
 import { addToHand, removeFromHand } from './hands.js';
 import { writeBoard, writeHands } from './sfen.js';
 import { applyAnimation, Config, configure } from './config.js';
 import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
-import { DrawShape, SquareHighlight } from './draw.js';
-import * as sg from './types.js';
 import { redraw } from './redraw.js';
 import { redrawAll } from './dom.js';
 

@@ -1,5 +1,4 @@
-import { State } from './state.js';
-import { createEl, opposite, pieceNameOf, pos2key, setDisplay } from './util.js';
+import type { State } from './state.js';
 import {
   colors,
   Notation,
@@ -11,10 +10,12 @@ import {
   HandElements,
   BoardElements,
 } from './types.js';
+import { createEl, opposite, pieceNameOf, pos2key, setDisplay } from './util.js';
 import { createSVGElement, setAttributes } from './shapes.js';
 
 export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   // .sg-wrap (element passed to Shogiground)
+  //     sg-hand-wrap
   //     sg-board
   //       sg-squares
   //       sg-pieces
@@ -26,6 +27,7 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   //         g
   //       svg.sg-custom-svgs
   //         g
+  //     sg-hand-wrap
   //     sg-free-pieces
   //       coords.ranks
   //       coords.files

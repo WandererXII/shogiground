@@ -1,11 +1,11 @@
+import type { State } from './state.js';
 import { render } from './render.js';
-import { State } from './state.js';
-import * as shapes from './shapes.js';
 import { renderHand } from './hands.js';
+import { renderShapes } from './shapes.js';
 
 export function redrawShapesNow(state: State): void {
   if (state.dom.elements.board?.svg)
-    shapes.renderShapes(
+    renderShapes(
       state,
       state.dom.elements.board.svg,
       state.dom.elements.board.customSvg!,

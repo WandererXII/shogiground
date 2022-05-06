@@ -1,7 +1,7 @@
+import type { State } from './state.js';
+import type { WrapElements } from './types.js';
 import { wrapBoard, wrapHand } from './wrap.js';
 import * as events from './events.js';
-import { State } from './state.js';
-import { WrapElements } from './types.js';
 import { renderHand } from './hands.js';
 import { redrawShapes } from './redraw.js';
 import { render } from './render.js';

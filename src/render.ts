@@ -1,8 +1,8 @@
 import type { State } from './state.js';
 import type { AnimCurrent, AnimVectors, AnimVector, AnimFadings, AnimPromotions } from './anim.js';
 import type { DragCurrent } from './drag.js';
-import { key2pos, createEl, setDisplay, posToTranslateRel, translateRel, pieceNameOf, sentePov } from './util.js';
 import * as sg from './types.js';
+import { key2pos, createEl, setDisplay, posToTranslateRel, translateRel, pieceNameOf, sentePov } from './util.js';
 
 type SquareClasses = Map<sg.Key, string>;
 

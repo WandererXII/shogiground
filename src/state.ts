@@ -1,8 +1,8 @@
-import { AnimCurrent } from './anim.js';
-import { DragCurrent } from './drag.js';
-import { Drawable } from './draw.js';
-import * as sfen from './sfen.js';
+import type { AnimCurrent } from './anim.js';
+import type { DragCurrent } from './drag.js';
+import type { Drawable } from './draw.js';
 import * as sg from './types.js';
+import * as sfen from './sfen.js';
 
 export interface HeadlessState {
   pieces: sg.Pieces;

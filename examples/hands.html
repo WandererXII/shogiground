@@ -62,16 +62,16 @@
       sg.wrap({
         board: document.getElementById('dirty'),
       });
-     sg.wrap({
-       hands: {
-         bottom: document.getElementById('hand-bottom'),
-       },
-     });
-     sg.wrap({
-       hands: {
-         top: document.getElementById('hand-top'),
-       },
-     });
+      sg.wrap({
+        hands: {
+          bottom: document.getElementById('hand-bottom'),
+        },
+      });
+      sg.wrap({
+        hands: {
+          top: document.getElementById('hand-top'),
+        },
+      });
       function flip() {
         sg.toggleOrientation();
       }
@@ -79,8 +79,8 @@
         sg.set({
           sfen: {
             board: 'lnsgkg1nl/1r5s1/pppppp1pp/6p2/5B3/2P6/PP1PPPPPP/7R1/LNSGKGSNL w b 6',
-            hands: 'b'
-          }
+            hands: 'b',
+          },
         });
       }
       function sp() {

@@ -1,4 +1,5 @@
-import { State } from './state.js';
+import type { State } from './state.js';
+import * as sg from './types.js';
 import { unselect, cancelMoveOrDrop } from './board.js';
 import {
   eventPosition,
@@ -9,7 +10,6 @@ import {
   getKeyAtDomPos,
   sentePov,
 } from './util.js';
-import * as sg from './types.js';
 import { isPiece, pos2user, samePieceOrKey, setAttributes } from './shapes.js';
 import { redraw, redrawNow } from './redraw.js';
 

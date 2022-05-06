@@ -1,4 +1,6 @@
-import { State } from './state.js';
+import type { State } from './state.js';
+import type { DrawShape, DrawShapePiece, DrawCurrent } from './draw.js';
+import * as sg from './types.js';
 import {
   createEl,
   key2pos,
@@ -9,8 +11,6 @@ import {
   posOfOutsideEl,
   sentePov,
 } from './util.js';
-import { DrawShape, DrawShapePiece, DrawCurrent } from './draw.js';
-import * as sg from './types.js';
 
 export function createSVGElement(tagName: string): SVGElement {
   return document.createElementNS('http://www.w3.org/2000/svg', tagName);
