@@ -16,7 +16,7 @@ export interface Api {
 
   // reconfigure the instance. Accepts all config options
   // board will be animated accordingly, if animations are enabled
-  set(config: Config): void;
+  set(config: Config, skipAnimation?: boolean): void;
 
   // read shogiground state; write at your own risks
   state: State;
@@ -93,7 +93,7 @@ export function start(state: State): Api {
       redrawAll(wrapElements, state);
     },
 
-    set(config): void {
+    set(config, skipAnimation?: boolean): void {
       let toRedraw = false;
       if (config.orientation && config.orientation !== state.orientation) {
         board.toggleOrientation(state);
@@ -111,7 +111,7 @@ export function start(state: State): Api {
 
       if (toRedraw) redrawAll(state.dom.wrapElements, state);
       applyAnimation(state, config);
-      (config.sfen?.board ? anim : render)(state => configure(state, config), state);
+      (config.sfen?.board && !skipAnimation ? anim : render)(state => configure(state, config), state);
     },
 
     state,
@@ -200,7 +200,6 @@ export function start(state: State): Api {
     stop(): void {
       render(state => {
         board.stop(state);
-        dragCancel(state);
       }, state);
     },
 
