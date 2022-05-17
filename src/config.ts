@@ -128,6 +128,7 @@ export function configure(state: HeadlessState, config: Config): void {
   // don't merge, just override.
   if (config.movable?.dests) state.movable.dests = undefined;
   if (config.droppable?.dests) state.droppable.dests = undefined;
+  if (config.drawable?.shapes) state.drawable.shapes = [];
   if (config.drawable?.autoShapes) state.drawable.autoShapes = [];
   if (config.drawable?.squares) state.drawable.squares = [];
   if (config.hands?.roles) state.hands.roles = [];
@@ -138,7 +139,7 @@ export function configure(state: HeadlessState, config: Config): void {
   if (config.sfen?.board) {
     state.dimensions = inferDimensions(config.sfen.board);
     state.pieces = sfenRead(config.sfen.board, state.dimensions);
-    state.drawable.shapes = [];
+    state.drawable.shapes = config.drawable?.shapes || [];
   }
 
   if (config.sfen?.hands) {
