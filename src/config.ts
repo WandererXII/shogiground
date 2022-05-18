@@ -16,6 +16,7 @@ export interface Config {
   lastDests?: sg.Key[]; // squares part of the last move or drop ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
   selectedPiece?: sg.Piece; // piece in hand currently selected
+  hovered?: sg.Key; // square currently being hovered
   viewOnly?: boolean; // don't bind events: the user will never be able to move pieces around
   squareRatio?: sg.NumberPair; // ratio of a single square [width, height]
   disableContextMenu?: boolean; // because who needs a context menu on a board, only without viewOnly
@@ -28,6 +29,7 @@ export interface Config {
   highlight?: {
     lastDests?: boolean; // add last-dest class to squares
     check?: boolean; // add check class to squares
+    hovered?: boolean; // add hover class to hovered squares
   };
   animation?: {
     enabled?: boolean;

@@ -69,11 +69,11 @@ export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom:
   const captured = destPiece && destPiece.color !== origPiece.color ? destPiece : undefined,
     promPiece = prom && promotePiece(state, origPiece);
   if (dest === state.selected || orig === state.selected) unselect(state);
-  callUserFunction(state.events.move, orig, dest, prom, captured);
   state.pieces.set(dest, promPiece || origPiece);
   state.pieces.delete(orig);
   state.lastDests = [orig, dest];
   state.check = undefined;
+  callUserFunction(state.events.move, orig, dest, prom, captured);
   callUserFunction(state.events.change);
   return captured || true;
 }
@@ -87,11 +87,11 @@ export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, pro
     (!state.droppable.spare && pieceCount === 1 && state.selectedPiece && samePiece(state.selectedPiece, piece))
   )
     unselect(state);
-  callUserFunction(state.events.drop, piece, key, prom);
   state.pieces.set(key, promPiece || piece);
   state.lastDests = [key];
   state.check = undefined;
   if (!state.droppable.spare) removeFromHand(state, piece);
+  callUserFunction(state.events.drop, piece, key, prom);
   callUserFunction(state.events.change);
   return true;
 }

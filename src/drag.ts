@@ -13,7 +13,6 @@ export interface DragCurrent {
   origPos: sg.NumberPair; // first event position
   started: boolean; // whether the drag has started; as per the distance setting
   touch: boolean; // was the dragging initiated from touch event
-  hovering?: sg.Key; // currently hovered square
   originTarget: EventTarget | null;
   fromBoard?: {
     orig: sg.Key; // orig key of dragging piece
@@ -192,10 +191,8 @@ function processDrag(s: State): void {
             (!!cur.fromOutside.originBounds && !util.isInsideRect(cur.fromOutside.originBounds, cur.pos));
 
         // if the hovered square changed
-        if (hover !== cur.hovering) {
-          const prevHover = cur.hovering;
-          cur.hovering = hover;
-          updateHovers(s, prevHover);
+        if (hover !== s.hovered) {
+          updateHoveredSquares(s, hover);
           if (cur.touch && s.dom.elements.board?.squareOver) {
             if (hover && s.draggable.showTouchSquareOverlay) {
               util.translateAbs(
@@ -219,6 +216,14 @@ export function move(s: State, e: sg.MouchEvent): void {
   // support one finger touch only
   if (s.draggable.current && (!e.touches || e.touches.length < 2)) {
     s.draggable.current.pos = util.eventPosition(e)!;
+  } else if (
+    (s.selected || s.selectedPiece || s.highlight.hovered) &&
+    !s.draggable.current &&
+    (!e.touches || e.touches.length < 2)
+  ) {
+    const bounds = s.dom.bounds.board.bounds(),
+      hover = bounds && util.getKeyAtDomPos(util.eventPosition(e)!, util.sentePov(s.orientation), s.dimensions, bounds);
+    if (hover !== s.hovered) updateHoveredSquares(s, hover);
   }
 }
 
@@ -292,14 +297,15 @@ export function unwantedEvent(e: sg.MouchEvent): boolean {
   return !e.isTrusted || (e.button !== undefined && e.button !== 0) || (!!e.touches && e.touches.length > 1);
 }
 
-function updateHovers(s: State, prevHover?: sg.Key): void {
-  const asSente = util.sentePov(s.orientation),
-    sqaureEls = s.dom.elements.board?.squares.children;
-
+function updateHoveredSquares(s: State, key: sg.Key | undefined): void {
+  const sqaureEls = s.dom.elements.board?.squares.children;
   if (!sqaureEls) return;
 
-  const curIndex =
-      s.draggable.current?.hovering && util.domSquareIndexOfKey(s.draggable.current.hovering, asSente, s.dimensions),
+  const prevHover = s.hovered;
+  s.hovered = key;
+
+  const asSente = util.sentePov(s.orientation),
+    curIndex = s.hovered && util.domSquareIndexOfKey(s.hovered, asSente, s.dimensions),
     curHoverEl = curIndex && sqaureEls[curIndex];
   if (curHoverEl) curHoverEl.classList.add('hover');
 

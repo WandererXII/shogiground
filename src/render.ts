@@ -180,7 +180,7 @@ function computeSquareClasses(s: State): SquareClasses {
   const squares: SquareClasses = new Map();
   if (s.lastDests && s.highlight.lastDests) for (const k of s.lastDests) addSquare(squares, k, 'last-dest');
   if (s.check && s.highlight.check) addSquare(squares, s.check, 'check');
-  if (s.draggable.current?.hovering) addSquare(squares, s.draggable.current.hovering, 'hover');
+  if (s.hovered) addSquare(squares, s.hovered, 'hover');
   if (s.selected) {
     if (s.activeColor === 'both' || s.activeColor === s.turnColor) addSquare(squares, s.selected, 'selected');
     else addSquare(squares, s.selected, 'preselected');

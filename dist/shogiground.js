@@ -309,11 +309,11 @@ var Shogiground = (function () {
         const captured = destPiece && destPiece.color !== origPiece.color ? destPiece : undefined, promPiece = prom && promotePiece(state, origPiece);
         if (dest === state.selected || orig === state.selected)
             unselect(state);
-        callUserFunction(state.events.move, orig, dest, prom, captured);
         state.pieces.set(dest, promPiece || origPiece);
         state.pieces.delete(orig);
         state.lastDests = [orig, dest];
         state.check = undefined;
+        callUserFunction(state.events.move, orig, dest, prom, captured);
         callUserFunction(state.events.change);
         return captured || true;
     }
@@ -326,12 +326,12 @@ var Shogiground = (function () {
         if (key === state.selected ||
             (!state.droppable.spare && pieceCount === 1 && state.selectedPiece && samePiece(state.selectedPiece, piece)))
             unselect(state);
-        callUserFunction(state.events.drop, piece, key, prom);
         state.pieces.set(key, promPiece || piece);
         state.lastDests = [key];
         state.check = undefined;
         if (!state.droppable.spare)
             removeFromHand(state, piece);
+        callUserFunction(state.events.drop, piece, key, prom);
         callUserFunction(state.events.change);
         return true;
     }
@@ -779,26 +779,28 @@ var Shogiground = (function () {
         }
     }
     function configure(state, config) {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         // don't merge, just override.
         if ((_a = config.movable) === null || _a === void 0 ? void 0 : _a.dests)
             state.movable.dests = undefined;
         if ((_b = config.droppable) === null || _b === void 0 ? void 0 : _b.dests)
             state.droppable.dests = undefined;
-        if ((_c = config.drawable) === null || _c === void 0 ? void 0 : _c.autoShapes)
+        if ((_c = config.drawable) === null || _c === void 0 ? void 0 : _c.shapes)
+            state.drawable.shapes = [];
+        if ((_d = config.drawable) === null || _d === void 0 ? void 0 : _d.autoShapes)
             state.drawable.autoShapes = [];
-        if ((_d = config.drawable) === null || _d === void 0 ? void 0 : _d.squares)
+        if ((_e = config.drawable) === null || _e === void 0 ? void 0 : _e.squares)
             state.drawable.squares = [];
-        if ((_e = config.hands) === null || _e === void 0 ? void 0 : _e.roles)
+        if ((_f = config.hands) === null || _f === void 0 ? void 0 : _f.roles)
             state.hands.roles = [];
         deepMerge(state, config);
         // if a sfen was provided, replace the pieces, except the currently dragged one
-        if ((_f = config.sfen) === null || _f === void 0 ? void 0 : _f.board) {
+        if ((_g = config.sfen) === null || _g === void 0 ? void 0 : _g.board) {
             state.dimensions = inferDimensions(config.sfen.board);
             state.pieces = readBoard(config.sfen.board, state.dimensions);
-            state.drawable.shapes = [];
+            state.drawable.shapes = ((_h = config.drawable) === null || _h === void 0 ? void 0 : _h.shapes) || [];
         }
-        if ((_g = config.sfen) === null || _g === void 0 ? void 0 : _g.hands) {
+        if ((_j = config.sfen) === null || _j === void 0 ? void 0 : _j.hands) {
             state.hands.handMap = readHands(config.sfen.hands);
         }
         // apply config values that could be undefined yet meaningful
@@ -969,22 +971,22 @@ var Shogiground = (function () {
             map.set(key, [value]);
     }
     function computeSquareClasses(s) {
-        var _a, _b, _c;
+        var _a, _b;
         const squares = new Map();
         if (s.lastDests && s.highlight.lastDests)
             for (const k of s.lastDests)
                 addSquare(squares, k, 'last-dest');
         if (s.check && s.highlight.check)
             addSquare(squares, s.check, 'check');
-        if ((_a = s.draggable.current) === null || _a === void 0 ? void 0 : _a.hovering)
-            addSquare(squares, s.draggable.current.hovering, 'hover');
+        if (s.hovered)
+            addSquare(squares, s.hovered, 'hover');
         if (s.selected) {
             if (s.activeColor === 'both' || s.activeColor === s.turnColor)
                 addSquare(squares, s.selected, 'selected');
             else
                 addSquare(squares, s.selected, 'preselected');
             if (s.movable.showDests) {
-                const dests = (_b = s.movable.dests) === null || _b === void 0 ? void 0 : _b.get(s.selected);
+                const dests = (_a = s.movable.dests) === null || _a === void 0 ? void 0 : _a.get(s.selected);
                 if (dests)
                     for (const k of dests) {
                         addSquare(squares, k, 'dest' + (s.pieces.has(k) ? ' oc' : ''));
@@ -998,7 +1000,7 @@ var Shogiground = (function () {
         }
         else if (s.selectedPiece) {
             if (s.droppable.showDests) {
-                const dests = (_c = s.droppable.dests) === null || _c === void 0 ? void 0 : _c.get(s.selectedPiece.role);
+                const dests = (_b = s.droppable.dests) === null || _b === void 0 ? void 0 : _b.get(s.selectedPiece.role);
                 if (dests)
                     for (const k of dests) {
                         addSquare(squares, k, 'dest');
@@ -1802,10 +1804,8 @@ var Shogiground = (function () {
                             cur.fromOutside.leftOrigin ||
                                 (!!cur.fromOutside.originBounds && !isInsideRect(cur.fromOutside.originBounds, cur.pos));
                     // if the hovered square changed
-                    if (hover !== cur.hovering) {
-                        const prevHover = cur.hovering;
-                        cur.hovering = hover;
-                        updateHovers(s, prevHover);
+                    if (hover !== s.hovered) {
+                        updateHoveredSquares(s, hover);
                         if (cur.touch && ((_d = s.dom.elements.board) === null || _d === void 0 ? void 0 : _d.squareOver)) {
                             if (hover && s.draggable.showTouchSquareOverlay) {
                                 translateAbs(s.dom.elements.board.squareOver, posToTranslateAbs(s.dimensions, bounds)(key2pos(hover), sentePov(s.orientation)), 1);
@@ -1825,6 +1825,13 @@ var Shogiground = (function () {
         // support one finger touch only
         if (s.draggable.current && (!e.touches || e.touches.length < 2)) {
             s.draggable.current.pos = eventPosition(e);
+        }
+        else if ((s.selected || s.selectedPiece || s.highlight.hovered) &&
+            !s.draggable.current &&
+            (!e.touches || e.touches.length < 2)) {
+            const bounds = s.dom.bounds.board.bounds(), hover = bounds && getKeyAtDomPos(eventPosition(e), sentePov(s.orientation), s.dimensions, bounds);
+            if (hover !== s.hovered)
+                updateHoveredSquares(s, hover);
         }
     }
     function end(s, e) {
@@ -1891,12 +1898,14 @@ var Shogiground = (function () {
     function unwantedEvent(e) {
         return !e.isTrusted || (e.button !== undefined && e.button !== 0) || (!!e.touches && e.touches.length > 1);
     }
-    function updateHovers(s, prevHover) {
-        var _a, _b;
-        const asSente = sentePov(s.orientation), sqaureEls = (_a = s.dom.elements.board) === null || _a === void 0 ? void 0 : _a.squares.children;
+    function updateHoveredSquares(s, key) {
+        var _a;
+        const sqaureEls = (_a = s.dom.elements.board) === null || _a === void 0 ? void 0 : _a.squares.children;
         if (!sqaureEls)
             return;
-        const curIndex = ((_b = s.draggable.current) === null || _b === void 0 ? void 0 : _b.hovering) && domSquareIndexOfKey(s.draggable.current.hovering, asSente, s.dimensions), curHoverEl = curIndex && sqaureEls[curIndex];
+        const prevHover = s.hovered;
+        s.hovered = key;
+        const asSente = sentePov(s.orientation), curIndex = s.hovered && domSquareIndexOfKey(s.hovered, asSente, s.dimensions), curHoverEl = curIndex && sqaureEls[curIndex];
         if (curHoverEl)
             curHoverEl.classList.add('hover');
         const prevIndex = prevHover && domSquareIndexOfKey(prevHover, asSente, s.dimensions), prevHoverEl = prevIndex && sqaureEls[prevIndex];
@@ -2253,7 +2262,7 @@ var Shogiground = (function () {
             wrap(wrapElements) {
                 redrawAll(wrapElements, state);
             },
-            set(config) {
+            set(config, skipAnimation) {
                 var _a, _b;
                 let toRedraw = false;
                 if (config.orientation && config.orientation !== state.orientation) {
@@ -2272,7 +2281,7 @@ var Shogiground = (function () {
                 if (toRedraw)
                     redrawAll(state.dom.wrapElements, state);
                 applyAnimation(state, config);
-                (((_b = config.sfen) === null || _b === void 0 ? void 0 : _b.board) ? anim : render)(state => configure(state, config), state);
+                (((_b = config.sfen) === null || _b === void 0 ? void 0 : _b.board) && !skipAnimation ? anim : render)(state => configure(state, config), state);
             },
             state,
             getBoardSfen: () => writeBoard(state.pieces, state.dimensions),
@@ -2348,7 +2357,6 @@ var Shogiground = (function () {
             stop() {
                 render(state => {
                     stop(state);
-                    cancel(state);
                 }, state);
             },
             setAutoShapes(shapes) {
@@ -2390,6 +2398,7 @@ var Shogiground = (function () {
             highlight: {
                 lastDests: true,
                 check: true,
+                hovered: false,
             },
             animation: {
                 enabled: true,
