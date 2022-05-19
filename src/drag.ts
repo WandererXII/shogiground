@@ -306,10 +306,10 @@ function updateHoveredSquares(s: State, key: sg.Key | undefined): void {
 
   const asSente = util.sentePov(s.orientation),
     curIndex = s.hovered && util.domSquareIndexOfKey(s.hovered, asSente, s.dimensions),
-    curHoverEl = curIndex && sqaureEls[curIndex];
+    curHoverEl = curIndex !== undefined && sqaureEls[curIndex];
   if (curHoverEl) curHoverEl.classList.add('hover');
 
   const prevIndex = prevHover && util.domSquareIndexOfKey(prevHover, asSente, s.dimensions),
-    prevHoverEl = prevIndex && sqaureEls[prevIndex];
+    prevHoverEl = prevIndex !== undefined && sqaureEls[prevIndex];
   if (prevHoverEl) prevHoverEl.classList.remove('hover');
 }
