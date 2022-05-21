@@ -15,17 +15,18 @@ export function removeFromHand(s: HeadlessState, piece: sg.Piece, cnt = 1): void
 
 export function renderHand(s: HeadlessState, handEl: HTMLElement): void {
   handEl.classList.toggle('promotion', !!s.promotion.current);
-  let pieceEl = handEl.firstElementChild as sg.PieceNode | undefined;
-  while (pieceEl) {
-    const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
-    const num = s.hands.handMap.get(piece.color)?.get(piece.role) || 0;
-    const isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece) && !s.droppable.spare;
+  let wrapEl = handEl.firstElementChild as HTMLElement | undefined;
+  while (wrapEl) {
+    const pieceEl = wrapEl.firstElementChild as sg.PieceNode,
+      piece = { role: pieceEl.sgRole, color: pieceEl.sgColor },
+      num = s.hands.handMap.get(piece.color)?.get(piece.role) || 0,
+      isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece) && !s.droppable.spare;
 
-    pieceEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
-    pieceEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
-    pieceEl.classList.toggle('drawing', !!s.drawable.piece && samePiece(s.drawable.piece, piece));
-    pieceEl.classList.toggle('current-pre', !!s.predroppable.current && samePiece(s.predroppable.current.piece, piece));
-    pieceEl.dataset.nb = num.toString();
-    pieceEl = pieceEl.nextElementSibling as sg.PieceNode | undefined;
+    wrapEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
+    wrapEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
+    wrapEl.classList.toggle('drawing', !!s.drawable.piece && samePiece(s.drawable.piece, piece));
+    wrapEl.classList.toggle('current-pre', !!s.predroppable.current && samePiece(s.predroppable.current.piece, piece));
+    wrapEl.dataset.nb = num.toString();
+    wrapEl = wrapEl.nextElementSibling as HTMLElement | undefined;
   }
 }

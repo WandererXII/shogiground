@@ -30,19 +30,21 @@ export function Shogiground(config?: Config, wrapElements?: WrapElements): Api {
             handEls = state.dom.elements.hands;
 
           if (handEls?.top) {
-            let el = handEls.top.firstElementChild as PieceNode | undefined;
-            while (el) {
-              const piece = { role: el.sgRole, color: el.sgColor };
-              handPiecesRects.set(util.pieceNameOf(piece), el.getBoundingClientRect());
-              el = el.nextElementSibling as PieceNode | undefined;
+            let wrapEl = handEls.top.firstElementChild as HTMLElement | undefined;
+            while (wrapEl) {
+              const pieceEl = wrapEl.firstElementChild as PieceNode,
+                piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
+              handPiecesRects.set(util.pieceNameOf(piece), pieceEl.getBoundingClientRect());
+              wrapEl = wrapEl.nextElementSibling as HTMLElement | undefined;
             }
           }
           if (handEls?.bottom) {
-            let el = handEls.bottom.firstElementChild as PieceNode | undefined;
-            while (el) {
-              const piece = { role: el.sgRole, color: el.sgColor };
-              handPiecesRects.set(util.pieceNameOf(piece), el.getBoundingClientRect());
-              el = el.nextElementSibling as PieceNode | undefined;
+            let wrapEl = handEls.bottom.firstElementChild as HTMLElement | undefined;
+            while (wrapEl) {
+              const pieceEl = wrapEl.firstElementChild as PieceNode,
+                piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
+              handPiecesRects.set(util.pieceNameOf(piece), pieceEl.getBoundingClientRect());
+              wrapEl = wrapEl.nextElementSibling as HTMLElement | undefined;
             }
           }
           return handPiecesRects;

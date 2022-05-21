@@ -181,10 +181,12 @@ function renderHand(color: Color, roles: Role[]): HTMLElement {
   const hand = createEl('sg-hand');
   for (const role of roles) {
     const piece = { role: role, color: color },
+      wrapEl = createEl('sg-hp-wrap'),
       pieceEl = createEl('piece', pieceNameOf(piece)) as PieceNode;
     pieceEl.sgColor = color;
     pieceEl.sgRole = role;
-    hand.appendChild(pieceEl);
+    wrapEl.appendChild(pieceEl);
+    hand.appendChild(wrapEl);
   }
   return hand;
 }

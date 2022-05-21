@@ -236,17 +236,15 @@ var Shogiground = (function () {
     function renderHand$1(s, handEl) {
         var _a;
         handEl.classList.toggle('promotion', !!s.promotion.current);
-        let pieceEl = handEl.firstElementChild;
-        while (pieceEl) {
-            const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
-            const num = ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role)) || 0;
-            const isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece) && !s.droppable.spare;
-            pieceEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
-            pieceEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
-            pieceEl.classList.toggle('drawing', !!s.drawable.piece && samePiece(s.drawable.piece, piece));
-            pieceEl.classList.toggle('current-pre', !!s.predroppable.current && samePiece(s.predroppable.current.piece, piece));
-            pieceEl.dataset.nb = num.toString();
-            pieceEl = pieceEl.nextElementSibling;
+        let wrapEl = handEl.firstElementChild;
+        while (wrapEl) {
+            const pieceEl = wrapEl.firstElementChild, piece = { role: pieceEl.sgRole, color: pieceEl.sgColor }, num = ((_a = s.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role)) || 0, isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece) && !s.droppable.spare;
+            wrapEl.classList.toggle('selected', (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected);
+            wrapEl.classList.toggle('preselected', s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected);
+            wrapEl.classList.toggle('drawing', !!s.drawable.piece && samePiece(s.drawable.piece, piece));
+            wrapEl.classList.toggle('current-pre', !!s.predroppable.current && samePiece(s.predroppable.current.piece, piece));
+            wrapEl.dataset.nb = num.toString();
+            wrapEl = wrapEl.nextElementSibling;
         }
     }
 
@@ -2046,10 +2044,11 @@ var Shogiground = (function () {
     function renderHand(color, roles) {
         const hand = createEl('sg-hand');
         for (const role of roles) {
-            const piece = { role: role, color: color }, pieceEl = createEl('piece', pieceNameOf(piece));
+            const piece = { role: role, color: color }, wrapEl = createEl('sg-hp-wrap'), pieceEl = createEl('piece', pieceNameOf(piece));
             pieceEl.sgColor = color;
             pieceEl.sgRole = role;
-            hand.appendChild(pieceEl);
+            wrapEl.appendChild(pieceEl);
+            hand.appendChild(wrapEl);
         }
         return hand;
     }
@@ -2491,19 +2490,19 @@ var Shogiground = (function () {
                     pieceBounds: memo(() => {
                         const handPiecesRects = new Map(), handEls = state.dom.elements.hands;
                         if (handEls === null || handEls === void 0 ? void 0 : handEls.top) {
-                            let el = handEls.top.firstElementChild;
-                            while (el) {
-                                const piece = { role: el.sgRole, color: el.sgColor };
-                                handPiecesRects.set(pieceNameOf(piece), el.getBoundingClientRect());
-                                el = el.nextElementSibling;
+                            let wrapEl = handEls.top.firstElementChild;
+                            while (wrapEl) {
+                                const pieceEl = wrapEl.firstElementChild, piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
+                                handPiecesRects.set(pieceNameOf(piece), pieceEl.getBoundingClientRect());
+                                wrapEl = wrapEl.nextElementSibling;
                             }
                         }
                         if (handEls === null || handEls === void 0 ? void 0 : handEls.bottom) {
-                            let el = handEls.bottom.firstElementChild;
-                            while (el) {
-                                const piece = { role: el.sgRole, color: el.sgColor };
-                                handPiecesRects.set(pieceNameOf(piece), el.getBoundingClientRect());
-                                el = el.nextElementSibling;
+                            let wrapEl = handEls.bottom.firstElementChild;
+                            while (wrapEl) {
+                                const pieceEl = wrapEl.firstElementChild, piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
+                                handPiecesRects.set(pieceNameOf(piece), pieceEl.getBoundingClientRect());
+                                wrapEl = wrapEl.nextElementSibling;
                             }
                         }
                         return handPiecesRects;

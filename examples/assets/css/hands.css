@@ -2,7 +2,11 @@
   height: 100%;
 }
 
-sg-hand piece::after {
+sg-hand sg-hp-wrap {
+  position: relative;
+}
+
+sg-hand sg-hp-wrap::after {
   content: attr(data-nb);
   top: 0;
   right: 0;
@@ -16,14 +20,14 @@ sg-hand piece::after {
   border: 1px solid #eee;
   border-radius: 3px;
 }
-.hand-bottom sg-hand piece::after {
+.hand-bottom sg-hand sg-hp-wrap::after {
   top: unset;
   bottom: 0;
 }
-piece[data-nb='0']:not(.drawing) {
+sg-hp-wrap[data-nb='0']:not(.drawing) {
   opacity: 0.3;
 }
-piece[data-nb='0']:not(.selected):not(.drawing)::after {
+sg-hp-wrap[data-nb='0']:not(.selected):not(.drawing)::after {
   content: none;
 }
 
@@ -76,21 +80,21 @@ sg-hand piece {
   background-repeat: no-repeat;
 }
 
-sg-hand piece.selected {
+sg-hand sg-hp-wrap.selected {
   opacity: 1;
   background-color: rgba(20, 85, 30, 0.5);
 }
 
-sg-hand piece.preselected {
+sg-hand sg-hp-wrap.preselected {
   opacity: 1;
   background-color: rgba(20, 30, 85, 0.5);
 }
 
-sg-hand piece.current-pre {
+sg-hand sg-hp-wrap.current-pre {
   background-color: rgba(20, 30, 85, 0.5);
 }
 
-sg-hand piece.drawing:before {
+sg-hand sg-hp-wrap.drawing:before {
   content: '';
   position: absolute;
   width: 12%;
