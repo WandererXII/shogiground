@@ -1222,7 +1222,7 @@ var Shogiground = (function () {
             return;
         let el;
         if (shape.customSvg) {
-            el = renderCustomSvg(shape.customSvg, orig);
+            el = renderCustomSvg(shape.customSvg, orig, state.squareRatio);
         }
         else {
             const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state);
@@ -1248,12 +1248,12 @@ var Shogiground = (function () {
         }
         return;
     }
-    function renderCustomSvg(customSvg, pos) {
+    function renderCustomSvg(customSvg, pos, ratio) {
         const [x, y] = pos;
         // Translate to top-left of `orig` square
         const g = setAttributes(createSVGElement('g'), { transform: `translate(${x},${y})` });
         // Give 100x100 coordinate system to the user for `orig` square
-        const svg = setAttributes(createSVGElement('svg'), { width: 1, height: 1, viewBox: '0 0 100 100' });
+        const svg = setAttributes(createSVGElement('svg'), { width: ratio[0], height: ratio[1], viewBox: '0 0 100 100' });
         g.appendChild(svg);
         svg.innerHTML = customSvg;
         return g;
@@ -1905,10 +1905,10 @@ var Shogiground = (function () {
             return;
         const prevHover = s.hovered;
         s.hovered = key;
-        const asSente = sentePov(s.orientation), curIndex = s.hovered && domSquareIndexOfKey(s.hovered, asSente, s.dimensions), curHoverEl = curIndex && sqaureEls[curIndex];
+        const asSente = sentePov(s.orientation), curIndex = s.hovered && domSquareIndexOfKey(s.hovered, asSente, s.dimensions), curHoverEl = curIndex !== undefined && sqaureEls[curIndex];
         if (curHoverEl)
             curHoverEl.classList.add('hover');
-        const prevIndex = prevHover && domSquareIndexOfKey(prevHover, asSente, s.dimensions), prevHoverEl = prevIndex && sqaureEls[prevIndex];
+        const prevIndex = prevHover && domSquareIndexOfKey(prevHover, asSente, s.dimensions), prevHoverEl = prevIndex !== undefined && sqaureEls[prevIndex];
         if (prevHoverEl)
             prevHoverEl.classList.remove('hover');
     }
@@ -2469,7 +2469,7 @@ var Shogiground = (function () {
         };
     }
 
-    function Shogiground(wrapElements, config) {
+    function Shogiground(config, wrapElements) {
         const state = defaults();
         configure(state, config || {});
         state.dom = {

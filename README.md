@@ -69,7 +69,7 @@ npm install --save shogiground
 const Shogiground = require('shogiground').Shogiground;
 
 const config = {};
-const ground = Shogiground({ board: document.body }, config);
+const ground = Shogiground(config, { board: document.body });
 ```
 
 ## Documentation

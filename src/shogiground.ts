@@ -6,7 +6,7 @@ import * as util from './util.js';
 import { redrawAll } from './dom.js';
 import { bindDocument } from './events.js';
 
-export function Shogiground(wrapElements?: WrapElements, config?: Config): Api {
+export function Shogiground(config?: Config, wrapElements?: WrapElements): Api {
   const state = defaults() as State;
   configure(state, config || {});
 

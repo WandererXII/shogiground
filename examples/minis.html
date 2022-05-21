@@ -80,13 +80,13 @@
     let start = new Date();
     for (let i = 0; i < boards.length; i++) {
       Shogiground(
-        { board: boards[i] },
         {
           coordinates: { enabled: false },
           viewOnly: true,
           hands: { enabled: false },
           drawable: { visible: false },
-        }
+        },
+        { board: boards[i] }
       );
     }
     // log the duration (deferred by 0ms timer)

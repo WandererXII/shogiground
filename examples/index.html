@@ -85,7 +85,7 @@
           },
         },
       };
-      const ground = Shogiground({ board: document.getElementById('dirty') }, config);
+      const ground = Shogiground(config, { board: document.getElementById('dirty') });
       function flip() {
         ground.toggleOrientation();
       }
