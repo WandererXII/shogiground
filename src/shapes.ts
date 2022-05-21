@@ -212,7 +212,7 @@ function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDest
   if (!orig) return;
   let el: SVGElement | undefined;
   if (shape.customSvg) {
-    el = renderCustomSvg(shape.customSvg, orig);
+    el = renderCustomSvg(shape.customSvg, orig, state.squareRatio);
   } else {
     const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state);
     if (dest) {
@@ -246,14 +246,14 @@ function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDest
   return;
 }
 
-function renderCustomSvg(customSvg: string, pos: sg.Pos): SVGElement {
+function renderCustomSvg(customSvg: string, pos: sg.Pos, ratio: sg.NumberPair): SVGElement {
   const [x, y] = pos;
 
   // Translate to top-left of `orig` square
   const g = setAttributes(createSVGElement('g'), { transform: `translate(${x},${y})` });
 
   // Give 100x100 coordinate system to the user for `orig` square
-  const svg = setAttributes(createSVGElement('svg'), { width: 1, height: 1, viewBox: '0 0 100 100' });
+  const svg = setAttributes(createSVGElement('svg'), { width: ratio[0], height: ratio[1], viewBox: '0 0 100 100' });
 
   g.appendChild(svg);
   svg.innerHTML = customSvg;
