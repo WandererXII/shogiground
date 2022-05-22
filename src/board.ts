@@ -7,7 +7,7 @@ import { removeFromHand } from './hands.js';
 
 export function toggleOrientation(state: HeadlessState): void {
   state.orientation = opposite(state.orientation);
-  state.animation.current = state.draggable.current = state.selected = state.selectedPiece = undefined;
+  state.animation.current = state.draggable.current = state.hovered = state.selected = state.selectedPiece = undefined;
 }
 
 export function reset(state: HeadlessState): void {
@@ -15,7 +15,7 @@ export function reset(state: HeadlessState): void {
   unsetPremove(state);
   unsetPredrop(state);
   cancelPromotion(state);
-  state.animation.current = state.draggable.current = undefined;
+  state.animation.current = state.draggable.current = state.hovered = undefined;
 }
 
 export function setPieces(state: HeadlessState, pieces: sg.PiecesDiff): void {
@@ -390,6 +390,7 @@ export function stop(state: HeadlessState): void {
     state.draggable.current =
     state.animation.current =
     state.promotion.current =
+    state.hovered =
       undefined;
   cancelMoveOrDrop(state);
 }

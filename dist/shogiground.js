@@ -250,14 +250,14 @@ var Shogiground = (function () {
 
     function toggleOrientation(state) {
         state.orientation = opposite(state.orientation);
-        state.animation.current = state.draggable.current = state.selected = state.selectedPiece = undefined;
+        state.animation.current = state.draggable.current = state.hovered = state.selected = state.selectedPiece = undefined;
     }
     function reset(state) {
         unselect(state);
         unsetPremove(state);
         unsetPredrop(state);
         cancelPromotion(state);
-        state.animation.current = state.draggable.current = undefined;
+        state.animation.current = state.draggable.current = state.hovered = undefined;
     }
     function setPieces(state, pieces) {
         for (const [key, piece] of pieces) {
@@ -591,7 +591,8 @@ var Shogiground = (function () {
                     state.draggable.current =
                         state.animation.current =
                             state.promotion.current =
-                                undefined;
+                                state.hovered =
+                                    undefined;
         cancelMoveOrDrop(state);
     }
 
@@ -1844,6 +1845,8 @@ var Shogiground = (function () {
         // has the same touch origin
         if (e.type === 'touchend' && cur.originTarget !== e.target && !cur.fromOutside) {
             s.draggable.current = undefined;
+            if (s.hovered && !s.highlight.hovered)
+                updateHoveredSquares(s, undefined);
             return;
         }
         unsetPremove(s);
@@ -1883,11 +1886,15 @@ var Shogiground = (function () {
         else if (!s.selectable.enabled)
             unselect(s);
         s.draggable.current = undefined;
+        if (!s.highlight.hovered)
+            s.hovered = undefined;
         redraw(s);
     }
     function cancel(s) {
         if (s.draggable.current) {
             s.draggable.current = undefined;
+            if (!s.highlight.hovered)
+                s.hovered = undefined;
             unselect(s);
             redraw(s);
         }

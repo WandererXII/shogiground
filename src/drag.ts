@@ -236,6 +236,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   // has the same touch origin
   if (e.type === 'touchend' && cur.originTarget !== e.target && !cur.fromOutside) {
     s.draggable.current = undefined;
+    if (s.hovered && !s.highlight.hovered) updateHoveredSquares(s, undefined);
     return;
   }
   board.unsetPremove(s);
@@ -281,12 +282,14 @@ export function end(s: State, e: sg.MouchEvent): void {
   else if (!s.selectable.enabled) board.unselect(s);
 
   s.draggable.current = undefined;
+  if (!s.highlight.hovered) s.hovered = undefined;
   redraw(s);
 }
 
 export function cancel(s: State): void {
   if (s.draggable.current) {
     s.draggable.current = undefined;
+    if (!s.highlight.hovered) s.hovered = undefined;
     board.unselect(s);
     redraw(s);
   }
