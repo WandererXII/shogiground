@@ -67,8 +67,10 @@ export const translateAbs = (el: HTMLElement, pos: sg.NumberPair, scale: number)
   el.style.transform = `translate(${pos[0]}px,${pos[1]}px) scale(${scale}`;
 };
 
-export const translateRel = (el: HTMLElement, percents: sg.NumberPair, scale: number): void => {
-  el.style.transform = `translate(${percents[0] * scale}%,${percents[1] * scale}%) scale(${scale})`;
+export const translateRel = (el: HTMLElement, percents: sg.NumberPair, scaleFactor: number, scale?: number): void => {
+  el.style.transform = `translate(${percents[0] * scaleFactor}%,${percents[1] * scaleFactor}%) scale(${
+    scale || scaleFactor
+  })`;
 };
 
 export const setDisplay = (el: HTMLElement, v: boolean): void => {

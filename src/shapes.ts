@@ -252,8 +252,11 @@ function renderCustomSvg(customSvg: string, pos: sg.Pos, ratio: sg.NumberPair): 
   // Translate to top-left of `orig` square
   const g = setAttributes(createSVGElement('g'), { transform: `translate(${x},${y})` });
 
-  // Give 100x100 coordinate system to the user for `orig` square
-  const svg = setAttributes(createSVGElement('svg'), { width: ratio[0], height: ratio[1], viewBox: '0 0 100 100' });
+  const svg = setAttributes(createSVGElement('svg'), {
+    width: ratio[0],
+    height: ratio[1],
+    viewBox: `0 0 ${ratio[0] * 10} ${ratio[1] * 10}`,
+  });
 
   g.appendChild(svg);
   svg.innerHTML = customSvg;
@@ -314,7 +317,12 @@ export function renderPiece(state: State, { shape, hash }: Shape): sg.PieceNode 
   pieceEl.setAttribute('sgHash', hash);
   pieceEl.sgKey = orig;
   pieceEl.sgScale = scale;
-  translateRel(pieceEl, posToTranslateRel(state.dimensions)(key2pos(orig), sentePov(state.orientation)), scale);
+  translateRel(
+    pieceEl,
+    posToTranslateRel(state.dimensions)(key2pos(orig), sentePov(state.orientation)),
+    state.scaleDownPieces ? 0.5 : 1,
+    scale
+  );
 
   return pieceEl;
 }
