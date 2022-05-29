@@ -36,6 +36,14 @@ export interface WrapElements {
   };
 }
 
+export interface UnwrapElements {
+  board?: boolean;
+  hands?: {
+    top?: boolean;
+    bottom?: boolean;
+  };
+}
+
 export interface BoardElements {
   board: HTMLElement;
   squares: HTMLElement;

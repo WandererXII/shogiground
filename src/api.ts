@@ -8,11 +8,14 @@ import { applyAnimation, Config, configure } from './config.js';
 import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
 import { redraw } from './redraw.js';
-import { redrawAll } from './dom.js';
+import { detachElements, redrawAll } from './dom.js';
 
 export interface Api {
   // attach elements to current sg instance
   wrap(wrapElements: sg.WrapElements): void;
+
+  // deattach elements from current sg instance
+  unwrap(wrapElements: sg.UnwrapElements): void;
 
   // reconfigure the instance. Accepts all config options
   // board will be animated accordingly, if animations are enabled
@@ -91,6 +94,10 @@ export function start(state: State): Api {
   return {
     wrap(wrapElements: sg.WrapElements): void {
       redrawAll(wrapElements, state);
+    },
+
+    unwrap(unwrapElements: sg.UnwrapElements): void {
+      detachElements(unwrapElements, state);
     },
 
     set(config, skipAnimation?: boolean): void {

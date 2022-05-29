@@ -1,5 +1,5 @@
 import type { State } from './state.js';
-import type { WrapElements } from './types.js';
+import type { UnwrapElements, WrapElements } from './types.js';
 import { wrapBoard, wrapHand } from './wrap.js';
 import * as events from './events.js';
 import { renderHand } from './hands.js';
@@ -61,4 +61,19 @@ export function redrawAll(wrapElements: WrapElements, state: State): void {
       top: wrapElements.hands?.top && state.dom.elements.hands?.top,
       bottom: wrapElements.hands?.bottom && state.dom.elements.hands?.bottom,
     });
+}
+
+export function detachElements(unwrapElements: UnwrapElements, state: State): void {
+  if (unwrapElements.board) {
+    state.dom.elements.board = undefined;
+    state.dom.bounds.board.bounds.clear();
+  }
+  if (state.dom.elements.hands) {
+    if (unwrapElements.hands?.top) state.dom.elements.hands.top = undefined;
+    if (unwrapElements.hands?.bottom) state.dom.elements.hands.bottom = undefined;
+    if (unwrapElements.hands?.top || unwrapElements.hands?.bottom) {
+      state.dom.bounds.hands.bounds.clear();
+      state.dom.bounds.hands.pieceBounds.clear();
+    }
+  }
 }
