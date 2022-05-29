@@ -12,10 +12,10 @@ import { detachElements, redrawAll } from './dom.js';
 
 export interface Api {
   // attach elements to current sg instance
-  wrap(wrapElements: sg.WrapElements): void;
+  attach(wrapElements: sg.WrapElements): void;
 
-  // deattach elements from current sg instance
-  unwrap(wrapElements: sg.UnwrapElements): void;
+  // detach elements from current sg instance
+  detach(wrapElementsBoolean: sg.WrapElementsBoolean): void;
 
   // reconfigure the instance. Accepts all config options
   // board will be animated accordingly, if animations are enabled
@@ -92,12 +92,12 @@ export interface Api {
 // see API types and documentations in api.d.ts
 export function start(state: State): Api {
   return {
-    wrap(wrapElements: sg.WrapElements): void {
+    attach(wrapElements: sg.WrapElements): void {
       redrawAll(wrapElements, state);
     },
 
-    unwrap(unwrapElements: sg.UnwrapElements): void {
-      detachElements(unwrapElements, state);
+    detach(wrapElementsBoolean: sg.WrapElementsBoolean): void {
+      detachElements(wrapElementsBoolean, state);
     },
 
     set(config, skipAnimation?: boolean): void {

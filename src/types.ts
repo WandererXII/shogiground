@@ -36,7 +36,7 @@ export interface WrapElements {
   };
 }
 
-export interface UnwrapElements {
+export interface WrapElementsBoolean {
   board?: boolean;
   hands?: {
     top?: boolean;
