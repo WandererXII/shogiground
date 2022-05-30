@@ -170,6 +170,7 @@ export function basePromotionDialog(state: HeadlessState, piece: sg.Piece, key: 
     key,
     dragged: !!state.draggable.current,
   };
+  state.hovered = key;
 
   return true;
 }
@@ -380,6 +381,7 @@ export function cancelPromotion(state: HeadlessState): void {
 
   unselect(state);
   state.promotion.current = undefined;
+  state.hovered = undefined;
   callUserFunction(state.promotion.events.cancel);
 }
 

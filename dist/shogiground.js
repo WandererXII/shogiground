@@ -406,6 +406,7 @@ var Shogiground = (function () {
             key,
             dragged: !!state.draggable.current,
         };
+        state.hovered = key;
         return true;
     }
     function promotionDialogDrop(state, piece, key) {
@@ -582,6 +583,7 @@ var Shogiground = (function () {
             return;
         unselect(state);
         state.promotion.current = undefined;
+        state.hovered = undefined;
         callUserFunction(state.promotion.events.cancel);
     }
     function stop(state) {
@@ -1889,7 +1891,7 @@ var Shogiground = (function () {
         else if (!s.selectable.enabled)
             unselect(s);
         s.draggable.current = undefined;
-        if (!s.highlight.hovered)
+        if (!s.highlight.hovered && !s.promotion.current)
             s.hovered = undefined;
         redraw(s);
     }
@@ -1909,7 +1911,7 @@ var Shogiground = (function () {
     function updateHoveredSquares(s, key) {
         var _a;
         const sqaureEls = (_a = s.dom.elements.board) === null || _a === void 0 ? void 0 : _a.squares.children;
-        if (!sqaureEls)
+        if (!sqaureEls || s.promotion.current)
             return;
         const prevHover = s.hovered;
         s.hovered = key;

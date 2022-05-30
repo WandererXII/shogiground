@@ -282,7 +282,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   else if (!s.selectable.enabled) board.unselect(s);
 
   s.draggable.current = undefined;
-  if (!s.highlight.hovered) s.hovered = undefined;
+  if (!s.highlight.hovered && !s.promotion.current) s.hovered = undefined;
   redraw(s);
 }
 
@@ -302,7 +302,7 @@ export function unwantedEvent(e: sg.MouchEvent): boolean {
 
 function updateHoveredSquares(s: State, key: sg.Key | undefined): void {
   const sqaureEls = s.dom.elements.board?.squares.children;
-  if (!sqaureEls) return;
+  if (!sqaureEls || s.promotion.current) return;
 
   const prevHover = s.hovered;
   s.hovered = key;

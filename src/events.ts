@@ -150,7 +150,7 @@ function startDragFromHand(s: State): MouchBind {
   };
 }
 
-export function promote(s: State, e: sg.MouchEvent): void {
+function promote(s: State, e: sg.MouchEvent): void {
   e.stopPropagation();
 
   const target = e.target as HTMLElement | null,
