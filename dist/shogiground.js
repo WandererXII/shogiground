@@ -250,7 +250,13 @@ var Shogiground = (function () {
 
     function toggleOrientation(state) {
         state.orientation = opposite(state.orientation);
-        state.animation.current = state.draggable.current = state.hovered = state.selected = state.selectedPiece = undefined;
+        state.animation.current =
+            state.draggable.current =
+                state.promotion.current =
+                    state.hovered =
+                        state.selected =
+                            state.selectedPiece =
+                                undefined;
     }
     function reset(state) {
         unselect(state);

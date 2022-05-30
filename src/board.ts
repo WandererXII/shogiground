@@ -7,7 +7,13 @@ import { removeFromHand } from './hands.js';
 
 export function toggleOrientation(state: HeadlessState): void {
   state.orientation = opposite(state.orientation);
-  state.animation.current = state.draggable.current = state.hovered = state.selected = state.selectedPiece = undefined;
+  state.animation.current =
+    state.draggable.current =
+    state.promotion.current =
+    state.hovered =
+    state.selected =
+    state.selectedPiece =
+      undefined;
 }
 
 export function reset(state: HeadlessState): void {
