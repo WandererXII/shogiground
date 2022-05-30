@@ -32,6 +32,8 @@
       <button onclick="setPieces()">PIECES</button>
       <button onclick="premove()">PREMOVE</button>
       <button onclick="tmout(1500)">TIMEOUT</button>
+      <button onclick="detach()">detach</button>
+      <button onclick="attach()">atttach</button>
     </div>
     <script src="../dist/shogiground.js"></script>
     <script>
@@ -144,6 +146,12 @@
       function premove() {
         ground.set({ turnColor: 'sente' });
         ground.playPremove();
+      }
+      function detach() {
+        ground.detach({ board: true });
+      }
+      function attach() {
+        ground.attach({ board: document.getElementById('dirty') });
       }
     </script>
     <script>

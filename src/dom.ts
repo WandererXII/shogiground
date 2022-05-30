@@ -65,12 +65,19 @@ export function redrawAll(wrapElements: WrapElements, state: State): void {
 
 export function detachElements(web: WrapElementsBoolean, state: State): void {
   if (web.board) {
+    state.dom.wrapElements.board = undefined;
     state.dom.elements.board = undefined;
     state.dom.bounds.board.bounds.clear();
   }
-  if (state.dom.elements.hands) {
-    if (web.hands?.top) state.dom.elements.hands.top = undefined;
-    if (web.hands?.bottom) state.dom.elements.hands.bottom = undefined;
+  if (state.dom.elements.hands && state.dom.wrapElements.hands) {
+    if (web.hands?.top) {
+      state.dom.wrapElements.hands.top = undefined;
+      state.dom.elements.hands.top = undefined;
+    }
+    if (web.hands?.bottom) {
+      state.dom.wrapElements.hands.bottom = undefined;
+      state.dom.elements.hands.bottom = undefined;
+    }
     if (web.hands?.top || web.hands?.bottom) {
       state.dom.bounds.hands.bounds.clear();
       state.dom.bounds.hands.pieceBounds.clear();

@@ -2264,12 +2264,37 @@ var Shogiground = (function () {
                 bottom: ((_c = wrapElements.hands) === null || _c === void 0 ? void 0 : _c.bottom) && ((_d = state.dom.elements.hands) === null || _d === void 0 ? void 0 : _d.bottom),
             });
     }
+    function detachElements(web, state) {
+        var _a, _b, _c, _d;
+        if (web.board) {
+            state.dom.wrapElements.board = undefined;
+            state.dom.elements.board = undefined;
+            state.dom.bounds.board.bounds.clear();
+        }
+        if (state.dom.elements.hands && state.dom.wrapElements.hands) {
+            if ((_a = web.hands) === null || _a === void 0 ? void 0 : _a.top) {
+                state.dom.wrapElements.hands.top = undefined;
+                state.dom.elements.hands.top = undefined;
+            }
+            if ((_b = web.hands) === null || _b === void 0 ? void 0 : _b.bottom) {
+                state.dom.wrapElements.hands.bottom = undefined;
+                state.dom.elements.hands.bottom = undefined;
+            }
+            if (((_c = web.hands) === null || _c === void 0 ? void 0 : _c.top) || ((_d = web.hands) === null || _d === void 0 ? void 0 : _d.bottom)) {
+                state.dom.bounds.hands.bounds.clear();
+                state.dom.bounds.hands.pieceBounds.clear();
+            }
+        }
+    }
 
     // see API types and documentations in api.d.ts
     function start(state) {
         return {
-            wrap(wrapElements) {
+            attach(wrapElements) {
                 redrawAll(wrapElements, state);
+            },
+            detach(wrapElementsBoolean) {
+                detachElements(wrapElementsBoolean, state);
             },
             set(config, skipAnimation) {
                 var _a, _b;
