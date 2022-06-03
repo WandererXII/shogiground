@@ -97,7 +97,7 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
 
   boardWrap.innerHTML = '';
 
-  // ensure the sg-wrap class and dimensions class i set beforehand to avoid recomputing style
+  // ensure the sg-wrap class and dimensions class is set beforehand to avoid recomputing styles
   boardWrap.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
 
   for (const c of colors) boardWrap.classList.toggle('orientation-' + c, s.orientation === c);
@@ -134,7 +134,8 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
 export function wrapHand(handWrap: HTMLElement, pos: 'top' | 'bottom', s: State): HTMLElement {
   const hand = renderHand(pos === 'top' ? opposite(s.orientation) : s.orientation, s.hands.roles);
   handWrap.innerHTML = '';
-  handWrap.classList.add(`hand-${pos}`);
+  // ensure the sg-hand-wrap class, hand pos class and role number class is set beforehand to avoid recomputing styles
+  handWrap.classList.add('sg-hand-wrap', `hand-${pos}`, `r-${s.hands.roles.length}`);
   handWrap.appendChild(hand);
 
   return hand;

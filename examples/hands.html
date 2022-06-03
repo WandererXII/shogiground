@@ -60,15 +60,15 @@
         },
       };
       const sg = Shogiground(config);
-      sg.wrap({
+      sg.attach({
         board: document.getElementById('dirty'),
       });
-      sg.wrap({
+      sg.attach({
         hands: {
           bottom: document.getElementById('hand-bottom'),
         },
       });
-      sg.wrap({
+      sg.attach({
         hands: {
           top: document.getElementById('hand-top'),
         },
