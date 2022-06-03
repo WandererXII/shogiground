@@ -2424,7 +2424,7 @@ var Shogiground = (function () {
 
     function defaults() {
         return {
-            pieces: readBoard('lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL', { files: 9, ranks: 9 }),
+            pieces: new Map(),
             dimensions: { files: 9, ranks: 9 },
             orientation: 'sente',
             turnColor: 'sente',

@@ -2,7 +2,6 @@ import type { AnimCurrent } from './anim.js';
 import type { DragCurrent } from './drag.js';
 import type { Drawable } from './draw.js';
 import * as sg from './types.js';
-import * as sfen from './sfen.js';
 
 export interface HeadlessState {
   pieces: sg.Pieces;
@@ -134,7 +133,7 @@ export interface State extends HeadlessState {
 
 export function defaults(): HeadlessState {
   return {
-    pieces: sfen.readBoard('lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL', { files: 9, ranks: 9 }),
+    pieces: new Map(),
     dimensions: { files: 9, ranks: 9 },
     orientation: 'sente',
     turnColor: 'sente',
