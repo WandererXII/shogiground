@@ -1,6 +1,6 @@
 {
   "name": "shogiground",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "lishogi.org shogi ui",
   "type": "module",
   "module": "shogiground.js",
