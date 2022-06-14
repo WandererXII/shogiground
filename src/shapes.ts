@@ -44,7 +44,7 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
 
   for (const s of d.shapes.concat(d.autoShapes).concat(cur ? [cur] : [])) {
     const destName = isPiece(s.dest) ? pieceNameOf(s.dest) : s.dest;
-    if (destName && !samePieceOrKey(s.dest, s.orig)) arrowDests.set(destName, (arrowDests.get(destName) || 0) + 1);
+    if (!samePieceOrKey(s.dest, s.orig)) arrowDests.set(destName, (arrowDests.get(destName) || 0) + 1);
   }
 
   for (const s of d.shapes.concat(cur ? [cur] : []).concat(d.autoShapes)) {
