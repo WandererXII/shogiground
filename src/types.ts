@@ -11,7 +11,7 @@ export interface Piece {
   role: Role;
   color: Color;
 }
-export type PieceName = string; // `$color $role`
+export type PieceName = `${Color} ${Role}`;
 export type Pieces = Map<Key, Piece>;
 
 export type Hands = Map<Color, Hand>;
