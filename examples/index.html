@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <link rel="stylesheet" href="assets/css/base.css" />
     <link rel="stylesheet" href="assets/css/shogiground.css" />
+    <link rel="stylesheet" href="assets/css/d5x5.css" />
     <link rel="stylesheet" href="assets/css/themes/bird.css" />
     <link rel="stylesheet" href="assets/css/pieces/ryoko.css" />
   </head>
@@ -30,7 +31,7 @@
       <button onclick="pieceSVG()">PIECE</button>
       <button onclick="move()">MOVE</button>
       <button onclick="setPieces()">PIECES</button>
-      <button onclick="premove()">PREMOVE</button>
+      <button onclick="to5x5()">TO 5x5</button>
       <button onclick="tmout(1500)">TIMEOUT</button>
       <button onclick="detach()">detach</button>
       <button onclick="attach()">atttach</button>
@@ -143,9 +144,8 @@
       function tmout(ms) {
         setTimeout(pieceSVG, ms);
       }
-      function premove() {
-        ground.set({ turnColor: 'sente' });
-        ground.playPremove();
+      function to5x5() {
+        ground.set({ sfen: { board: 'ppppp/5/5/5/PPPPP' } });
       }
       function detach() {
         ground.detach({ board: true });

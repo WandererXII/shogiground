@@ -1080,7 +1080,7 @@ var Shogiground = (function () {
         };
         for (const s of d.shapes.concat(d.autoShapes).concat(cur ? [cur] : [])) {
             const destName = isPiece(s.dest) ? pieceNameOf(s.dest) : s.dest;
-            if (destName && !samePieceOrKey(s.dest, s.orig))
+            if (!samePieceOrKey(s.dest, s.orig))
                 arrowDests.set(destName, (arrowDests.get(destName) || 0) + 1);
         }
         for (const s of d.shapes.concat(cur ? [cur] : []).concat(d.autoShapes)) {
@@ -1991,8 +1991,14 @@ var Shogiground = (function () {
             board.appendChild(renderCoords(['12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, s.dimensions.files));
         }
         boardWrap.innerHTML = '';
+        const dimCls = `d-${s.dimensions.files}x${s.dimensions.ranks}`;
+        // remove all other dimension classes
+        boardWrap.classList.forEach(c => {
+            if (c.substring(0, 2) === 'd-' && c !== dimCls)
+                boardWrap.classList.remove(c);
+        });
         // ensure the sg-wrap class and dimensions class is set beforehand to avoid recomputing styles
-        boardWrap.classList.add('sg-wrap', `d-${s.dimensions.files}x${s.dimensions.ranks}`);
+        boardWrap.classList.add('sg-wrap', dimCls);
         for (const c of colors)
             boardWrap.classList.toggle('orientation-' + c, s.orientation === c);
         boardWrap.classList.toggle('manipulable', !s.viewOnly);
@@ -2023,8 +2029,14 @@ var Shogiground = (function () {
     function wrapHand(handWrap, pos, s) {
         const hand = renderHand(pos === 'top' ? opposite(s.orientation) : s.orientation, s.hands.roles);
         handWrap.innerHTML = '';
+        const roleCntCls = `r-${s.hands.roles.length}`;
+        // remove all other role count classes
+        handWrap.classList.forEach(c => {
+            if (c.substring(0, 2) === 'r-' && c !== roleCntCls)
+                handWrap.classList.remove(c);
+        });
         // ensure the sg-hand-wrap class, hand pos class and role number class is set beforehand to avoid recomputing styles
-        handWrap.classList.add('sg-hand-wrap', `hand-${pos}`, `r-${s.hands.roles.length}`);
+        handWrap.classList.add('sg-hand-wrap', `hand-${pos}`, roleCntCls);
         handWrap.appendChild(hand);
         return hand;
     }
@@ -2306,25 +2318,35 @@ var Shogiground = (function () {
                 detachElements(wrapElementsBoolean, state);
             },
             set(config, skipAnimation) {
-                var _a, _b;
-                let toRedraw = false;
-                if (config.orientation && config.orientation !== state.orientation) {
-                    toggleOrientation(state);
-                    toRedraw = true;
+                var _a, _b, _c;
+                function getByPath(path, obj) {
+                    const properties = path.split('.');
+                    return properties.reduce((prev, curr) => prev && prev[curr], obj);
                 }
-                if (config.viewOnly !== undefined && config.viewOnly !== state.viewOnly) {
-                    state.viewOnly = config.viewOnly;
+                const forceRedrawProps = [
+                    'orientation',
+                    'viewOnly',
+                    'coordinates.enabled',
+                    'coordinates.notation',
+                    'drawable.visible',
+                    'hands.inlined',
+                ];
+                const newDims = ((_a = config.sfen) === null || _a === void 0 ? void 0 : _a.board) && inferDimensions(config.sfen.board);
+                const toRedraw = forceRedrawProps.some(p => {
+                    const cRes = getByPath(p, config);
+                    return cRes && cRes !== getByPath(p, state);
+                }) ||
+                    !!(newDims && (newDims.files !== state.dimensions.files || newDims.ranks !== state.dimensions.ranks)) ||
+                    !!(((_b = config.hands) === null || _b === void 0 ? void 0 : _b.roles) && config.hands.roles.every((r, i) => r === state.hands.roles[i]));
+                if (toRedraw) {
                     reset(state);
-                    toRedraw = true;
-                }
-                if (((_a = config.hands) === null || _a === void 0 ? void 0 : _a.roles) !== undefined && config.hands.roles !== state.hands.roles) {
-                    state.hands.roles = config.hands.roles;
-                    toRedraw = true;
-                }
-                if (toRedraw)
+                    configure(state, config);
                     redrawAll(state.dom.wrapElements, state);
-                applyAnimation(state, config);
-                (((_b = config.sfen) === null || _b === void 0 ? void 0 : _b.board) && !skipAnimation ? anim : render)(state => configure(state, config), state);
+                }
+                else {
+                    applyAnimation(state, config);
+                    (((_c = config.sfen) === null || _c === void 0 ? void 0 : _c.board) && !skipAnimation ? anim : render)(state => configure(state, config), state);
+                }
             },
             state,
             getBoardSfen: () => writeBoard(state.pieces, state.dimensions),

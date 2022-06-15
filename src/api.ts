@@ -3,7 +3,7 @@ import type { DrawShape, SquareHighlight } from './draw.js';
 import * as sg from './types.js';
 import * as board from './board.js';
 import { addToHand, removeFromHand } from './hands.js';
-import { writeBoard, writeHands } from './sfen.js';
+import { inferDimensions, writeBoard, writeHands } from './sfen.js';
 import { applyAnimation, Config, configure } from './config.js';
 import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
@@ -100,25 +100,37 @@ export function start(state: State): Api {
       detachElements(wrapElementsBoolean, state);
     },
 
-    set(config, skipAnimation?: boolean): void {
-      let toRedraw = false;
-      if (config.orientation && config.orientation !== state.orientation) {
-        board.toggleOrientation(state);
-        toRedraw = true;
-      }
-      if (config.viewOnly !== undefined && config.viewOnly !== state.viewOnly) {
-        state.viewOnly = config.viewOnly;
-        board.reset(state);
-        toRedraw = true;
-      }
-      if (config.hands?.roles !== undefined && config.hands.roles !== state.hands.roles) {
-        state.hands.roles = config.hands.roles;
-        toRedraw = true;
+    set(config: Config, skipAnimation?: boolean): void {
+      function getByPath(path: string, obj: any) {
+        const properties = path.split('.');
+        return properties.reduce((prev, curr) => prev && prev[curr], obj);
       }
 
-      if (toRedraw) redrawAll(state.dom.wrapElements, state);
-      applyAnimation(state, config);
-      (config.sfen?.board && !skipAnimation ? anim : render)(state => configure(state, config), state);
+      const forceRedrawProps: (`${keyof Config}` | `${keyof Config}.${string}`)[] = [
+        'orientation',
+        'viewOnly',
+        'coordinates.enabled',
+        'coordinates.notation',
+        'drawable.visible',
+        'hands.inlined',
+      ];
+      const newDims = config.sfen?.board && inferDimensions(config.sfen.board);
+      const toRedraw =
+        forceRedrawProps.some(p => {
+          const cRes = getByPath(p, config);
+          return cRes && cRes !== getByPath(p, state);
+        }) ||
+        !!(newDims && (newDims.files !== state.dimensions.files || newDims.ranks !== state.dimensions.ranks)) ||
+        !!(config.hands?.roles && config.hands.roles.every((r, i) => r === state.hands.roles[i]));
+
+      if (toRedraw) {
+        board.reset(state);
+        configure(state, config);
+        redrawAll(state.dom.wrapElements, state);
+      } else {
+        applyAnimation(state, config);
+        (config.sfen?.board && !skipAnimation ? anim : render)(state => configure(state, config), state);
+      }
     },
 
     state,
