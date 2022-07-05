@@ -153,6 +153,9 @@ export function wrapHand(handWrap: HTMLElement, pos: 'top' | 'bottom', s: State)
   handWrap.classList.add('sg-hand-wrap', `hand-${pos}`, roleCntCls);
   handWrap.appendChild(hand);
 
+  for (const c of colors) handWrap.classList.toggle('orientation-' + c, s.orientation === c);
+  handWrap.classList.toggle('manipulable', !s.viewOnly);
+
   return hand;
 }
 

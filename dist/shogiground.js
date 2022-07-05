@@ -2038,6 +2038,9 @@ var Shogiground = (function () {
         // ensure the sg-hand-wrap class, hand pos class and role number class is set beforehand to avoid recomputing styles
         handWrap.classList.add('sg-hand-wrap', `hand-${pos}`, roleCntCls);
         handWrap.appendChild(hand);
+        for (const c of colors)
+            handWrap.classList.toggle('orientation-' + c, s.orientation === c);
+        handWrap.classList.toggle('manipulable', !s.viewOnly);
         return hand;
     }
     function ranksByNotation(notation) {
