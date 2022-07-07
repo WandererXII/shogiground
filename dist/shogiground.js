@@ -2045,9 +2045,9 @@ var Shogiground = (function () {
     }
     function ranksByNotation(notation) {
         switch (notation) {
-            case 2 /* JAPANESE */:
+            case 2 /* Notation.JAPANESE */:
                 return ['十二', '十一', '十', '九', '八', '七', '六', '五', '四', '三', '二', '一'];
-            case 3 /* WESTERN2 */:
+            case 3 /* Notation.WESTERN2 */:
                 return ['l', 'k', 'j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
             default:
                 return ['12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
@@ -2201,8 +2201,11 @@ var Shogiground = (function () {
                 else if (s.drawable.current)
                     cancel$1(s);
                 else if (isMiddleButton(e)) {
-                    if (s.drawable.enabled)
+                    if (s.drawable.enabled) {
+                        if (e.cancelable !== false)
+                            e.preventDefault();
                         setDrawPiece(s, piece);
+                    }
                 }
                 else if (e.shiftKey || isRightButton(e)) {
                     if (s.drawable.enabled)
@@ -2461,7 +2464,7 @@ var Shogiground = (function () {
             scaleDownPieces: true,
             coordinates: {
                 enabled: true,
-                notation: 0 /* WESTERN */,
+                notation: 0 /* sg.Notation.WESTERN */,
             },
             highlight: {
                 lastDests: true,
