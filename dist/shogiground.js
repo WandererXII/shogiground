@@ -1894,7 +1894,7 @@ var Shogiground = (function () {
                 cur.fromOutside.previouslySelectedPiece &&
                 samePiece(cur.fromOutside.previouslySelectedPiece, cur.piece)))
             unselect(s);
-        else if (!s.selectable.enabled)
+        else if (!s.selectable.enabled && !s.promotion.current)
             unselect(s);
         s.draggable.current = undefined;
         if (!s.highlight.hovered && !s.promotion.current)

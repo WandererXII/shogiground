@@ -279,7 +279,7 @@ export function end(s: State, e: sg.MouchEvent): void {
       util.samePiece(cur.fromOutside.previouslySelectedPiece as sg.Piece, cur.piece))
   )
     board.unselect(s);
-  else if (!s.selectable.enabled) board.unselect(s);
+  else if (!s.selectable.enabled && !s.promotion.current) board.unselect(s);
 
   s.draggable.current = undefined;
   if (!s.highlight.hovered && !s.promotion.current) s.hovered = undefined;
