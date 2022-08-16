@@ -826,14 +826,19 @@ var Shogiground = (function () {
     }
     function deepMerge(base, extend) {
         for (const key in extend) {
-            if (isObject(base[key]) && isObject(extend[key]))
-                deepMerge(base[key], extend[key]);
-            else
-                base[key] = extend[key];
+            if (Object.prototype.hasOwnProperty.call(extend, key)) {
+                if (Object.prototype.hasOwnProperty.call(base, key) && isPlainObject(base[key]) && isPlainObject(extend[key]))
+                    deepMerge(base[key], extend[key]);
+                else
+                    base[key] = extend[key];
+            }
         }
     }
-    function isObject(o) {
-        return typeof o === 'object';
+    function isPlainObject(o) {
+        if (typeof o !== 'object' || o === null)
+            return false;
+        const proto = Object.getPrototypeOf(o);
+        return proto === Object.prototype || proto === null;
     }
 
     function render$1(s, boardEls) {
@@ -1320,8 +1325,10 @@ var Shogiground = (function () {
         return marker;
     }
     function setAttributes(el, attrs) {
-        for (const key in attrs)
-            el.setAttribute(key, attrs[key]);
+        for (const key in attrs) {
+            if (Object.prototype.hasOwnProperty.call(attrs, key))
+                el.setAttribute(key, attrs[key]);
+        }
         return el;
     }
     function pos2user(pos, color, dims, ratio) {
