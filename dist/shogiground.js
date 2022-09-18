@@ -131,97 +131,6 @@ var Shogiground = (function () {
         return [xOff, yOff];
     }
 
-    function diff(a, b) {
-        return Math.abs(a - b);
-    }
-    function pawn(color) {
-        return (x1, y1, x2, y2) => (color === 'sente' ? x1 === x2 && y1 - 1 === y2 : x1 === x2 && y1 + 1 === y2);
-    }
-    function knight(color) {
-        return (x1, y1, x2, y2) => diff(x1, x2) === 1 && diff(y1, y2) === 2 && (color === 'sente' ? y2 < y1 : y2 > y1);
-    }
-    const bishop = (x1, y1, x2, y2) => {
-        return diff(x1, x2) === diff(y1, y2);
-    };
-    const rook = (x1, y1, x2, y2) => {
-        return x1 === x2 || y1 === y2;
-    };
-    const king = (x1, y1, x2, y2) => {
-        return diff(x1, x2) < 2 && diff(y1, y2) < 2;
-    };
-    function lance(color) {
-        return (x1, y1, x2, y2) => (color === 'sente' ? x1 === x2 && y2 < y1 : x1 === x2 && y1 < y2);
-    }
-    function silver(color) {
-        return (x1, y1, x2, y2) => diff(x1, x2) < 2 &&
-            diff(y1, y2) < 2 &&
-            y1 !== y2 &&
-            (color === 'sente' ? x1 !== x2 || y2 < y1 : x1 !== x2 || y2 > y1);
-    }
-    function gold(color) {
-        return (x1, y1, x2, y2) => diff(x1, x2) < 2 && diff(y1, y2) < 2 && (color === 'sente' ? y2 <= y1 || x1 === x2 : y2 >= y1 || x1 === x2);
-    }
-    const horse = (x1, y1, x2, y2) => {
-        return king(x1, y1, x2, y2) || bishop(x1, y1, x2, y2);
-    };
-    const dragon = (x1, y1, x2, y2) => {
-        return king(x1, y1, x2, y2) || rook(x1, y1, x2, y2);
-    };
-    const allPos = allKeys.map(key2pos);
-    function premove(pieces, key, dims) {
-        const piece = pieces.get(key);
-        if (!piece)
-            return [];
-        const pos = key2pos(key), r = piece.role, mobility = r === 'pawn'
-            ? pawn(piece.color)
-            : r === 'knight'
-                ? knight(piece.color)
-                : r === 'bishop'
-                    ? bishop
-                    : r === 'rook'
-                        ? rook
-                        : r === 'king'
-                            ? king
-                            : r === 'silver'
-                                ? silver(piece.color)
-                                : r === 'lance'
-                                    ? lance(piece.color)
-                                    : r === 'horse'
-                                        ? horse
-                                        : r === 'dragon'
-                                            ? dragon
-                                            : gold(piece.color);
-        return allPos
-            .filter(pos2 => (pos[0] !== pos2[0] || pos[1] !== pos2[1]) &&
-            mobility(pos[0], pos[1], pos2[0], pos2[1]) &&
-            pos2[0] < dims.files &&
-            pos2[1] < dims.ranks)
-            .map(pos2key);
-    }
-
-    function lastRow(dims, pos, color) {
-        return color === 'sente' ? pos[1] === 0 : pos[1] === dims.ranks - 1;
-    }
-    function lastTwoRows(dims, pos, color) {
-        return lastRow(dims, pos, color) || (color === 'sente' ? pos[1] === 1 : pos[1] === dims.ranks - 2);
-    }
-    function predrop(pieces, dropPiece, dims) {
-        const color = dropPiece.color;
-        const role = dropPiece.role;
-        return allKeys.filter(key => {
-            const p = pieces.get(key);
-            const pos = key2pos(key);
-            return ((!p || p.color !== color) &&
-                pos[0] < dims.files &&
-                pos[1] < dims.ranks &&
-                (role === 'pawn' || role === 'lance'
-                    ? !lastRow(dims, pos, color)
-                    : role === 'knight'
-                        ? !lastTwoRows(dims, pos, color)
-                        : true));
-        });
-    }
-
     function addToHand(s, piece, cnt = 1) {
         const hand = s.hands.handMap.get(piece.color);
         if (hand && s.hands.roles.includes(piece.role))
@@ -486,10 +395,10 @@ var Shogiground = (function () {
     }
     function setPreDests(state) {
         state.premovable.dests = state.predroppable.dests = undefined;
-        if (state.selected && isPremovable(state, state.selected))
-            state.premovable.dests = premove(state.pieces, state.selected, state.dimensions);
-        else if (state.selectedPiece && isPredroppable(state, state.selectedPiece))
-            state.predroppable.dests = predrop(state.pieces, state.selectedPiece, state.dimensions);
+        if (state.selected && isPremovable(state, state.selected) && state.premovable.generate)
+            state.premovable.dests = state.premovable.generate(state.selected, state.pieces);
+        else if (state.selectedPiece && isPredroppable(state, state.selectedPiece) && state.predroppable.generate)
+            state.predroppable.dests = state.predroppable.generate(state.selectedPiece, state.pieces);
     }
     function unselect(state) {
         state.selected =
@@ -530,13 +439,17 @@ var Shogiground = (function () {
         return state.predroppable.enabled && state.activeColor === piece.color && state.turnColor !== piece.color;
     }
     function canPremove(state, orig, dest) {
-        return orig !== dest && isPremovable(state, orig) && premove(state.pieces, orig, state.dimensions).includes(dest);
+        return (orig !== dest &&
+            isPremovable(state, orig) &&
+            !!state.premovable.generate &&
+            state.premovable.generate(orig, state.pieces).includes(dest));
     }
     function canPredrop(state, piece, dest) {
         const destPiece = state.pieces.get(dest);
         return (isPredroppable(state, piece) &&
             (!destPiece || destPiece.color !== state.activeColor) &&
-            predrop(state.pieces, piece, state.dimensions).includes(dest));
+            !!state.predroppable.generate &&
+            state.predroppable.generate(piece, state.pieces).includes(dest));
     }
     function isDraggable(state, piece) {
         return (state.draggable.enabled &&

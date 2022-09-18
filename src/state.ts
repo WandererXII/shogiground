@@ -65,6 +65,7 @@ export interface HeadlessState {
       dest: sg.Key;
       prom: boolean;
     };
+    generate?: (key: sg.Key, pieces: sg.Pieces) => sg.Key[];
     events: {
       set?: (orig: sg.Key, dest: sg.Key, prom: boolean) => void; // called after the premove has been set
       unset?: () => void; // called after the premove has been unset
@@ -79,6 +80,7 @@ export interface HeadlessState {
       key: sg.Key;
       prom: boolean;
     };
+    generate?: (piece: sg.Piece, pieces: sg.Pieces) => sg.Key[];
     events: {
       set?: (piece: sg.Piece, key: sg.Key, prom: boolean) => void; // called after the predrop has been set
       unset?: () => void; // called after the predrop has been unset

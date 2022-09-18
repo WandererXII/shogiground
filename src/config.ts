@@ -61,6 +61,7 @@ export interface Config {
     enabled?: boolean; // allow premoves for color that can not move
     showDests?: boolean; // whether to add the pre-dest class on squares
     dests?: sg.Key[]; // premove destinations for the current selection
+    generate?: (key: sg.Key, pieces: sg.Pieces) => sg.Key[]; // function to generate destinations that user can premove to
     events?: {
       set?: (orig: sg.Key, dest: sg.Key, prom: boolean) => void; // called after the premove has been set
       unset?: () => void; // called after the premove has been unset
@@ -70,6 +71,7 @@ export interface Config {
     enabled?: boolean; // allow predrops for color that can not move
     showDests?: boolean; // whether to add the pre-dest class on squares for drops
     dests?: sg.Key[]; // premove destinations for the drop selection
+    generate?: (piece: sg.Piece, pieces: sg.Pieces) => sg.Key[]; // function to generate destinations that user can predrop on
     events?: {
       set?: (piece: sg.Piece, key: sg.Key, prom: boolean) => void; // called after the predrop has been set
       unset?: () => void; // called after the predrop has been unset

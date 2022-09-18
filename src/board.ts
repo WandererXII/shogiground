@@ -1,8 +1,6 @@
 import type { HeadlessState } from './state.js';
 import * as sg from './types.js';
 import { callUserFunction, opposite, samePiece } from './util.js';
-import { premove } from './premove.js';
-import { predrop } from './predrop.js';
 import { removeFromHand } from './hands.js';
 
 export function toggleOrientation(state: HeadlessState): void {
@@ -259,10 +257,10 @@ export function setSelectedPiece(state: HeadlessState, piece: sg.Piece): void {
 export function setPreDests(state: HeadlessState): void {
   state.premovable.dests = state.predroppable.dests = undefined;
 
-  if (state.selected && isPremovable(state, state.selected))
-    state.premovable.dests = premove(state.pieces, state.selected, state.dimensions);
-  else if (state.selectedPiece && isPredroppable(state, state.selectedPiece))
-    state.predroppable.dests = predrop(state.pieces, state.selectedPiece, state.dimensions);
+  if (state.selected && isPremovable(state, state.selected) && state.premovable.generate)
+    state.premovable.dests = state.premovable.generate(state.selected, state.pieces);
+  else if (state.selectedPiece && isPredroppable(state, state.selectedPiece) && state.predroppable.generate)
+    state.predroppable.dests = state.predroppable.generate(state.selectedPiece, state.pieces);
 }
 
 export function unselect(state: HeadlessState): void {
@@ -317,7 +315,12 @@ function isPredroppable(state: HeadlessState, piece: sg.Piece): boolean {
 }
 
 function canPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
-  return orig !== dest && isPremovable(state, orig) && premove(state.pieces, orig, state.dimensions).includes(dest);
+  return (
+    orig !== dest &&
+    isPremovable(state, orig) &&
+    !!state.premovable.generate &&
+    state.premovable.generate(orig, state.pieces).includes(dest)
+  );
 }
 
 function canPredrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
@@ -325,7 +328,8 @@ function canPredrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolea
   return (
     isPredroppable(state, piece) &&
     (!destPiece || destPiece.color !== state.activeColor) &&
-    predrop(state.pieces, piece, state.dimensions).includes(dest)
+    !!state.predroppable.generate &&
+    state.predroppable.generate(piece, state.pieces).includes(dest)
   );
 }
 
