@@ -100,7 +100,7 @@ export function pieceNameOf(piece: sg.Piece): sg.PieceName {
 export function parsePieceName(pieceName: sg.PieceName): sg.Piece {
   const splitted = pieceName.split(' '),
     color = splitted[0] as sg.Color,
-    role = splitted[1] as sg.Role;
+    role = splitted[1] as sg.RoleString;
   return { color, role };
 }
 
@@ -150,7 +150,7 @@ export function getKeyAtDomPos(
 
 export function getHandPieceAtDomPos(
   pos: sg.NumberPair,
-  roles: sg.Role[],
+  roles: sg.RoleString[],
   bounds: Map<sg.PieceName, DOMRect>
 ): sg.Piece | undefined {
   for (const color of sg.colors) {

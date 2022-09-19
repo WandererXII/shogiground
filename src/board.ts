@@ -202,7 +202,7 @@ export function promotionDialogMove(state: HeadlessState, orig: sg.Key, dest: sg
 
 function promotePiece(s: HeadlessState, piece: sg.Piece): sg.Piece | undefined {
   const promRole = s.promotion.promotesTo(piece.role);
-  return promRole && { color: piece.color, role: promRole };
+  return promRole !== undefined ? { color: piece.color, role: promRole } : undefined;
 }
 
 export function deletePiece(state: HeadlessState, key: sg.Key): void {

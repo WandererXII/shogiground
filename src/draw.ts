@@ -27,7 +27,7 @@ export interface SquareHighlight {
 }
 
 export interface DrawShapePiece {
-  role: sg.Role;
+  role: sg.RoleString;
   color: sg.Color;
   scale?: number;
 }

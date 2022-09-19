@@ -6,7 +6,7 @@ import {
   SquareNode,
   Color,
   PieceNode,
-  Role,
+  RoleString,
   HandElements,
   BoardElements,
 } from './types.js';
@@ -196,7 +196,7 @@ function renderSquares(dims: Dimensions, orientation: Color): HTMLElement {
   return squares;
 }
 
-function renderHand(color: Color, roles: Role[]): HTMLElement {
+function renderHand(color: Color, roles: RoleString[]): HTMLElement {
   const hand = createEl('sg-hand');
   for (const role of roles) {
     const piece = { role: role, color: color },

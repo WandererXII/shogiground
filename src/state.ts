@@ -37,7 +37,7 @@ export interface HeadlessState {
   hands: {
     inlined: boolean; // attaches sg-hands directly to sg-wrap, ignores HTMLElements passed to Shogiground
     handMap: sg.Hands;
-    roles: sg.Role[]; // roles to render in sg-hand
+    roles: sg.RoleString[]; // roles to render in sg-hand
   };
   movable: {
     free: boolean; // all moves are valid - board editor
@@ -101,7 +101,7 @@ export interface HeadlessState {
     deleteOnTouch: boolean; // selecting a piece on the board or in hand will remove it - board editor
   };
   promotion: {
-    promotesTo: (role: sg.Role) => sg.Role | undefined;
+    promotesTo: (role: sg.RoleString) => sg.RoleString | undefined;
     movePromotionDialog: (orig: sg.Key, dest: sg.Key) => boolean;
     forceMovePromotion: (orig: sg.Key, dest: sg.Key) => boolean;
     dropPromotionDialog: (piece: sg.Piece, key: sg.Key) => boolean;
@@ -118,6 +118,10 @@ export interface HeadlessState {
       cancel?: () => void; // called after user cancels the selection
     };
     prevPromotionHash: string;
+  };
+  forsyth: {
+    toForsyth?: (role: sg.RoleString) => string | undefined;
+    fromForsyth?: (str: string) => sg.RoleString | undefined;
   };
   events: {
     change?: () => void; // called after the situation changes on the board
@@ -210,6 +214,7 @@ export function defaults(): HeadlessState {
       events: {},
       prevPromotionHash: '',
     },
+    forsyth: {},
     events: {},
     drawable: {
       enabled: true, // can draw

@@ -3,7 +3,7 @@ import type { DrawShape, SquareHighlight } from './draw.js';
 import * as sg from './types.js';
 import * as board from './board.js';
 import { addToHand, removeFromHand } from './hands.js';
-import { inferDimensions, writeBoard, writeHands } from './sfen.js';
+import { inferDimensions, boardToSfen, handsToSfen } from './sfen.js';
 import { applyAnimation, Config, configure } from './config.js';
 import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
@@ -135,9 +135,9 @@ export function start(state: State): Api {
 
     state,
 
-    getBoardSfen: () => writeBoard(state.pieces, state.dimensions),
+    getBoardSfen: () => boardToSfen(state.pieces, state.dimensions, state.forsyth.toForsyth),
 
-    getHandsSfen: () => writeHands(state.hands.handMap, state.hands.roles),
+    getHandsSfen: () => handsToSfen(state.hands.handMap, state.hands.roles, state.forsyth.toForsyth),
 
     toggleOrientation(): void {
       board.toggleOrientation(state);

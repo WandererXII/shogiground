@@ -2,7 +2,7 @@ import type { HeadlessState } from './state.js';
 import type { DrawShape, SquareHighlight } from './draw.js';
 import * as sg from './types.js';
 import { setCheck, setPreDests } from './board.js';
-import { inferDimensions, readBoard as sfenRead, readHands } from './sfen.js';
+import { inferDimensions, sfenToBoard, sfenToHands } from './sfen.js';
 
 export interface Config {
   sfen?: {
@@ -38,7 +38,7 @@ export interface Config {
   };
   hands?: {
     inlined?: boolean; // attaches sg-hands directly to sg-wrap, ignores HTMLElements passed to Shogiground
-    roles?: sg.Role[]; // roles to render in sg-hand
+    roles?: sg.RoleString[]; // roles to render in sg-hand
   };
   movable?: {
     free?: boolean; // all moves are valid - board editor
@@ -107,8 +107,12 @@ export interface Config {
     squares?: SquareHighlight[];
     onChange?: (shapes: DrawShape[]) => void; // called after drawable shapes change
   };
+  forsyth?: {
+    toForsyth?: (role: sg.RoleString) => string | undefined;
+    fromForsyth?: (str: string) => sg.RoleString | undefined;
+  };
   promotion?: {
-    promotesTo?: (role: sg.Role) => sg.Role | undefined;
+    promotesTo?: (role: sg.RoleString) => sg.RoleString | undefined;
     movePromotionDialog?: (orig: sg.Key, dest: sg.Key) => boolean; // activate promotion dialog
     forceMovePromotion?: (orig: sg.Key, dest: sg.Key) => boolean; // auto promote after move
     dropPromotionDialog?: (piece: sg.Piece, key: sg.Key) => boolean; // activate promotion dialog
@@ -143,12 +147,12 @@ export function configure(state: HeadlessState, config: Config): void {
   // if a sfen was provided, replace the pieces, except the currently dragged one
   if (config.sfen?.board) {
     state.dimensions = inferDimensions(config.sfen.board);
-    state.pieces = sfenRead(config.sfen.board, state.dimensions);
+    state.pieces = sfenToBoard(config.sfen.board, state.dimensions, state.forsyth.fromForsyth);
     state.drawable.shapes = config.drawable?.shapes || [];
   }
 
   if (config.sfen?.hands) {
-    state.hands.handMap = readHands(config.sfen.hands);
+    state.hands.handMap = sfenToHands(config.sfen.hands, state.forsyth.fromForsyth);
   }
 
   // apply config values that could be undefined yet meaningful
