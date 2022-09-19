@@ -49,7 +49,7 @@ export interface HeadlessState {
   };
   droppable: {
     free: boolean; // all drops are valid - board editor
-    dests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
+    dests?: sg.DropDests; // valid drops. {"sente pawn" ["3a" "4a"] "sente lance" ["3a" "3c"]}
     showDests: boolean; // whether to add the dest class on squares
     spare: boolean; // whether to remove dropped piece from hand after drop - board editor
     events: {

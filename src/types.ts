@@ -26,7 +26,7 @@ export type NumberPair = [number, number];
 export type NumberQuad = [number, number, number, number];
 
 export type Dests = Map<Key, Key[]>;
-export type DropDests = Map<RoleString, Key[]>;
+export type DropDests = Map<PieceName, Key[]>;
 
 export interface WrapElements {
   board?: HTMLElement;

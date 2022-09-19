@@ -1,6 +1,6 @@
 import type { HeadlessState } from './state.js';
 import * as sg from './types.js';
-import { callUserFunction, opposite, samePiece } from './util.js';
+import { callUserFunction, opposite, pieceNameOf, samePiece } from './util.js';
 import { removeFromHand } from './hands.js';
 
 export function toggleOrientation(state: HeadlessState): void {
@@ -292,7 +292,7 @@ export function canMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boole
 export function canDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   return (
     isDroppable(state, piece) &&
-    (state.droppable.free || state.droppable.spare || !!state.droppable.dests?.get(piece.role)?.includes(dest))
+    (state.droppable.free || state.droppable.spare || !!state.droppable.dests?.get(pieceNameOf(piece))?.includes(dest))
   );
 }
 

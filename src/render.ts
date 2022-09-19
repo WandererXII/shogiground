@@ -198,7 +198,7 @@ function computeSquareClasses(s: State): SquareClasses {
     }
   } else if (s.selectedPiece) {
     if (s.droppable.showDests) {
-      const dests = s.droppable.dests?.get(s.selectedPiece.role);
+      const dests = s.droppable.dests?.get(pieceNameOf(s.selectedPiece));
       if (dests)
         for (const k of dests) {
           addSquare(squares, k, 'dest');
