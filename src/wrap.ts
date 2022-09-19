@@ -88,7 +88,7 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
     board.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
     board.appendChild(
       renderCoords(
-        ['12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'],
+        ['16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'],
         'files' + orientClass,
         s.dimensions.files
       )
@@ -162,11 +162,28 @@ export function wrapHand(handWrap: HTMLElement, pos: 'top' | 'bottom', s: State)
 function ranksByNotation(notation: Notation): string[] {
   switch (notation) {
     case Notation.JAPANESE:
-      return ['十二', '十一', '十', '九', '八', '七', '六', '五', '四', '三', '二', '一'];
+      return [
+        '十六',
+        '十五',
+        '十四',
+        '十三',
+        '十二',
+        '十一',
+        '十',
+        '九',
+        '八',
+        '七',
+        '六',
+        '五',
+        '四',
+        '三',
+        '二',
+        '一',
+      ];
     case Notation.WESTERN2:
-      return ['l', 'k', 'j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+      return ['p', 'o', 'n', 'm', 'l', 'k', 'j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
     default:
-      return ['12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
+      return ['16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
   }
 }
 

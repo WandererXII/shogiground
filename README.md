@@ -52,9 +52,9 @@ Shogiground is designed to fulfill all lishogi.org web and mobile apps needs, so
 - Premove or predrop by click or drag
 - Animation of pieces: moving and fading away both on board and from hands
 - Display last move, check, move destinations, and premove destinations (hover effects possible)
-- Import and export positions in SFEN notation
+- Import and export positions in SFEN notation, custom sfen parser/renderer
 - User callbacks
-- Supports board dimensions up to 12x12
+- Supports board dimensions up to 16x16
 - No shogi logic inside: can be used for [shogi variants](https://lishogi.org/variant)
 
 ## Installation

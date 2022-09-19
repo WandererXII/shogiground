@@ -6,7 +6,7 @@ import * as sg from './types.js';
 export interface HeadlessState {
   pieces: sg.Pieces;
   orientation: sg.Color; // board orientation. sente | gote
-  dimensions: sg.Dimensions; // board dimensions - max 12x12
+  dimensions: sg.Dimensions; // board dimensions - max 16x16
   turnColor: sg.Color; // turn to play. sente | gote
   activeColor?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
   check?: sg.Key; // square currently in check "5a"

@@ -3,7 +3,7 @@ import * as sg from './types.js';
 // 1a, 2a, 3a ...
 export const allKeys: readonly sg.Key[] = Array.prototype.concat(...sg.ranks.map(r => sg.files.map(f => f + r)));
 
-export const pos2key = (pos: sg.Pos): sg.Key => allKeys[pos[0] + 12 * pos[1]];
+export const pos2key = (pos: sg.Pos): sg.Key => allKeys[pos[0] + 16 * pos[1]];
 
 export const key2pos = (k: sg.Key): sg.Pos => {
   if (k.length > 2) return [k.charCodeAt(1) - 39, k.charCodeAt(2) - 97];
