@@ -1,7 +1,7 @@
 import type { HeadlessState } from './state.js';
 import type { DrawShape, SquareHighlight } from './draw.js';
 import * as sg from './types.js';
-import { setCheck, setPreDests } from './board.js';
+import { setPreDests } from './board.js';
 import { inferDimensions, sfenToBoard, sfenToHands } from './sfen.js';
 
 export interface Config {
@@ -12,7 +12,7 @@ export interface Config {
   orientation?: sg.Color; // board orientation. sente | gote
   turnColor?: sg.Color; // turn to play. sente | gote
   activeColor?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
-  check?: sg.Color | boolean; // true for current color, false to unset
+  checks?: sg.Key[]; // squares currently in check ["5a"]
   lastDests?: sg.Key[]; // squares part of the last move or drop ["3c", "4c"]
   selected?: sg.Key; // square currently selected "1a"
   selectedPiece?: sg.Piece; // piece in hand currently selected
@@ -156,7 +156,6 @@ export function configure(state: HeadlessState, config: Config): void {
   }
 
   // apply config values that could be undefined yet meaningful
-  if ('check' in config) setCheck(state, config.check || false);
   if ('lastDests' in config && !config.lastDests) state.lastDests = undefined;
   // in case of drop last move, there's a single square.
   // if the previous last move had two squares,

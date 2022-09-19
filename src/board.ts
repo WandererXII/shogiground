@@ -29,17 +29,6 @@ export function setPieces(state: HeadlessState, pieces: sg.PiecesDiff): void {
   }
 }
 
-export function setCheck(state: HeadlessState, color: sg.Color | boolean): void {
-  state.check = undefined;
-  if (color === true) color = state.turnColor;
-  if (color)
-    for (const [k, p] of state.pieces) {
-      if (p.role === 'king' && p.color === color) {
-        state.check = k;
-      }
-    }
-}
-
 function setPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom: boolean): void {
   unsetPredrop(state);
   state.premovable.current = { orig, dest, prom };
@@ -76,7 +65,7 @@ export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom:
   state.pieces.set(dest, promPiece || origPiece);
   state.pieces.delete(orig);
   state.lastDests = [orig, dest];
-  state.check = undefined;
+  state.checks = [];
   callUserFunction(state.events.move, orig, dest, prom, captured);
   callUserFunction(state.events.change);
   return captured || true;
@@ -93,7 +82,7 @@ export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, pro
     unselect(state);
   state.pieces.set(key, promPiece || piece);
   state.lastDests = [key];
-  state.check = undefined;
+  state.checks = [];
   if (!state.droppable.spare) removeFromHand(state, piece);
   callUserFunction(state.events.drop, piece, key, prom);
   callUserFunction(state.events.change);
