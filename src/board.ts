@@ -212,7 +212,7 @@ export function selectSquare(state: HeadlessState, key: sg.Key, prom?: boolean, 
       }
     }
   }
-  if (isMovable(state, key) || isPremovable(state, key)) {
+  if ((state.selectable.enabled || state.draggable.enabled) && (isMovable(state, key) || isPremovable(state, key))) {
     setSelected(state, key);
   }
 }
