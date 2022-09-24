@@ -121,10 +121,11 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
   if (!spare && s.selectable.deleteOnTouch) removeFromHand(s, piece);
   else board.selectPiece(s, piece, spare);
 
-  const hadPremove = !!s.premovable.current;
-  const hadPredrop = !!s.predroppable.current;
+  const hadPremove = !!s.premovable.current,
+    hadPredrop = !!s.predroppable.current,
+    stillSelected = s.selectedPiece && util.samePiece(s.selectedPiece, piece);
 
-  if (draggedEl && s.selectedPiece && board.isDraggable(s, piece)) {
+  if (draggedEl && s.selectedPiece && stillSelected && board.isDraggable(s, piece)) {
     s.draggable.current = {
       piece: s.selectedPiece,
       pos: position,
@@ -245,6 +246,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   const eventPos = util.eventPosition(e) || cur.pos,
     bounds = s.dom.bounds.board.bounds(),
     dest = bounds && util.getKeyAtDomPos(eventPos, util.sentePov(s.orientation), s.dimensions, bounds);
+
   if (dest && cur.started && cur.fromBoard?.orig !== dest) {
     if (cur.fromOutside && !board.promotionDialogDrop(s, cur.piece, dest)) board.userDrop(s, cur.piece, dest);
     else if (cur.fromBoard && !board.promotionDialogMove(s, cur.fromBoard.orig, dest))
