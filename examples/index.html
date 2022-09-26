@@ -73,6 +73,12 @@
           drop: () => {
             console.log('drop');
           },
+          pieceUnselect: (p) => {
+            console.log('pieceUnselect', p);
+          },
+          unselect: (s) => {
+            console.log('unselect', s);
+          }
         },
         promotion: {
           promotesTo: role => {

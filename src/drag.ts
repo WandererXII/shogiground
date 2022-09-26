@@ -271,21 +271,30 @@ export function end(s: State, e: sg.MouchEvent): void {
     cur.fromBoard &&
     (cur.fromBoard.orig === cur.fromBoard.previouslySelected || cur.fromBoard.keyHasChanged) &&
     (cur.fromBoard.orig === dest || !dest)
-  )
-    board.unselect(s);
-  else if (
-    cur.fromOutside?.leftOrigin ||
+  ) {
+    unselect(s, cur, dest);
+  } else if (
+    (!dest && cur.fromOutside?.leftOrigin) ||
     (cur.fromOutside?.originBounds &&
       util.isInsideRect(cur.fromOutside.originBounds, cur.pos) &&
       cur.fromOutside.previouslySelectedPiece &&
-      util.samePiece(cur.fromOutside.previouslySelectedPiece as sg.Piece, cur.piece))
-  )
-    board.unselect(s);
-  else if (!s.selectable.enabled && !s.promotion.current) board.unselect(s);
+      util.samePiece(cur.fromOutside.previouslySelectedPiece, cur.piece))
+  ) {
+    unselect(s, cur, dest);
+  } else if (!s.selectable.enabled && !s.promotion.current) {
+    unselect(s, cur, dest);
+  }
 
   s.draggable.current = undefined;
   if (!s.highlight.hovered && !s.promotion.current) s.hovered = undefined;
   redraw(s);
+}
+
+function unselect(s: State, cur: DragCurrent, dest?: sg.Key): void {
+  if (cur.fromBoard && cur.fromBoard.orig === dest) util.callUserFunction(s.events.unselect, cur.fromBoard.orig);
+  else if (cur.fromOutside?.originBounds && util.isInsideRect(cur.fromOutside.originBounds, cur.pos))
+    util.callUserFunction(s.events.pieceUnselect, cur.piece);
+  board.unselect(s);
 }
 
 export function cancel(s: State): void {

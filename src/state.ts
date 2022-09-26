@@ -128,8 +128,10 @@ export interface HeadlessState {
     move?: (orig: sg.Key, dest: sg.Key, prom: boolean, capturedPiece?: sg.Piece) => void;
     drop?: (piece: sg.Piece, key: sg.Key, prom: boolean) => void;
     select?: (key: sg.Key) => void; // called when a square is selected
+    unselect?: (key: sg.Key) => void; // called when a selected square is directly unselected - dropped back or clicked on the original square
     pieceSelect?: (piece: sg.Piece) => void; // called when a piece in hand is selected
-    insert?: (boardElements?: sg.BoardElements, handElements?: sg.HandElements) => void; // when the board (and hands) DOM has been (re)inserted
+    pieceUnselect?: (piece: sg.Piece) => void; // called when a selected piece is directly unselected - dropped back or clicked on the same piece
+    insert?: (boardElements?: sg.BoardElements, handElements?: sg.HandElements) => void; // when the board or hands DOM has been (re)inserted
   };
   drawable: Drawable;
 }

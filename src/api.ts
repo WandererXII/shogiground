@@ -52,7 +52,7 @@ export interface Api {
   selectSquare(key: sg.Key | null, prom?: boolean, force?: boolean): void;
 
   // select a piece from hand to drop programatically, by default piece in hand is selected
-  selectPiece(piece: sg.Piece | null, spare?: boolean): void;
+  selectPiece(piece: sg.Piece | null, spare?: boolean, force?: boolean): void;
 
   // play the current premove, if any; returns true if premove was played
   playPremove(): boolean;
@@ -175,8 +175,8 @@ export function start(state: State): Api {
       }
     },
 
-    selectPiece(piece, spare): void {
-      if (piece) render(state => board.selectPiece(state, piece, spare), state);
+    selectPiece(piece, spare, force): void {
+      if (piece) render(state => board.selectPiece(state, piece, spare, force), state);
       else if (state.selectedPiece) {
         board.unselect(state);
         redraw(state);

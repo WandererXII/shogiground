@@ -200,34 +200,43 @@ export function deletePiece(state: HeadlessState, key: sg.Key): void {
 
 export function selectSquare(state: HeadlessState, key: sg.Key, prom?: boolean, force?: boolean): void {
   callUserFunction(state.events.select, key);
-  if ((state.selectable.enabled || force) && state.selectedPiece) {
-    if (userDrop(state, state.selectedPiece, key, prom)) return;
-  } else if (state.selected) {
-    if (state.selected === key && !state.draggable.enabled) {
-      unselect(state);
-      return;
-    } else if ((state.selectable.enabled || force) && state.selected !== key) {
-      if (userMove(state, state.selected, key, prom)) {
-        return;
-      }
-    }
+
+  // unselect if selecting selected key, keep selected for drag
+  if (!state.draggable.enabled && state.selected === key) {
+    callUserFunction(state.events.unselect, key);
+    unselect(state);
+    return;
   }
-  if ((state.selectable.enabled || state.draggable.enabled) && (isMovable(state, key) || isPremovable(state, key))) {
+
+  // try moving/dropping
+  if (state.selectable.enabled || force) {
+    if (state.selectedPiece && userDrop(state, state.selectedPiece, key, prom)) return;
+    else if (state.selected && userMove(state, state.selected, key, prom)) return;
+  }
+
+  if (
+    (state.selectable.enabled || state.draggable.enabled || force) &&
+    (isMovable(state, key) || isPremovable(state, key))
+  ) {
     setSelected(state, key);
   }
 }
 
-export function selectPiece(state: HeadlessState, piece: sg.Piece, spare?: boolean): void {
+export function selectPiece(state: HeadlessState, piece: sg.Piece, spare?: boolean, force?: boolean): void {
   callUserFunction(state.events.pieceSelect, piece);
 
-  if (
-    (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) ||
-    (!spare && !state.hands.handMap.get(piece.color)?.get(piece.role))
-  )
+  // unselect if selecting the selected piece, keep selected for drag
+  if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) {
+    callUserFunction(state.events.pieceUnselect, piece);
     unselect(state);
-  else if (isDroppable(state, piece) || isPredroppable(state, piece)) {
+  } else if (
+    (state.selectable.enabled || state.draggable.enabled || force) &&
+    (isDroppable(state, piece) || isPredroppable(state, piece))
+  ) {
     setSelectedPiece(state, piece);
     state.droppable.spare = !!spare;
+  } else {
+    unselect(state);
   }
 }
 
@@ -269,7 +278,10 @@ function isMovable(state: HeadlessState, orig: sg.Key): boolean {
 }
 
 function isDroppable(state: HeadlessState, piece: sg.Piece): boolean {
-  return state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color);
+  return (
+    !!state.hands.handMap.get(piece.color)?.get(piece.role) &&
+    (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color))
+  );
 }
 
 export function canMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
@@ -300,7 +312,12 @@ function isPremovable(state: HeadlessState, orig: sg.Key): boolean {
 }
 
 function isPredroppable(state: HeadlessState, piece: sg.Piece): boolean {
-  return state.predroppable.enabled && state.activeColor === piece.color && state.turnColor !== piece.color;
+  return (
+    !!state.hands.handMap.get(piece.color)?.get(piece.role) &&
+    state.predroppable.enabled &&
+    state.activeColor === piece.color &&
+    state.turnColor !== piece.color
+  );
 }
 
 function canPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
