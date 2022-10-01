@@ -131,10 +131,10 @@ export const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '
 export const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'] as const;
 
 export const enum Notation {
-  WESTERN,
-  KAWASAKI,
+  NUMERIC,
   JAPANESE,
-  WESTERN2,
+  ENGINE,
+  SEPT,
 }
 
 export type Dimensions = {

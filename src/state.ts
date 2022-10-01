@@ -154,7 +154,7 @@ export function defaults(): HeadlessState {
     scaleDownPieces: true,
     coordinates: {
       enabled: true,
-      notation: sg.Notation.WESTERN,
+      notation: sg.Notation.NUMERIC,
     },
     highlight: {
       lastDests: true,
