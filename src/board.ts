@@ -231,7 +231,7 @@ export function selectPiece(state: HeadlessState, piece: sg.Piece, spare?: boole
     unselect(state);
   } else if (
     (state.selectable.enabled || state.draggable.enabled || force) &&
-    (isDroppable(state, piece) || isPredroppable(state, piece))
+    (isDroppable(state, piece, !!spare) || isPredroppable(state, piece))
   ) {
     setSelectedPiece(state, piece);
     state.droppable.spare = !!spare;
@@ -277,9 +277,9 @@ function isMovable(state: HeadlessState, orig: sg.Key): boolean {
   );
 }
 
-function isDroppable(state: HeadlessState, piece: sg.Piece): boolean {
+function isDroppable(state: HeadlessState, piece: sg.Piece, spare: boolean): boolean {
   return (
-    !!state.hands.handMap.get(piece.color)?.get(piece.role) &&
+    (spare || !!state.hands.handMap.get(piece.color)?.get(piece.role)) &&
     (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color))
   );
 }
@@ -292,7 +292,7 @@ export function canMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boole
 
 export function canDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   return (
-    isDroppable(state, piece) &&
+    isDroppable(state, piece, state.droppable.spare) &&
     (state.droppable.free || state.droppable.spare || !!state.droppable.dests?.get(pieceNameOf(piece))?.includes(dest))
   );
 }
