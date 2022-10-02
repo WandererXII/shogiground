@@ -134,7 +134,7 @@ export const enum Notation {
   NUMERIC,
   JAPANESE,
   ENGINE,
-  SEPT,
+  HEX,
 }
 
 export type Dimensions = {

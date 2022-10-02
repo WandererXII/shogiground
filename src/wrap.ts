@@ -182,8 +182,8 @@ function ranksByNotation(notation: Notation): string[] {
       ];
     case Notation.ENGINE:
       return ['p', 'o', 'n', 'm', 'l', 'k', 'j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
-    case Notation.SEPT:
-      return ['g', 'f', 'e', 'd', 'c', 'b', 'a', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
+    case Notation.HEX:
+      return ['10', 'f', 'e', 'd', 'c', 'b', 'a', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
     default:
       return ['16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
   }
