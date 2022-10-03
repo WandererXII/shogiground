@@ -83,16 +83,11 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   }
 
   if (s.coordinates.enabled) {
-    const orientClass = s.orientation === 'gote' ? ' gote' : '';
-    const ranks = ranksByNotation(s.coordinates.notation);
+    const orientClass = s.orientation === 'gote' ? ' gote' : '',
+      ranks = ranksByNotation(s.coordinates.notation),
+      files = filesByNotation(s.coordinates.notation);
     board.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
-    board.appendChild(
-      renderCoords(
-        ['16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'],
-        'files' + orientClass,
-        s.dimensions.files
-      )
-    );
+    board.appendChild(renderCoords(files, 'files' + orientClass, s.dimensions.files));
   }
 
   boardWrap.innerHTML = '';
@@ -157,6 +152,15 @@ export function wrapHand(handWrap: HTMLElement, pos: 'top' | 'bottom', s: State)
   handWrap.classList.toggle('manipulable', !s.viewOnly);
 
   return hand;
+}
+
+function filesByNotation(notation: Notation): string[] {
+  switch (notation) {
+    case Notation.HEX:
+      return ['10', 'f', 'e', 'd', 'c', 'b', 'a', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
+    default:
+      return ['16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
+  }
 }
 
 function ranksByNotation(notation: Notation): string[] {
