@@ -21,7 +21,8 @@ export interface HeadlessState {
   scaleDownPieces: boolean;
   coordinates: {
     enabled: boolean; // include coords attributes
-    notation: sg.Notation;
+    files: sg.Notation;
+    ranks: sg.Notation;
   };
   highlight: {
     lastDests: boolean; // add last-dest class to squares
@@ -154,7 +155,8 @@ export function defaults(): HeadlessState {
     scaleDownPieces: true,
     coordinates: {
       enabled: true,
-      notation: sg.Notation.NUMERIC,
+      files: sg.Notation.NUMERIC,
+      ranks: sg.Notation.NUMERIC,
     },
     highlight: {
       lastDests: true,

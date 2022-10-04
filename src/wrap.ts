@@ -84,8 +84,8 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
 
   if (s.coordinates.enabled) {
     const orientClass = s.orientation === 'gote' ? ' gote' : '',
-      ranks = ranksByNotation(s.coordinates.notation),
-      files = filesByNotation(s.coordinates.notation);
+      ranks = coordsByNotation(s.coordinates.ranks),
+      files = coordsByNotation(s.coordinates.files);
     board.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
     board.appendChild(renderCoords(files, 'files' + orientClass, s.dimensions.files));
   }
@@ -154,16 +154,7 @@ export function wrapHand(handWrap: HTMLElement, pos: 'top' | 'bottom', s: State)
   return hand;
 }
 
-function filesByNotation(notation: Notation): string[] {
-  switch (notation) {
-    case Notation.HEX:
-      return ['10', 'f', 'e', 'd', 'c', 'b', 'a', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
-    default:
-      return ['16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
-  }
-}
-
-function ranksByNotation(notation: Notation): string[] {
+function coordsByNotation(notation: Notation): string[] {
   switch (notation) {
     case Notation.JAPANESE:
       return [
