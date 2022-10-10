@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="assets/css/base.css" />
     <link rel="stylesheet" href="assets/css/shogiground.css" />
     <link rel="stylesheet" href="assets/css/d5x5.css" />
-    <link rel="stylesheet" href="assets/css/themes/bird.css" />
+    <link rel="stylesheet" href="assets/css/themes/wood-grid.css" />
     <link rel="stylesheet" href="assets/css/pieces/ryoko.css" />
   </head>
 
@@ -104,13 +104,9 @@
       function pieceSVG() {
         const shape = {
           orig: '5e',
-          dest: '5e',
-          brush: 'green',
-          piece: {
-            role: 'horse',
-            color: 'sente',
-            scale: 0.5,
-          },
+          dest: '7e',
+          brush: 'primary',
+          description: '+'
         };
         ground.setAutoShapes([shape]);
         ground.setSquareHighlights([{ key: '5e', className: 'orange' }]);

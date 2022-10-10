@@ -1061,7 +1061,7 @@ var Shogiground = (function () {
         const shapesEl = svg.querySelector('g');
         const customSvgsEl = customSvg.querySelector('g');
         syncDefs(shapes, outsideArrow ? curD : undefined, defsEl);
-        syncShapes(shapes.filter(s => !s.shape.customSvg && (!s.shape.piece || s.current)), shapesEl, shape => renderSVGShape(state, shape, arrowDests), outsideArrow);
+        syncShapes(shapes.filter(s => !s.shape.customSvg && (!s.shape.piece || s.current)), shapesEl, shape => renderSVGShape(state, shape, arrowDests), shape => renderDescription(state, shape, arrowDests), outsideArrow);
         syncShapes(shapes.filter(s => s.shape.customSvg), customSvgsEl, shape => renderSVGShape(state, shape, arrowDests));
         syncShapes(pieceShapes, freePieces, shape => renderPiece(state, shape));
         if (!outsideArrow && curD)
@@ -1097,7 +1097,7 @@ var Shogiground = (function () {
         }
     }
     // append and remove only. No updates.
-    function syncShapes(shapes, root, renderShape, outsideArrow) {
+    function syncShapes(shapes, root, renderShape, renderDesc, outsideArrow) {
         const hashesInDom = new Map(), // by hash
         toRemove = [];
         for (const sc of shapes)
@@ -1124,10 +1124,13 @@ var Shogiground = (function () {
                 const shapeEl = renderShape(sc);
                 if (shapeEl)
                     root.appendChild(shapeEl);
+                const descEl = sc.shape.description && renderDesc && renderDesc(sc);
+                if (descEl)
+                    root.appendChild(descEl);
             }
         }
     }
-    function shapeHash({ orig, dest, brush, piece, customSvg }, arrowDests, current, boundHash) {
+    function shapeHash({ orig, dest, brush, piece, customSvg, description }, arrowDests, current, boundHash) {
         return [
             current,
             (isPiece(orig) || isPiece(dest)) && boundHash(),
@@ -1137,6 +1140,7 @@ var Shogiground = (function () {
             (arrowDests.get(isPiece(dest) ? pieceNameOf(dest) : dest) || 0) > 1,
             piece && pieceHash(piece),
             customSvg && customSvgHash(customSvg),
+            description,
         ]
             .filter(x => x)
             .join(',');
@@ -1151,6 +1155,28 @@ var Shogiground = (function () {
             h = ((h << 5) - h + s.charCodeAt(i)) >>> 0;
         }
         return 'custom-' + h.toString();
+    }
+    function renderDescription(state, { shape, hash }, arrowDests) {
+        const orig = pieceOrKeyToPos(shape.orig, state);
+        if (!orig || !shape.description)
+            return;
+        const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state), diff = dest ? [dest[0] - orig[0], dest[1] - orig[1]] : [0, 0], offset = (arrowDests.get(isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest) || 0) > 1 ? 0.3 : 0.15, close = (diff[0] === 0 || Math.abs(diff[0]) === state.squareRatio[0]) &&
+            (diff[1] === 0 || Math.abs(diff[1]) === state.squareRatio[1]), ratio = dest ? 0.55 - (close ? offset : 0) : 0, mid = [orig[0] + diff[0] * ratio, orig[1] + diff[1] * ratio], textLength = shape.description.length;
+        const g = setAttributes(createSVGElement('g'), { class: 'description', sgHash: hash }), circle = setAttributes(createSVGElement('ellipse'), {
+            cx: mid[0],
+            cy: mid[1],
+            rx: textLength + 1.5,
+            ry: 2.5,
+        }), text = setAttributes(createSVGElement('text'), {
+            x: mid[0],
+            y: mid[1],
+            'text-anchor': 'middle',
+            'dominant-baseline': 'central',
+        });
+        g.appendChild(circle);
+        text.appendChild(document.createTextNode(shape.description));
+        g.appendChild(text);
+        return g;
     }
     function renderSVGShape(state, { shape, current, hash }, arrowDests) {
         const orig = pieceOrKeyToPos(shape.orig, state);
@@ -1926,7 +1952,7 @@ var Shogiground = (function () {
             board.appendChild(freePieces);
         }
         if (s.coordinates.enabled) {
-            const orientClass = s.orientation === 'gote' ? ' gote' : '', ranks = ranksByNotation(s.coordinates.notation), files = filesByNotation(s.coordinates.notation);
+            const orientClass = s.orientation === 'gote' ? ' gote' : '', ranks = coordsByNotation(s.coordinates.ranks), files = coordsByNotation(s.coordinates.files);
             board.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
             board.appendChild(renderCoords(files, 'files' + orientClass, s.dimensions.files));
         }
@@ -1983,15 +2009,7 @@ var Shogiground = (function () {
         handWrap.classList.toggle('manipulable', !s.viewOnly);
         return hand;
     }
-    function filesByNotation(notation) {
-        switch (notation) {
-            case 3 /* Notation.HEX */:
-                return ['10', 'f', 'e', 'd', 'c', 'b', 'a', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
-            default:
-                return ['16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
-        }
-    }
-    function ranksByNotation(notation) {
+    function coordsByNotation(notation) {
         switch (notation) {
             case 1 /* Notation.JAPANESE */:
                 return [
@@ -2432,7 +2450,8 @@ var Shogiground = (function () {
             scaleDownPieces: true,
             coordinates: {
                 enabled: true,
-                notation: 0 /* sg.Notation.NUMERIC */,
+                files: 0 /* sg.Notation.NUMERIC */,
+                ranks: 0 /* sg.Notation.NUMERIC */,
             },
             highlight: {
                 lastDests: true,

@@ -18,6 +18,7 @@ export interface DrawShape {
   dest: sg.Key | sg.Piece;
   piece?: DrawShapePiece;
   customSvg?: string; // svg
+  description?: string;
   brush: string; // css class to be appended
 }
 

@@ -23,16 +23,6 @@
   background-color: black;
 }
 
-.sg-wrap .sg-shapes ellipse.primary {
-  stroke: #f08a04;
-}
-.sg-wrap .sg-shapes line.primary {
-  stroke: #f08a04;
-}
-.sg-wrap .sg-shapes marker#arrowhead-primary path {
-  fill: #f08a04;
-}
-
 sg-squares sq.orange {
   background-color: rgba(185, 129, 25, 0.5);
 }
