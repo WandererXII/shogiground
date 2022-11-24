@@ -42,7 +42,7 @@ export interface HeadlessState {
   };
   movable: {
     free: boolean; // all moves are valid - board editor
-    dests?: sg.Dests; // valid moves. {"7g" ["7f"] "5i" ["4h" "5h" "6h"]}
+    dests?: sg.MoveDests; // valid moves. {"7g" ["7f"] "5i" ["4h" "5h" "6h"]}
     showDests: boolean; // whether to add the dest class on squares
     events: {
       after?: (orig: sg.Key, dest: sg.Key, prom: boolean, metadata: sg.MoveMetadata) => void; // called after the move has been played

@@ -43,7 +43,7 @@ export interface Config {
   };
   movable?: {
     free?: boolean; // all moves are valid - board editor
-    dests?: sg.Dests; // valid moves. {"2a" ["3a" "4a"] "1b" ["3a" "3c"]}
+    dests?: sg.MoveDests; // valid moves. {"2a" ["3a" "4a"] "1b" ["3a" "3c"]}
     showDests?: boolean; // whether to add the dest class on squares
     events?: {
       after?: (orig: sg.Key, dest: sg.Key, prom: boolean, metadata: sg.MoveMetadata) => void; // called after the move has been played
