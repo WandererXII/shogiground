@@ -50,15 +50,15 @@
           addToHandOnDropOff: false,
         },
         selectable: {
-          enabled: true
+          enabled: true,
         },
         movable: {
           free: false,
-          dests: new Map([['3g', ['3g', '3f']]])
+          dests: new Map([['3g', ['3g', '3f']]]),
         },
         droppable: {
           free: false,
-          dests: new Map([['sente bishop', ['5e']]])
+          dests: new Map([['sente bishop', ['5e']]]),
         },
         promotion: {
           promotesTo: role => {
@@ -71,19 +71,19 @@
           },
         },
         events: {
-          select: (s) => {
-            console.log("SELECT", s, sg.state.selected);
+          select: s => {
+            console.log('SELECT', s, sg.state.selected);
           },
           move: (a, b) => {
             console.log('MOVE', a, b);
           },
-          pieceUnselect: (p) => {
+          pieceUnselect: p => {
             console.log('pieceUnselect', p);
           },
-          unselect: (s) => {
+          unselect: s => {
             console.log('unselect', s);
-          }
-        }
+          },
+        },
       };
       console.log('STATUS:', ' drag:', config.draggable.enabled, ' select: ', config.selectable.enabled);
       sg.set(config);
@@ -100,7 +100,7 @@
           top: document.getElementById('hand-top'),
         },
       });
-     sg.selectSquare('3g')
+      sg.selectSquare('3g');
       function flip() {
         sg.toggleOrientation();
       }

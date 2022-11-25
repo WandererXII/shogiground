@@ -73,12 +73,12 @@
           drop: () => {
             console.log('drop');
           },
-          pieceUnselect: (p) => {
+          pieceUnselect: p => {
             console.log('pieceUnselect', p);
           },
-          unselect: (s) => {
+          unselect: s => {
             console.log('unselect', s);
-          }
+          },
         },
         promotion: {
           promotesTo: role => {
@@ -106,7 +106,7 @@
           orig: '5e',
           dest: '7e',
           brush: 'primary',
-          description: '+'
+          description: '+',
         };
         ground.setAutoShapes([shape]);
         ground.setSquareHighlights([{ key: '5e', className: 'orange' }]);
