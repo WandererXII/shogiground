@@ -1,5 +1,4 @@
 export type Color = typeof colors[number];
-export type Role = typeof roles[number];
 export type Key = `${File}${Rank}`;
 export type File = typeof files[number];
 export type Rank = typeof ranks[number];
@@ -7,15 +6,16 @@ export type BoardSfen = string;
 export type HandsSfen = string;
 // coordinate system starts at top right
 export type Pos = [number, number];
+export type RoleString = string;
 export interface Piece {
-  role: Role;
+  role: RoleString;
   color: Color;
 }
-export type PieceName = `${Color} ${Role}`;
+export type PieceName = `${Color} ${RoleString}`;
 export type Pieces = Map<Key, Piece>;
 
 export type Hands = Map<Color, Hand>;
-export type Hand = Map<Role, number>;
+export type Hand = Map<RoleString, number>;
 
 export type PiecesDiff = Map<Key, Piece | undefined>;
 
@@ -25,8 +25,8 @@ export type NumberPair = [number, number];
 
 export type NumberQuad = [number, number, number, number];
 
-export type Dests = Map<Key, Key[]>;
-export type DropDests = Map<Role, Key[]>;
+export type MoveDests = Map<Key, Key[]>;
+export type DropDests = Map<PieceName, Key[]>;
 
 export interface WrapElements {
   board?: HTMLElement;
@@ -97,7 +97,7 @@ export interface KeyedNode extends HTMLElement {
 }
 export interface PieceNode extends KeyedNode {
   tagName: 'PIECE';
-  sgRole: Role;
+  sgRole: RoleString;
   sgColor: Color;
   sgAnimating?: boolean;
   sgFading?: boolean;
@@ -127,30 +127,14 @@ export type Milliseconds = number;
 export type KHz = number;
 
 export const colors = ['sente', 'gote'] as const;
-export const roles = [
-  'king',
-  'rook',
-  'bishop',
-  'gold',
-  'silver',
-  'knight',
-  'lance',
-  'pawn',
-  'dragon',
-  'horse',
-  'promotedsilver',
-  'promotedknight',
-  'promotedlance',
-  'tokin',
-] as const;
-export const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'] as const;
-export const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'] as const;
+export const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'] as const;
+export const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'] as const;
 
 export const enum Notation {
-  WESTERN,
-  KAWASAKI,
+  NUMERIC,
   JAPANESE,
-  WESTERN2,
+  ENGINE,
+  HEX,
 }
 
 export type Dimensions = {

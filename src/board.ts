@@ -1,8 +1,6 @@
 import type { HeadlessState } from './state.js';
 import * as sg from './types.js';
-import { callUserFunction, opposite, samePiece } from './util.js';
-import { premove } from './premove.js';
-import { predrop } from './predrop.js';
+import { callUserFunction, opposite, pieceNameOf, samePiece } from './util.js';
 import { removeFromHand } from './hands.js';
 
 export function toggleOrientation(state: HeadlessState): void {
@@ -29,17 +27,6 @@ export function setPieces(state: HeadlessState, pieces: sg.PiecesDiff): void {
     if (piece) state.pieces.set(key, piece);
     else state.pieces.delete(key);
   }
-}
-
-export function setCheck(state: HeadlessState, color: sg.Color | boolean): void {
-  state.check = undefined;
-  if (color === true) color = state.turnColor;
-  if (color)
-    for (const [k, p] of state.pieces) {
-      if (p.role === 'king' && p.color === color) {
-        state.check = k;
-      }
-    }
 }
 
 function setPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom: boolean): void {
@@ -78,7 +65,7 @@ export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom:
   state.pieces.set(dest, promPiece || origPiece);
   state.pieces.delete(orig);
   state.lastDests = [orig, dest];
-  state.check = undefined;
+  state.checks = [];
   callUserFunction(state.events.move, orig, dest, prom, captured);
   callUserFunction(state.events.change);
   return captured || true;
@@ -95,7 +82,7 @@ export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, pro
     unselect(state);
   state.pieces.set(key, promPiece || piece);
   state.lastDests = [key];
-  state.check = undefined;
+  state.checks = [];
   if (!state.droppable.spare) removeFromHand(state, piece);
   callUserFunction(state.events.drop, piece, key, prom);
   callUserFunction(state.events.change);
@@ -204,7 +191,7 @@ export function promotionDialogMove(state: HeadlessState, orig: sg.Key, dest: sg
 
 function promotePiece(s: HeadlessState, piece: sg.Piece): sg.Piece | undefined {
   const promRole = s.promotion.promotesTo(piece.role);
-  return promRole && { color: piece.color, role: promRole };
+  return promRole !== undefined ? { color: piece.color, role: promRole } : undefined;
 }
 
 export function deletePiece(state: HeadlessState, key: sg.Key): void {
@@ -213,34 +200,43 @@ export function deletePiece(state: HeadlessState, key: sg.Key): void {
 
 export function selectSquare(state: HeadlessState, key: sg.Key, prom?: boolean, force?: boolean): void {
   callUserFunction(state.events.select, key);
-  if ((state.selectable.enabled || force) && state.selectedPiece) {
-    if (userDrop(state, state.selectedPiece, key, prom)) return;
-  } else if (state.selected) {
-    if (state.selected === key && !state.draggable.enabled) {
-      unselect(state);
-      return;
-    } else if ((state.selectable.enabled || force) && state.selected !== key) {
-      if (userMove(state, state.selected, key, prom)) {
-        return;
-      }
-    }
+
+  // unselect if selecting selected key, keep selected for drag
+  if (!state.draggable.enabled && state.selected === key) {
+    callUserFunction(state.events.unselect, key);
+    unselect(state);
+    return;
   }
-  if (isMovable(state, key) || isPremovable(state, key)) {
+
+  // try moving/dropping
+  if (state.selectable.enabled || force) {
+    if (state.selectedPiece && userDrop(state, state.selectedPiece, key, prom)) return;
+    else if (state.selected && userMove(state, state.selected, key, prom)) return;
+  }
+
+  if (
+    (state.selectable.enabled || state.draggable.enabled || force) &&
+    (isMovable(state, key) || isPremovable(state, key))
+  ) {
     setSelected(state, key);
   }
 }
 
-export function selectPiece(state: HeadlessState, piece: sg.Piece, spare?: boolean): void {
+export function selectPiece(state: HeadlessState, piece: sg.Piece, spare?: boolean, force?: boolean): void {
   callUserFunction(state.events.pieceSelect, piece);
 
-  if (
-    (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) ||
-    (!spare && !state.hands.handMap.get(piece.color)?.get(piece.role))
-  )
+  // unselect if selecting the selected piece, keep selected for drag
+  if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) {
+    callUserFunction(state.events.pieceUnselect, piece);
     unselect(state);
-  else if (isDroppable(state, piece) || isPredroppable(state, piece)) {
+  } else if (
+    (state.selectable.enabled || state.draggable.enabled || force) &&
+    (isDroppable(state, piece, !!spare) || isPredroppable(state, piece))
+  ) {
     setSelectedPiece(state, piece);
     state.droppable.spare = !!spare;
+  } else {
+    unselect(state);
   }
 }
 
@@ -259,10 +255,10 @@ export function setSelectedPiece(state: HeadlessState, piece: sg.Piece): void {
 export function setPreDests(state: HeadlessState): void {
   state.premovable.dests = state.predroppable.dests = undefined;
 
-  if (state.selected && isPremovable(state, state.selected))
-    state.premovable.dests = premove(state.pieces, state.selected, state.dimensions);
-  else if (state.selectedPiece && isPredroppable(state, state.selectedPiece))
-    state.predroppable.dests = predrop(state.pieces, state.selectedPiece, state.dimensions);
+  if (state.selected && isPremovable(state, state.selected) && state.premovable.generate)
+    state.premovable.dests = state.premovable.generate(state.selected, state.pieces);
+  else if (state.selectedPiece && isPredroppable(state, state.selectedPiece) && state.predroppable.generate)
+    state.predroppable.dests = state.predroppable.generate(state.selectedPiece, state.pieces);
 }
 
 export function unselect(state: HeadlessState): void {
@@ -281,8 +277,11 @@ function isMovable(state: HeadlessState, orig: sg.Key): boolean {
   );
 }
 
-function isDroppable(state: HeadlessState, piece: sg.Piece): boolean {
-  return state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color);
+function isDroppable(state: HeadlessState, piece: sg.Piece, spare: boolean): boolean {
+  return (
+    (spare || !!state.hands.handMap.get(piece.color)?.get(piece.role)) &&
+    (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color))
+  );
 }
 
 export function canMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
@@ -293,8 +292,8 @@ export function canMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boole
 
 export function canDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   return (
-    isDroppable(state, piece) &&
-    (state.droppable.free || state.droppable.spare || !!state.droppable.dests?.get(piece.role)?.includes(dest))
+    isDroppable(state, piece, state.droppable.spare) &&
+    (state.droppable.free || state.droppable.spare || !!state.droppable.dests?.get(pieceNameOf(piece))?.includes(dest))
   );
 }
 
@@ -313,11 +312,21 @@ function isPremovable(state: HeadlessState, orig: sg.Key): boolean {
 }
 
 function isPredroppable(state: HeadlessState, piece: sg.Piece): boolean {
-  return state.predroppable.enabled && state.activeColor === piece.color && state.turnColor !== piece.color;
+  return (
+    !!state.hands.handMap.get(piece.color)?.get(piece.role) &&
+    state.predroppable.enabled &&
+    state.activeColor === piece.color &&
+    state.turnColor !== piece.color
+  );
 }
 
 function canPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
-  return orig !== dest && isPremovable(state, orig) && premove(state.pieces, orig, state.dimensions).includes(dest);
+  return (
+    orig !== dest &&
+    isPremovable(state, orig) &&
+    !!state.premovable.generate &&
+    state.premovable.generate(orig, state.pieces).includes(dest)
+  );
 }
 
 function canPredrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
@@ -325,7 +334,8 @@ function canPredrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolea
   return (
     isPredroppable(state, piece) &&
     (!destPiece || destPiece.color !== state.activeColor) &&
-    predrop(state.pieces, piece, state.dimensions).includes(dest)
+    !!state.predroppable.generate &&
+    state.predroppable.generate(piece, state.pieces).includes(dest)
   );
 }
 

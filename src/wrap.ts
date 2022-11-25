@@ -6,7 +6,7 @@ import {
   SquareNode,
   Color,
   PieceNode,
-  Role,
+  RoleString,
   HandElements,
   BoardElements,
 } from './types.js';
@@ -83,16 +83,11 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   }
 
   if (s.coordinates.enabled) {
-    const orientClass = s.orientation === 'gote' ? ' gote' : '';
-    const ranks = ranksByNotation(s.coordinates.notation);
+    const orientClass = s.orientation === 'gote' ? ' gote' : '',
+      ranks = coordsByNotation(s.coordinates.ranks),
+      files = coordsByNotation(s.coordinates.files);
     board.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
-    board.appendChild(
-      renderCoords(
-        ['12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'],
-        'files' + orientClass,
-        s.dimensions.files
-      )
-    );
+    board.appendChild(renderCoords(files, 'files' + orientClass, s.dimensions.files));
   }
 
   boardWrap.innerHTML = '';
@@ -159,14 +154,33 @@ export function wrapHand(handWrap: HTMLElement, pos: 'top' | 'bottom', s: State)
   return hand;
 }
 
-function ranksByNotation(notation: Notation): string[] {
+function coordsByNotation(notation: Notation): string[] {
   switch (notation) {
     case Notation.JAPANESE:
-      return ['十二', '十一', '十', '九', '八', '七', '六', '五', '四', '三', '二', '一'];
-    case Notation.WESTERN2:
-      return ['l', 'k', 'j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+      return [
+        '十六',
+        '十五',
+        '十四',
+        '十三',
+        '十二',
+        '十一',
+        '十',
+        '九',
+        '八',
+        '七',
+        '六',
+        '五',
+        '四',
+        '三',
+        '二',
+        '一',
+      ];
+    case Notation.ENGINE:
+      return ['p', 'o', 'n', 'm', 'l', 'k', 'j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+    case Notation.HEX:
+      return ['10', 'f', 'e', 'd', 'c', 'b', 'a', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
     default:
-      return ['12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
+      return ['16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
   }
 }
 
@@ -196,7 +210,7 @@ function renderSquares(dims: Dimensions, orientation: Color): HTMLElement {
   return squares;
 }
 
-function renderHand(color: Color, roles: Role[]): HTMLElement {
+function renderHand(color: Color, roles: RoleString[]): HTMLElement {
   const hand = createEl('sg-hand');
   for (const role of roles) {
     const piece = { role: role, color: color },

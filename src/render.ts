@@ -179,7 +179,7 @@ function appendValue<K, V>(map: Map<K, V[]>, key: K, value: V): void {
 function computeSquareClasses(s: State): SquareClasses {
   const squares: SquareClasses = new Map();
   if (s.lastDests && s.highlight.lastDests) for (const k of s.lastDests) addSquare(squares, k, 'last-dest');
-  if (s.check && s.highlight.check) addSquare(squares, s.check, 'check');
+  for (const check of s.checks) addSquare(squares, check, 'check');
   if (s.hovered) addSquare(squares, s.hovered, 'hover');
   if (s.selected) {
     if (s.activeColor === 'both' || s.activeColor === s.turnColor) addSquare(squares, s.selected, 'selected');
@@ -198,7 +198,7 @@ function computeSquareClasses(s: State): SquareClasses {
     }
   } else if (s.selectedPiece) {
     if (s.droppable.showDests) {
-      const dests = s.droppable.dests?.get(s.selectedPiece.role);
+      const dests = s.droppable.dests?.get(pieceNameOf(s.selectedPiece));
       if (dests)
         for (const k of dests) {
           addSquare(squares, k, 'dest');

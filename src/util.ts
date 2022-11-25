@@ -3,7 +3,7 @@ import * as sg from './types.js';
 // 1a, 2a, 3a ...
 export const allKeys: readonly sg.Key[] = Array.prototype.concat(...sg.ranks.map(r => sg.files.map(f => f + r)));
 
-export const pos2key = (pos: sg.Pos): sg.Key => allKeys[pos[0] + 12 * pos[1]];
+export const pos2key = (pos: sg.Pos): sg.Key => allKeys[pos[0] + 16 * pos[1]];
 
 export const key2pos = (k: sg.Key): sg.Pos => {
   if (k.length > 2) return [k.charCodeAt(1) - 39, k.charCodeAt(2) - 97];
@@ -97,6 +97,13 @@ export function pieceNameOf(piece: sg.Piece): sg.PieceName {
   return `${piece.color} ${piece.role}`;
 }
 
+export function parsePieceName(pieceName: sg.PieceName): sg.Piece {
+  const splitted = pieceName.split(' '),
+    color = splitted[0] as sg.Color,
+    role = splitted[1] as sg.RoleString;
+  return { color, role };
+}
+
 export function computeSquareCenter(
   key: sg.Key,
   asSente: boolean,
@@ -143,7 +150,7 @@ export function getKeyAtDomPos(
 
 export function getHandPieceAtDomPos(
   pos: sg.NumberPair,
-  roles: sg.Role[],
+  roles: sg.RoleString[],
   bounds: Map<sg.PieceName, DOMRect>
 ): sg.Piece | undefined {
   for (const color of sg.colors) {

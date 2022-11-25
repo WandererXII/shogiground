@@ -278,6 +278,13 @@ sg-square-over {
 .sg-wrap .sg-shapes ellipse {
   fill: none;
 }
+.sg-wrap .sg-shapes .description ellipse {
+  fill: #15781b;
+}
+.sg-wrap .sg-shapes .description text {
+  fill: white;
+  font-size: 60%;
+}
 .sg-wrap .sg-shapes line.current {
   opacity: 0.9;
 }

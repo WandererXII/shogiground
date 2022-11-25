@@ -35,10 +35,11 @@
     </div>
     <script src="../dist/shogiground.js"></script>
     <script>
+      const sg = Shogiground();
       const config = {
         sfen: {
-          board: 'lnsgkg1nl/1r5s1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/7R1/LNSGKGSNL b Bb 5',
-          hands: 'B2b',
+          board: 'lnsgkg1nl/1r5s1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/7R1/LNSGKGSNL',
+          hands: 'B2r',
         },
         check: true,
         activeColor: 'sente',
@@ -47,6 +48,17 @@
           enabled: true,
           deleteOnDropOff: false,
           addToHandOnDropOff: false,
+        },
+        selectable: {
+          enabled: true
+        },
+        movable: {
+          free: false,
+          dests: new Map([['3g', ['3g', '3f']]])
+        },
+        droppable: {
+          free: false,
+          dests: new Map([['sente bishop', ['5e']]])
         },
         promotion: {
           promotesTo: role => {
@@ -58,8 +70,23 @@
             if (role === 'lance') return 'promotedLance';
           },
         },
+        events: {
+          select: (s) => {
+            console.log("SELECT", s, sg.state.selected);
+          },
+          move: (a, b) => {
+            console.log('MOVE', a, b);
+          },
+          pieceUnselect: (p) => {
+            console.log('pieceUnselect', p);
+          },
+          unselect: (s) => {
+            console.log('unselect', s);
+          }
+        }
       };
-      const sg = Shogiground(config);
+      console.log('STATUS:', ' drag:', config.draggable.enabled, ' select: ', config.selectable.enabled);
+      sg.set(config);
       sg.attach({
         board: document.getElementById('dirty'),
       });
@@ -73,6 +100,7 @@
           top: document.getElementById('hand-top'),
         },
       });
+     sg.selectSquare('3g')
       function flip() {
         sg.toggleOrientation();
       }

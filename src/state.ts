@@ -6,10 +6,10 @@ import * as sg from './types.js';
 export interface HeadlessState {
   pieces: sg.Pieces;
   orientation: sg.Color; // board orientation. sente | gote
-  dimensions: sg.Dimensions; // board dimensions - max 12x12
+  dimensions: sg.Dimensions; // board dimensions - max 16x16
   turnColor: sg.Color; // turn to play. sente | gote
   activeColor?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
-  check?: sg.Key; // square currently in check "5a"
+  checks: sg.Key[]; // squares currently in check ["5a"]
   lastDests?: sg.Key[]; // squares part of the last move or drop ["2b"; "8h"]
   selected?: sg.Key; // square currently selected "1a"
   selectedPiece?: sg.Piece; // piece in hand currently selected
@@ -21,7 +21,8 @@ export interface HeadlessState {
   scaleDownPieces: boolean;
   coordinates: {
     enabled: boolean; // include coords attributes
-    notation: sg.Notation;
+    files: sg.Notation;
+    ranks: sg.Notation;
   };
   highlight: {
     lastDests: boolean; // add last-dest class to squares
@@ -37,11 +38,11 @@ export interface HeadlessState {
   hands: {
     inlined: boolean; // attaches sg-hands directly to sg-wrap, ignores HTMLElements passed to Shogiground
     handMap: sg.Hands;
-    roles: sg.Role[]; // roles to render in sg-hand
+    roles: sg.RoleString[]; // roles to render in sg-hand
   };
   movable: {
     free: boolean; // all moves are valid - board editor
-    dests?: sg.Dests; // valid moves. {"7g" ["7f"] "5i" ["4h" "5h" "6h"]}
+    dests?: sg.MoveDests; // valid moves. {"7g" ["7f"] "5i" ["4h" "5h" "6h"]}
     showDests: boolean; // whether to add the dest class on squares
     events: {
       after?: (orig: sg.Key, dest: sg.Key, prom: boolean, metadata: sg.MoveMetadata) => void; // called after the move has been played
@@ -49,7 +50,7 @@ export interface HeadlessState {
   };
   droppable: {
     free: boolean; // all drops are valid - board editor
-    dests?: sg.DropDests; // valid drops. {"pawn" ["3a" "4a"] "lance" ["3a" "3c"]}
+    dests?: sg.DropDests; // valid drops. {"sente pawn" ["3a" "4a"] "sente lance" ["3a" "3c"]}
     showDests: boolean; // whether to add the dest class on squares
     spare: boolean; // whether to remove dropped piece from hand after drop - board editor
     events: {
@@ -65,6 +66,7 @@ export interface HeadlessState {
       dest: sg.Key;
       prom: boolean;
     };
+    generate?: (key: sg.Key, pieces: sg.Pieces) => sg.Key[];
     events: {
       set?: (orig: sg.Key, dest: sg.Key, prom: boolean) => void; // called after the premove has been set
       unset?: () => void; // called after the premove has been unset
@@ -79,6 +81,7 @@ export interface HeadlessState {
       key: sg.Key;
       prom: boolean;
     };
+    generate?: (piece: sg.Piece, pieces: sg.Pieces) => sg.Key[];
     events: {
       set?: (piece: sg.Piece, key: sg.Key, prom: boolean) => void; // called after the predrop has been set
       unset?: () => void; // called after the predrop has been unset
@@ -99,7 +102,7 @@ export interface HeadlessState {
     deleteOnTouch: boolean; // selecting a piece on the board or in hand will remove it - board editor
   };
   promotion: {
-    promotesTo: (role: sg.Role) => sg.Role | undefined;
+    promotesTo: (role: sg.RoleString) => sg.RoleString | undefined;
     movePromotionDialog: (orig: sg.Key, dest: sg.Key) => boolean;
     forceMovePromotion: (orig: sg.Key, dest: sg.Key) => boolean;
     dropPromotionDialog: (piece: sg.Piece, key: sg.Key) => boolean;
@@ -117,13 +120,19 @@ export interface HeadlessState {
     };
     prevPromotionHash: string;
   };
+  forsyth: {
+    toForsyth?: (role: sg.RoleString) => string | undefined;
+    fromForsyth?: (str: string) => sg.RoleString | undefined;
+  };
   events: {
     change?: () => void; // called after the situation changes on the board
     move?: (orig: sg.Key, dest: sg.Key, prom: boolean, capturedPiece?: sg.Piece) => void;
     drop?: (piece: sg.Piece, key: sg.Key, prom: boolean) => void;
     select?: (key: sg.Key) => void; // called when a square is selected
+    unselect?: (key: sg.Key) => void; // called when a selected square is directly unselected - dropped back or clicked on the original square
     pieceSelect?: (piece: sg.Piece) => void; // called when a piece in hand is selected
-    insert?: (boardElements?: sg.BoardElements, handElements?: sg.HandElements) => void; // when the board (and hands) DOM has been (re)inserted
+    pieceUnselect?: (piece: sg.Piece) => void; // called when a selected piece is directly unselected - dropped back or clicked on the same piece
+    insert?: (boardElements?: sg.BoardElements, handElements?: sg.HandElements) => void; // when the board or hands DOM has been (re)inserted
   };
   drawable: Drawable;
 }
@@ -138,6 +147,7 @@ export function defaults(): HeadlessState {
     orientation: 'sente',
     turnColor: 'sente',
     activeColor: 'both',
+    checks: [],
     viewOnly: false,
     squareRatio: [11, 12],
     disableContextMenu: true,
@@ -145,7 +155,8 @@ export function defaults(): HeadlessState {
     scaleDownPieces: true,
     coordinates: {
       enabled: true,
-      notation: sg.Notation.WESTERN,
+      files: sg.Notation.NUMERIC,
+      ranks: sg.Notation.NUMERIC,
     },
     highlight: {
       lastDests: true,
@@ -208,6 +219,7 @@ export function defaults(): HeadlessState {
       events: {},
       prevPromotionHash: '',
     },
+    forsyth: {},
     events: {},
     drawable: {
       enabled: true, // can draw

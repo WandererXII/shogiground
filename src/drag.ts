@@ -121,10 +121,11 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
   if (!spare && s.selectable.deleteOnTouch) removeFromHand(s, piece);
   else board.selectPiece(s, piece, spare);
 
-  const hadPremove = !!s.premovable.current;
-  const hadPredrop = !!s.predroppable.current;
+  const hadPremove = !!s.premovable.current,
+    hadPredrop = !!s.predroppable.current,
+    stillSelected = s.selectedPiece && util.samePiece(s.selectedPiece, piece);
 
-  if (draggedEl && s.selectedPiece && board.isDraggable(s, piece)) {
+  if (draggedEl && s.selectedPiece && stillSelected && board.isDraggable(s, piece)) {
     s.draggable.current = {
       piece: s.selectedPiece,
       pos: position,
@@ -245,6 +246,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   const eventPos = util.eventPosition(e) || cur.pos,
     bounds = s.dom.bounds.board.bounds(),
     dest = bounds && util.getKeyAtDomPos(eventPos, util.sentePov(s.orientation), s.dimensions, bounds);
+
   if (dest && cur.started && cur.fromBoard?.orig !== dest) {
     if (cur.fromOutside && !board.promotionDialogDrop(s, cur.piece, dest)) board.userDrop(s, cur.piece, dest);
     else if (cur.fromBoard && !board.promotionDialogMove(s, cur.fromBoard.orig, dest))
@@ -269,21 +271,30 @@ export function end(s: State, e: sg.MouchEvent): void {
     cur.fromBoard &&
     (cur.fromBoard.orig === cur.fromBoard.previouslySelected || cur.fromBoard.keyHasChanged) &&
     (cur.fromBoard.orig === dest || !dest)
-  )
-    board.unselect(s);
-  else if (
-    cur.fromOutside?.leftOrigin ||
+  ) {
+    unselect(s, cur, dest);
+  } else if (
+    (!dest && cur.fromOutside?.leftOrigin) ||
     (cur.fromOutside?.originBounds &&
       util.isInsideRect(cur.fromOutside.originBounds, cur.pos) &&
       cur.fromOutside.previouslySelectedPiece &&
-      util.samePiece(cur.fromOutside.previouslySelectedPiece as sg.Piece, cur.piece))
-  )
-    board.unselect(s);
-  else if (!s.selectable.enabled && !s.promotion.current) board.unselect(s);
+      util.samePiece(cur.fromOutside.previouslySelectedPiece, cur.piece))
+  ) {
+    unselect(s, cur, dest);
+  } else if (!s.selectable.enabled && !s.promotion.current) {
+    unselect(s, cur, dest);
+  }
 
   s.draggable.current = undefined;
   if (!s.highlight.hovered && !s.promotion.current) s.hovered = undefined;
   redraw(s);
+}
+
+function unselect(s: State, cur: DragCurrent, dest?: sg.Key): void {
+  if (cur.fromBoard && cur.fromBoard.orig === dest) util.callUserFunction(s.events.unselect, cur.fromBoard.orig);
+  else if (cur.fromOutside?.originBounds && util.isInsideRect(cur.fromOutside.originBounds, cur.pos))
+    util.callUserFunction(s.events.pieceUnselect, cur.piece);
+  board.unselect(s);
 }
 
 export function cancel(s: State): void {

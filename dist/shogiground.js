@@ -8,12 +8,12 @@ var Shogiground = (function () {
         return el.tagName === 'SQ';
     }
     const colors = ['sente', 'gote'];
-    const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-    const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'];
+    const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'];
+    const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'];
 
     // 1a, 2a, 3a ...
     const allKeys = Array.prototype.concat(...ranks.map(r => files.map(f => f + r)));
-    const pos2key = (pos) => allKeys[pos[0] + 12 * pos[1]];
+    const pos2key = (pos) => allKeys[pos[0] + 16 * pos[1]];
     const key2pos = (k) => {
         if (k.length > 2)
             return [k.charCodeAt(1) - 39, k.charCodeAt(2) - 97];
@@ -131,97 +131,6 @@ var Shogiground = (function () {
         return [xOff, yOff];
     }
 
-    function diff(a, b) {
-        return Math.abs(a - b);
-    }
-    function pawn(color) {
-        return (x1, y1, x2, y2) => (color === 'sente' ? x1 === x2 && y1 - 1 === y2 : x1 === x2 && y1 + 1 === y2);
-    }
-    function knight(color) {
-        return (x1, y1, x2, y2) => diff(x1, x2) === 1 && diff(y1, y2) === 2 && (color === 'sente' ? y2 < y1 : y2 > y1);
-    }
-    const bishop = (x1, y1, x2, y2) => {
-        return diff(x1, x2) === diff(y1, y2);
-    };
-    const rook = (x1, y1, x2, y2) => {
-        return x1 === x2 || y1 === y2;
-    };
-    const king = (x1, y1, x2, y2) => {
-        return diff(x1, x2) < 2 && diff(y1, y2) < 2;
-    };
-    function lance(color) {
-        return (x1, y1, x2, y2) => (color === 'sente' ? x1 === x2 && y2 < y1 : x1 === x2 && y1 < y2);
-    }
-    function silver(color) {
-        return (x1, y1, x2, y2) => diff(x1, x2) < 2 &&
-            diff(y1, y2) < 2 &&
-            y1 !== y2 &&
-            (color === 'sente' ? x1 !== x2 || y2 < y1 : x1 !== x2 || y2 > y1);
-    }
-    function gold(color) {
-        return (x1, y1, x2, y2) => diff(x1, x2) < 2 && diff(y1, y2) < 2 && (color === 'sente' ? y2 <= y1 || x1 === x2 : y2 >= y1 || x1 === x2);
-    }
-    const horse = (x1, y1, x2, y2) => {
-        return king(x1, y1, x2, y2) || bishop(x1, y1, x2, y2);
-    };
-    const dragon = (x1, y1, x2, y2) => {
-        return king(x1, y1, x2, y2) || rook(x1, y1, x2, y2);
-    };
-    const allPos = allKeys.map(key2pos);
-    function premove(pieces, key, dims) {
-        const piece = pieces.get(key);
-        if (!piece)
-            return [];
-        const pos = key2pos(key), r = piece.role, mobility = r === 'pawn'
-            ? pawn(piece.color)
-            : r === 'knight'
-                ? knight(piece.color)
-                : r === 'bishop'
-                    ? bishop
-                    : r === 'rook'
-                        ? rook
-                        : r === 'king'
-                            ? king
-                            : r === 'silver'
-                                ? silver(piece.color)
-                                : r === 'lance'
-                                    ? lance(piece.color)
-                                    : r === 'horse'
-                                        ? horse
-                                        : r === 'dragon'
-                                            ? dragon
-                                            : gold(piece.color);
-        return allPos
-            .filter(pos2 => (pos[0] !== pos2[0] || pos[1] !== pos2[1]) &&
-            mobility(pos[0], pos[1], pos2[0], pos2[1]) &&
-            pos2[0] < dims.files &&
-            pos2[1] < dims.ranks)
-            .map(pos2key);
-    }
-
-    function lastRow(dims, pos, color) {
-        return color === 'sente' ? pos[1] === 0 : pos[1] === dims.ranks - 1;
-    }
-    function lastTwoRows(dims, pos, color) {
-        return lastRow(dims, pos, color) || (color === 'sente' ? pos[1] === 1 : pos[1] === dims.ranks - 2);
-    }
-    function predrop(pieces, dropPiece, dims) {
-        const color = dropPiece.color;
-        const role = dropPiece.role;
-        return allKeys.filter(key => {
-            const p = pieces.get(key);
-            const pos = key2pos(key);
-            return ((!p || p.color !== color) &&
-                pos[0] < dims.files &&
-                pos[1] < dims.ranks &&
-                (role === 'pawn' || role === 'lance'
-                    ? !lastRow(dims, pos, color)
-                    : role === 'knight'
-                        ? !lastTwoRows(dims, pos, color)
-                        : true));
-        });
-    }
-
     function addToHand(s, piece, cnt = 1) {
         const hand = s.hands.handMap.get(piece.color);
         if (hand && s.hands.roles.includes(piece.role))
@@ -259,7 +168,7 @@ var Shogiground = (function () {
                                 undefined;
     }
     function reset(state) {
-        unselect(state);
+        unselect$1(state);
         unsetPremove(state);
         unsetPredrop(state);
         cancelPromotion(state);
@@ -272,17 +181,6 @@ var Shogiground = (function () {
             else
                 state.pieces.delete(key);
         }
-    }
-    function setCheck(state, color) {
-        state.check = undefined;
-        if (color === true)
-            color = state.turnColor;
-        if (color)
-            for (const [k, p] of state.pieces) {
-                if (p.role === 'king' && p.color === color) {
-                    state.check = k;
-                }
-            }
     }
     function setPremove(state, orig, dest, prom) {
         unsetPredrop(state);
@@ -312,11 +210,11 @@ var Shogiground = (function () {
             return false;
         const captured = destPiece && destPiece.color !== origPiece.color ? destPiece : undefined, promPiece = prom && promotePiece(state, origPiece);
         if (dest === state.selected || orig === state.selected)
-            unselect(state);
+            unselect$1(state);
         state.pieces.set(dest, promPiece || origPiece);
         state.pieces.delete(orig);
         state.lastDests = [orig, dest];
-        state.check = undefined;
+        state.checks = [];
         callUserFunction(state.events.move, orig, dest, prom, captured);
         callUserFunction(state.events.change);
         return captured || true;
@@ -329,10 +227,10 @@ var Shogiground = (function () {
         const promPiece = prom && promotePiece(state, piece);
         if (key === state.selected ||
             (!state.droppable.spare && pieceCount === 1 && state.selectedPiece && samePiece(state.selectedPiece, piece)))
-            unselect(state);
+            unselect$1(state);
         state.pieces.set(key, promPiece || piece);
         state.lastDests = [key];
-        state.check = undefined;
+        state.checks = [];
         if (!state.droppable.spare)
             removeFromHand(state, piece);
         callUserFunction(state.events.drop, piece, key, prom);
@@ -364,7 +262,7 @@ var Shogiground = (function () {
         if (canDrop(state, piece, key)) {
             const result = baseUserDrop(state, piece, key, realProm);
             if (result) {
-                unselect(state);
+                unselect$1(state);
                 callUserFunction(state.droppable.events.after, piece, key, realProm, {
                     premade: false,
                 });
@@ -373,10 +271,10 @@ var Shogiground = (function () {
         }
         else if (canPredrop(state, piece, key)) {
             setPredrop(state, piece, key, realProm);
-            unselect(state);
+            unselect$1(state);
             return true;
         }
-        unselect(state);
+        unselect$1(state);
         return false;
     }
     function userMove(state, orig, dest, prom) {
@@ -384,7 +282,7 @@ var Shogiground = (function () {
         if (canMove(state, orig, dest)) {
             const result = baseUserMove(state, orig, dest, realProm);
             if (result) {
-                unselect(state);
+                unselect$1(state);
                 const metadata = {
                     premade: false,
                 };
@@ -396,10 +294,10 @@ var Shogiground = (function () {
         }
         else if (canPremove(state, orig, dest)) {
             setPremove(state, orig, dest, realProm);
-            unselect(state);
+            unselect$1(state);
             return true;
         }
-        unselect(state);
+        unselect$1(state);
         return false;
     }
     function basePromotionDialog(state, piece, key) {
@@ -436,7 +334,7 @@ var Shogiground = (function () {
     }
     function promotePiece(s, piece) {
         const promRole = s.promotion.promotesTo(piece.role);
-        return promRole && { color: piece.color, role: promRole };
+        return promRole !== undefined ? { color: piece.color, role: promRole } : undefined;
     }
     function deletePiece(state, key) {
         if (state.pieces.delete(key))
@@ -444,54 +342,58 @@ var Shogiground = (function () {
     }
     function selectSquare(state, key, prom, force) {
         callUserFunction(state.events.select, key);
-        if ((state.selectable.enabled || force) && state.selectedPiece) {
-            if (userDrop(state, state.selectedPiece, key, prom))
+        // unselect if selecting selected key, keep selected for drag
+        if (!state.draggable.enabled && state.selected === key) {
+            callUserFunction(state.events.unselect, key);
+            unselect$1(state);
+            return;
+        }
+        // try moving/dropping
+        if (state.selectable.enabled || force) {
+            if (state.selectedPiece && userDrop(state, state.selectedPiece, key, prom))
+                return;
+            else if (state.selected && userMove(state, state.selected, key, prom))
                 return;
         }
-        else if (state.selected) {
-            if (state.selected === key && !state.draggable.enabled) {
-                unselect(state);
-                return;
-            }
-            else if ((state.selectable.enabled || force) && state.selected !== key) {
-                if (userMove(state, state.selected, key, prom)) {
-                    return;
-                }
-            }
-        }
-        if (isMovable(state, key) || isPremovable(state, key)) {
+        if ((state.selectable.enabled || state.draggable.enabled || force) &&
+            (isMovable(state, key) || isPremovable(state, key))) {
             setSelected(state, key);
         }
     }
-    function selectPiece(state, piece, spare) {
-        var _a;
+    function selectPiece(state, piece, spare, force) {
         callUserFunction(state.events.pieceSelect, piece);
-        if ((!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) ||
-            (!spare && !((_a = state.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role))))
-            unselect(state);
-        else if (isDroppable(state, piece) || isPredroppable(state, piece)) {
+        // unselect if selecting the selected piece, keep selected for drag
+        if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) {
+            callUserFunction(state.events.pieceUnselect, piece);
+            unselect$1(state);
+        }
+        else if ((state.selectable.enabled || state.draggable.enabled || force) &&
+            (isDroppable(state, piece, !!spare) || isPredroppable(state, piece))) {
             setSelectedPiece(state, piece);
             state.droppable.spare = !!spare;
         }
+        else {
+            unselect$1(state);
+        }
     }
     function setSelected(state, key) {
-        unselect(state);
+        unselect$1(state);
         state.selected = key;
         setPreDests(state);
     }
     function setSelectedPiece(state, piece) {
-        unselect(state);
+        unselect$1(state);
         state.selectedPiece = piece;
         setPreDests(state);
     }
     function setPreDests(state) {
         state.premovable.dests = state.predroppable.dests = undefined;
-        if (state.selected && isPremovable(state, state.selected))
-            state.premovable.dests = premove(state.pieces, state.selected, state.dimensions);
-        else if (state.selectedPiece && isPredroppable(state, state.selectedPiece))
-            state.predroppable.dests = predrop(state.pieces, state.selectedPiece, state.dimensions);
+        if (state.selected && isPremovable(state, state.selected) && state.premovable.generate)
+            state.premovable.dests = state.premovable.generate(state.selected, state.pieces);
+        else if (state.selectedPiece && isPredroppable(state, state.selectedPiece) && state.predroppable.generate)
+            state.predroppable.dests = state.predroppable.generate(state.selectedPiece, state.pieces);
     }
-    function unselect(state) {
+    function unselect$1(state) {
         state.selected =
             state.selectedPiece =
                 state.premovable.dests =
@@ -503,8 +405,10 @@ var Shogiground = (function () {
         const piece = state.pieces.get(orig);
         return (!!piece && (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color)));
     }
-    function isDroppable(state, piece) {
-        return state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color);
+    function isDroppable(state, piece, spare) {
+        var _a;
+        return ((spare || !!((_a = state.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role))) &&
+            (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color)));
     }
     function canMove(state, orig, dest) {
         var _a, _b;
@@ -512,8 +416,8 @@ var Shogiground = (function () {
     }
     function canDrop(state, piece, dest) {
         var _a, _b;
-        return (isDroppable(state, piece) &&
-            (state.droppable.free || state.droppable.spare || !!((_b = (_a = state.droppable.dests) === null || _a === void 0 ? void 0 : _a.get(piece.role)) === null || _b === void 0 ? void 0 : _b.includes(dest))));
+        return (isDroppable(state, piece, state.droppable.spare) &&
+            (state.droppable.free || state.droppable.spare || !!((_b = (_a = state.droppable.dests) === null || _a === void 0 ? void 0 : _a.get(pieceNameOf(piece))) === null || _b === void 0 ? void 0 : _b.includes(dest))));
     }
     function canMovePromote(state, orig, dest) {
         const piece = state.pieces.get(orig);
@@ -527,16 +431,24 @@ var Shogiground = (function () {
         return !!piece && state.premovable.enabled && state.activeColor === piece.color && state.turnColor !== piece.color;
     }
     function isPredroppable(state, piece) {
-        return state.predroppable.enabled && state.activeColor === piece.color && state.turnColor !== piece.color;
+        var _a;
+        return (!!((_a = state.hands.handMap.get(piece.color)) === null || _a === void 0 ? void 0 : _a.get(piece.role)) &&
+            state.predroppable.enabled &&
+            state.activeColor === piece.color &&
+            state.turnColor !== piece.color);
     }
     function canPremove(state, orig, dest) {
-        return orig !== dest && isPremovable(state, orig) && premove(state.pieces, orig, state.dimensions).includes(dest);
+        return (orig !== dest &&
+            isPremovable(state, orig) &&
+            !!state.premovable.generate &&
+            state.premovable.generate(orig, state.pieces).includes(dest));
     }
     function canPredrop(state, piece, dest) {
         const destPiece = state.pieces.get(dest);
         return (isPredroppable(state, piece) &&
             (!destPiece || destPiece.color !== state.activeColor) &&
-            predrop(state.pieces, piece, state.dimensions).includes(dest));
+            !!state.predroppable.generate &&
+            state.predroppable.generate(piece, state.pieces).includes(dest));
     }
     function isDraggable(state, piece) {
         return (state.draggable.enabled &&
@@ -582,12 +494,12 @@ var Shogiground = (function () {
     function cancelMoveOrDrop(state) {
         unsetPremove(state);
         unsetPredrop(state);
-        unselect(state);
+        unselect$1(state);
     }
     function cancelPromotion(state) {
         if (!state.promotion.current)
             return;
-        unselect(state);
+        unselect$1(state);
         state.promotion.current = undefined;
         state.hovered = undefined;
         callUserFunction(state.promotion.events.cancel);
@@ -604,8 +516,126 @@ var Shogiground = (function () {
         cancelMoveOrDrop(state);
     }
 
-    function stringToRole(ch) {
-        switch (ch) {
+    function inferDimensions(boardSfen) {
+        const ranks = boardSfen.split('/'), firstFile = ranks[0].split('');
+        let filesCnt = 0, cnt = 0;
+        for (const c of firstFile) {
+            const nb = c.charCodeAt(0);
+            if (nb < 58 && nb > 47)
+                cnt = cnt * 10 + nb - 48;
+            else if (c !== '+') {
+                filesCnt += cnt + 1;
+                cnt = 0;
+            }
+        }
+        filesCnt += cnt;
+        return { files: filesCnt, ranks: ranks.length };
+    }
+    function sfenToBoard(sfen, dims, fromForsyth) {
+        const sfenParser = fromForsyth || standardFromForsyth, pieces = new Map();
+        let x = dims.files - 1, y = 0;
+        for (let i = 0; i < sfen.length; i++) {
+            switch (sfen[i]) {
+                case ' ':
+                case '_':
+                    return pieces;
+                case '/':
+                    ++y;
+                    if (y > dims.ranks - 1)
+                        return pieces;
+                    x = dims.files - 1;
+                    break;
+                default: {
+                    const nb1 = sfen[i].charCodeAt(0), nb2 = sfen[i + 1] && sfen[i + 1].charCodeAt(0);
+                    if (nb1 < 58 && nb1 > 47) {
+                        if (nb2 && nb2 < 58 && nb2 > 47) {
+                            x -= (nb1 - 48) * 10 + (nb2 - 48);
+                            i++;
+                        }
+                        else
+                            x -= nb1 - 48;
+                    }
+                    else {
+                        const roleStr = sfen[i] === '+' && sfen.length > i + 1 ? '+' + sfen[++i] : sfen[i], role = sfenParser(roleStr);
+                        if (x >= 0 && role) {
+                            const color = roleStr === roleStr.toLowerCase() ? 'gote' : 'sente';
+                            pieces.set(pos2key([x, y]), {
+                                role: role,
+                                color: color,
+                            });
+                        }
+                        --x;
+                    }
+                }
+            }
+        }
+        return pieces;
+    }
+    function boardToSfen(pieces, dims, toForsyth) {
+        const sfenRenderer = toForsyth || standardToForsyth, reversedFiles = files.slice(0, dims.files).reverse();
+        return ranks
+            .slice(0, dims.ranks)
+            .map(y => reversedFiles
+            .map(x => {
+            const piece = pieces.get((x + y)), forsyth = piece && sfenRenderer(piece.role);
+            if (forsyth) {
+                return piece.color === 'sente' ? forsyth.toUpperCase() : forsyth.toLowerCase();
+            }
+            else
+                return '1';
+        })
+            .join(''))
+            .join('/')
+            .replace(/1{2,}/g, s => s.length.toString());
+    }
+    function sfenToHands(sfen, fromForsyth) {
+        const sfenParser = fromForsyth || standardFromForsyth, sente = new Map(), gote = new Map();
+        let tmpNum = 0, num = 1;
+        for (let i = 0; i < sfen.length; i++) {
+            const nb = sfen[i].charCodeAt(0);
+            if (nb < 58 && nb > 47) {
+                tmpNum = tmpNum * 10 + nb - 48;
+                num = tmpNum;
+            }
+            else {
+                const roleStr = sfen[i] === '+' && sfen.length > i + 1 ? '+' + sfen[++i] : sfen[i], role = sfenParser(roleStr);
+                if (role) {
+                    const color = roleStr === roleStr.toLowerCase() ? 'gote' : 'sente';
+                    if (color === 'sente')
+                        sente.set(role, (sente.get(role) || 0) + num);
+                    else
+                        gote.set(role, (gote.get(role) || 0) + num);
+                }
+                tmpNum = 0;
+                num = 1;
+            }
+        }
+        return new Map([
+            ['sente', sente],
+            ['gote', gote],
+        ]);
+    }
+    function handsToSfen(hands, roles, toForsyth) {
+        var _a, _b;
+        const sfenRenderer = toForsyth || standardToForsyth;
+        let senteHandStr = '', goteHandStr = '';
+        for (const role of roles) {
+            const forsyth = sfenRenderer(role);
+            if (forsyth) {
+                const senteCnt = (_a = hands.get('sente')) === null || _a === void 0 ? void 0 : _a.get(role), goteCnt = (_b = hands.get('gote')) === null || _b === void 0 ? void 0 : _b.get(role);
+                if (senteCnt)
+                    senteHandStr += senteCnt > 1 ? senteCnt.toString() + forsyth : forsyth;
+                if (goteCnt)
+                    goteHandStr += goteCnt > 1 ? goteCnt.toString() + forsyth : forsyth;
+            }
+        }
+        if (senteHandStr || goteHandStr)
+            return senteHandStr.toUpperCase() + goteHandStr.toLowerCase();
+        else
+            return '-';
+    }
+    function standardFromForsyth(forsyth) {
+        switch (forsyth.toLowerCase()) {
             case 'p':
                 return 'pawn';
             case 'l':
@@ -638,143 +668,39 @@ var Shogiground = (function () {
                 return;
         }
     }
-    const letters = {
-        pawn: 'p',
-        lance: 'l',
-        knight: 'n',
-        silver: 's',
-        gold: 'g',
-        bishop: 'b',
-        rook: 'r',
-        king: 'k',
-        tokin: '+p',
-        promotedlance: '+l',
-        promotedknight: '+n',
-        promotedsilver: '+s',
-        horse: '+b',
-        dragon: '+r',
-    };
-    function inferDimensions(boardSfen) {
-        const ranks = boardSfen.split('/');
-        const firstFile = ranks[0].split('');
-        let filesCnt = 0;
-        let cnt = 0;
-        for (const c of firstFile) {
-            const nb = c.charCodeAt(0);
-            if (nb < 58 && nb > 47)
-                cnt = cnt * 10 + nb - 48;
-            else if (c !== '+') {
-                filesCnt += cnt + 1;
-                cnt = 0;
-            }
+    function standardToForsyth(role) {
+        switch (role) {
+            case 'pawn':
+                return 'p';
+            case 'lance':
+                return 'l';
+            case 'knight':
+                return 'n';
+            case 'silver':
+                return 's';
+            case 'gold':
+                return 'g';
+            case 'bishop':
+                return 'b';
+            case 'rook':
+                return 'r';
+            case 'tokin':
+                return '+p';
+            case 'promotedlance':
+                return '+l';
+            case 'promotedknight':
+                return '+n';
+            case 'promotedsilver':
+                return '+s';
+            case 'horse':
+                return '+b';
+            case 'dragon':
+                return '+r';
+            case 'king':
+                return 'k';
+            default:
+                return;
         }
-        filesCnt += cnt;
-        return { files: filesCnt, ranks: ranks.length };
-    }
-    function readBoard(sfen, dims) {
-        const pieces = new Map();
-        let x = dims.files - 1, y = 0;
-        for (let i = 0; i < sfen.length; i++) {
-            switch (sfen[i]) {
-                case ' ':
-                case '_':
-                    return pieces;
-                case '/':
-                    ++y;
-                    if (y > dims.ranks - 1)
-                        return pieces;
-                    x = dims.files - 1;
-                    break;
-                default: {
-                    const nb1 = sfen[i].charCodeAt(0), nb2 = sfen[i + 1] && sfen[i + 1].charCodeAt(0);
-                    if (nb1 < 58 && nb1 > 47) {
-                        if (nb2 && nb2 < 58 && nb2 > 47) {
-                            x -= (nb1 - 48) * 10 + (nb2 - 48);
-                            i++;
-                        }
-                        else
-                            x -= nb1 - 48;
-                    }
-                    else {
-                        const roleStr = (sfen[i] === '+' && sfen.length > i + 1 ? '+' + sfen[++i] : sfen[i]).toLowerCase();
-                        const role = stringToRole(roleStr);
-                        if (x >= 0 && role) {
-                            const color = sfen[i] === roleStr || '+' + sfen[i] === roleStr ? 'gote' : 'sente';
-                            pieces.set(pos2key([x, y]), {
-                                role: role,
-                                color: color,
-                            });
-                        }
-                        --x;
-                    }
-                }
-            }
-        }
-        return pieces;
-    }
-    function writeBoard(pieces, dims) {
-        const reversedFiles = files.slice(0, dims.files).reverse();
-        return ranks
-            .slice(0, dims.ranks)
-            .map(y => reversedFiles
-            .map(x => {
-            const piece = pieces.get((x + y));
-            if (piece) {
-                const letter = letters[piece.role];
-                return piece.color === 'sente' ? letter.toUpperCase() : letter;
-            }
-            else
-                return '1';
-        })
-            .join(''))
-            .join('/')
-            .replace(/1{2,}/g, s => s.length.toString());
-    }
-    function readHands(str) {
-        const sente = new Map();
-        const gote = new Map();
-        let tmpNum = 0;
-        let num = 1;
-        for (let i = 0; i < str.length; i++) {
-            const nb = str[i].charCodeAt(0);
-            if (nb < 58 && nb > 47) {
-                tmpNum = tmpNum * 10 + nb - 48;
-                num = tmpNum;
-            }
-            else {
-                const roleStr = (str[i] === '+' && str.length > i + 1 ? '+' + str[++i] : str[i]).toLowerCase();
-                const role = stringToRole(roleStr);
-                if (role) {
-                    const color = str[i] === roleStr || '+' + str[i] === roleStr ? 'gote' : 'sente';
-                    if (color === 'sente')
-                        sente.set(role, (sente.get(role) || 0) + num);
-                    else
-                        gote.set(role, (gote.get(role) || 0) + num);
-                }
-                tmpNum = 0;
-                num = 1;
-            }
-        }
-        return new Map([
-            ['sente', sente],
-            ['gote', gote],
-        ]);
-    }
-    function writeHands(hands, roles) {
-        var _a, _b;
-        let senteHandStr = '';
-        let goteHandStr = '';
-        for (const role of roles) {
-            const senteCnt = (_a = hands.get('sente')) === null || _a === void 0 ? void 0 : _a.get(role);
-            const goteCnt = (_b = hands.get('gote')) === null || _b === void 0 ? void 0 : _b.get(role);
-            if (senteCnt)
-                senteHandStr += senteCnt > 1 ? senteCnt.toString() + letters[role] : letters[role];
-            if (goteCnt)
-                goteHandStr += goteCnt > 1 ? goteCnt.toString() + letters[role] : letters[role];
-        }
-        if (senteHandStr || goteHandStr)
-            return senteHandStr.toUpperCase() + goteHandStr;
-        return '-';
     }
 
     function applyAnimation(state, config) {
@@ -804,15 +730,13 @@ var Shogiground = (function () {
         // if a sfen was provided, replace the pieces, except the currently dragged one
         if ((_g = config.sfen) === null || _g === void 0 ? void 0 : _g.board) {
             state.dimensions = inferDimensions(config.sfen.board);
-            state.pieces = readBoard(config.sfen.board, state.dimensions);
+            state.pieces = sfenToBoard(config.sfen.board, state.dimensions, state.forsyth.fromForsyth);
             state.drawable.shapes = ((_h = config.drawable) === null || _h === void 0 ? void 0 : _h.shapes) || [];
         }
         if ((_j = config.sfen) === null || _j === void 0 ? void 0 : _j.hands) {
-            state.hands.handMap = readHands(config.sfen.hands);
+            state.hands.handMap = sfenToHands(config.sfen.hands, state.forsyth.fromForsyth);
         }
         // apply config values that could be undefined yet meaningful
-        if ('check' in config)
-            setCheck(state, config.check || false);
         if ('lastDests' in config && !config.lastDests)
             state.lastDests = undefined;
         // in case of drop last move, there's a single square.
@@ -988,8 +912,8 @@ var Shogiground = (function () {
         if (s.lastDests && s.highlight.lastDests)
             for (const k of s.lastDests)
                 addSquare(squares, k, 'last-dest');
-        if (s.check && s.highlight.check)
-            addSquare(squares, s.check, 'check');
+        for (const check of s.checks)
+            addSquare(squares, check, 'check');
         if (s.hovered)
             addSquare(squares, s.hovered, 'hover');
         if (s.selected) {
@@ -1012,7 +936,7 @@ var Shogiground = (function () {
         }
         else if (s.selectedPiece) {
             if (s.droppable.showDests) {
-                const dests = (_b = s.droppable.dests) === null || _b === void 0 ? void 0 : _b.get(s.selectedPiece.role);
+                const dests = (_b = s.droppable.dests) === null || _b === void 0 ? void 0 : _b.get(pieceNameOf(s.selectedPiece));
                 if (dests)
                     for (const k of dests) {
                         addSquare(squares, k, 'dest');
@@ -1137,7 +1061,7 @@ var Shogiground = (function () {
         const shapesEl = svg.querySelector('g');
         const customSvgsEl = customSvg.querySelector('g');
         syncDefs(shapes, outsideArrow ? curD : undefined, defsEl);
-        syncShapes(shapes.filter(s => !s.shape.customSvg && (!s.shape.piece || s.current)), shapesEl, shape => renderSVGShape(state, shape, arrowDests), outsideArrow);
+        syncShapes(shapes.filter(s => !s.shape.customSvg && (!s.shape.piece || s.current)), shapesEl, shape => renderSVGShape(state, shape, arrowDests), shape => renderDescription(state, shape, arrowDests), outsideArrow);
         syncShapes(shapes.filter(s => s.shape.customSvg), customSvgsEl, shape => renderSVGShape(state, shape, arrowDests));
         syncShapes(pieceShapes, freePieces, shape => renderPiece(state, shape));
         if (!outsideArrow && curD)
@@ -1173,7 +1097,7 @@ var Shogiground = (function () {
         }
     }
     // append and remove only. No updates.
-    function syncShapes(shapes, root, renderShape, outsideArrow) {
+    function syncShapes(shapes, root, renderShape, renderDesc, outsideArrow) {
         const hashesInDom = new Map(), // by hash
         toRemove = [];
         for (const sc of shapes)
@@ -1200,10 +1124,13 @@ var Shogiground = (function () {
                 const shapeEl = renderShape(sc);
                 if (shapeEl)
                     root.appendChild(shapeEl);
+                const descEl = sc.shape.description && renderDesc && renderDesc(sc);
+                if (descEl)
+                    root.appendChild(descEl);
             }
         }
     }
-    function shapeHash({ orig, dest, brush, piece, customSvg }, arrowDests, current, boundHash) {
+    function shapeHash({ orig, dest, brush, piece, customSvg, description }, arrowDests, current, boundHash) {
         return [
             current,
             (isPiece(orig) || isPiece(dest)) && boundHash(),
@@ -1213,6 +1140,7 @@ var Shogiground = (function () {
             (arrowDests.get(isPiece(dest) ? pieceNameOf(dest) : dest) || 0) > 1,
             piece && pieceHash(piece),
             customSvg && customSvgHash(customSvg),
+            description,
         ]
             .filter(x => x)
             .join(',');
@@ -1227,6 +1155,28 @@ var Shogiground = (function () {
             h = ((h << 5) - h + s.charCodeAt(i)) >>> 0;
         }
         return 'custom-' + h.toString();
+    }
+    function renderDescription(state, { shape, hash }, arrowDests) {
+        const orig = pieceOrKeyToPos(shape.orig, state);
+        if (!orig || !shape.description)
+            return;
+        const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state), diff = dest ? [dest[0] - orig[0], dest[1] - orig[1]] : [0, 0], offset = (arrowDests.get(isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest) || 0) > 1 ? 0.3 : 0.15, close = (diff[0] === 0 || Math.abs(diff[0]) === state.squareRatio[0]) &&
+            (diff[1] === 0 || Math.abs(diff[1]) === state.squareRatio[1]), ratio = dest ? 0.55 - (close ? offset : 0) : 0, mid = [orig[0] + diff[0] * ratio, orig[1] + diff[1] * ratio], textLength = shape.description.length;
+        const g = setAttributes(createSVGElement('g'), { class: 'description', sgHash: hash }), circle = setAttributes(createSVGElement('ellipse'), {
+            cx: mid[0],
+            cy: mid[1],
+            rx: textLength + 1.5,
+            ry: 2.5,
+        }), text = setAttributes(createSVGElement('text'), {
+            x: mid[0],
+            y: mid[1],
+            'text-anchor': 'middle',
+            'dominant-baseline': 'central',
+        });
+        g.appendChild(circle);
+        text.appendChild(document.createTextNode(shape.description));
+        g.appendChild(text);
+        return g;
     }
     function renderSVGShape(state, { shape, current, hash }, arrowDests) {
         const orig = pieceOrKeyToPos(shape.orig, state);
@@ -1550,7 +1500,7 @@ var Shogiground = (function () {
             return;
         e.stopPropagation();
         e.preventDefault();
-        e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
+        e.ctrlKey ? unselect$1(state) : cancelMoveOrDrop(state);
         const pos = eventPosition(e), bounds = state.dom.bounds.board.bounds(), orig = pos && bounds && getKeyAtDomPos(pos, sentePov(state.orientation), state.dimensions, bounds), piece = state.drawable.piece;
         if (!orig)
             return;
@@ -1569,7 +1519,7 @@ var Shogiground = (function () {
             return;
         e.stopPropagation();
         e.preventDefault();
-        e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
+        e.ctrlKey ? unselect$1(state) : cancelMoveOrDrop(state);
         const pos = eventPosition(e);
         if (!pos)
             return;
@@ -1756,9 +1706,8 @@ var Shogiground = (function () {
             removeFromHand(s, piece);
         else
             selectPiece(s, piece, spare);
-        const hadPremove = !!s.premovable.current;
-        const hadPredrop = !!s.predroppable.current;
-        if (draggedEl && s.selectedPiece && isDraggable(s, piece)) {
+        const hadPremove = !!s.premovable.current, hadPredrop = !!s.predroppable.current, stillSelected = s.selectedPiece && samePiece(s.selectedPiece, piece);
+        if (draggedEl && s.selectedPiece && stillSelected && isDraggable(s, piece)) {
             s.draggable.current = {
                 piece: s.selectedPiece,
                 pos: position,
@@ -1893,27 +1842,38 @@ var Shogiground = (function () {
         }
         if (cur.fromBoard &&
             (cur.fromBoard.orig === cur.fromBoard.previouslySelected || cur.fromBoard.keyHasChanged) &&
-            (cur.fromBoard.orig === dest || !dest))
-            unselect(s);
-        else if (((_b = cur.fromOutside) === null || _b === void 0 ? void 0 : _b.leftOrigin) ||
+            (cur.fromBoard.orig === dest || !dest)) {
+            unselect(s, cur, dest);
+        }
+        else if ((!dest && ((_b = cur.fromOutside) === null || _b === void 0 ? void 0 : _b.leftOrigin)) ||
             (((_c = cur.fromOutside) === null || _c === void 0 ? void 0 : _c.originBounds) &&
                 isInsideRect(cur.fromOutside.originBounds, cur.pos) &&
                 cur.fromOutside.previouslySelectedPiece &&
-                samePiece(cur.fromOutside.previouslySelectedPiece, cur.piece)))
-            unselect(s);
-        else if (!s.selectable.enabled && !s.promotion.current)
-            unselect(s);
+                samePiece(cur.fromOutside.previouslySelectedPiece, cur.piece))) {
+            unselect(s, cur, dest);
+        }
+        else if (!s.selectable.enabled && !s.promotion.current) {
+            unselect(s, cur, dest);
+        }
         s.draggable.current = undefined;
         if (!s.highlight.hovered && !s.promotion.current)
             s.hovered = undefined;
         redraw(s);
+    }
+    function unselect(s, cur, dest) {
+        var _a;
+        if (cur.fromBoard && cur.fromBoard.orig === dest)
+            callUserFunction(s.events.unselect, cur.fromBoard.orig);
+        else if (((_a = cur.fromOutside) === null || _a === void 0 ? void 0 : _a.originBounds) && isInsideRect(cur.fromOutside.originBounds, cur.pos))
+            callUserFunction(s.events.pieceUnselect, cur.piece);
+        unselect$1(s);
     }
     function cancel(s) {
         if (s.draggable.current) {
             s.draggable.current = undefined;
             if (!s.highlight.hovered)
                 s.hovered = undefined;
-            unselect(s);
+            unselect$1(s);
             redraw(s);
         }
     }
@@ -1992,10 +1952,9 @@ var Shogiground = (function () {
             board.appendChild(freePieces);
         }
         if (s.coordinates.enabled) {
-            const orientClass = s.orientation === 'gote' ? ' gote' : '';
-            const ranks = ranksByNotation(s.coordinates.notation);
+            const orientClass = s.orientation === 'gote' ? ' gote' : '', ranks = coordsByNotation(s.coordinates.ranks), files = coordsByNotation(s.coordinates.files);
             board.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
-            board.appendChild(renderCoords(['12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'], 'files' + orientClass, s.dimensions.files));
+            board.appendChild(renderCoords(files, 'files' + orientClass, s.dimensions.files));
         }
         boardWrap.innerHTML = '';
         const dimCls = `d-${s.dimensions.files}x${s.dimensions.ranks}`;
@@ -2050,14 +2009,33 @@ var Shogiground = (function () {
         handWrap.classList.toggle('manipulable', !s.viewOnly);
         return hand;
     }
-    function ranksByNotation(notation) {
+    function coordsByNotation(notation) {
         switch (notation) {
-            case 2 /* Notation.JAPANESE */:
-                return ['十二', '十一', '十', '九', '八', '七', '六', '五', '四', '三', '二', '一'];
-            case 3 /* Notation.WESTERN2 */:
-                return ['l', 'k', 'j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+            case 1 /* Notation.JAPANESE */:
+                return [
+                    '十六',
+                    '十五',
+                    '十四',
+                    '十三',
+                    '十二',
+                    '十一',
+                    '十',
+                    '九',
+                    '八',
+                    '七',
+                    '六',
+                    '五',
+                    '四',
+                    '三',
+                    '二',
+                    '一',
+                ];
+            case 2 /* Notation.ENGINE */:
+                return ['p', 'o', 'n', 'm', 'l', 'k', 'j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
+            case 3 /* Notation.HEX */:
+                return ['10', 'f', 'e', 'd', 'c', 'b', 'a', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
             default:
-                return ['12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
+                return ['16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
         }
     }
     function renderCoords(elems, className, trim) {
@@ -2362,8 +2340,8 @@ var Shogiground = (function () {
                 }
             },
             state,
-            getBoardSfen: () => writeBoard(state.pieces, state.dimensions),
-            getHandsSfen: () => writeHands(state.hands.handMap, state.hands.roles),
+            getBoardSfen: () => boardToSfen(state.pieces, state.dimensions, state.forsyth.toForsyth),
+            getHandsSfen: () => handsToSfen(state.hands.handMap, state.hands.roles, state.forsyth.toForsyth),
             toggleOrientation() {
                 toggleOrientation(state);
                 redrawAll(state.dom.wrapElements, state);
@@ -2390,15 +2368,15 @@ var Shogiground = (function () {
                 if (key)
                     anim(state => selectSquare(state, key, prom, force), state);
                 else if (state.selected) {
-                    unselect(state);
+                    unselect$1(state);
                     redraw(state);
                 }
             },
-            selectPiece(piece, spare) {
+            selectPiece(piece, spare, force) {
                 if (piece)
-                    render(state => selectPiece(state, piece, spare), state);
+                    render(state => selectPiece(state, piece, spare, force), state);
                 else if (state.selectedPiece) {
-                    unselect(state);
+                    unselect$1(state);
                     redraw(state);
                 }
             },
@@ -2464,6 +2442,7 @@ var Shogiground = (function () {
             orientation: 'sente',
             turnColor: 'sente',
             activeColor: 'both',
+            checks: [],
             viewOnly: false,
             squareRatio: [11, 12],
             disableContextMenu: true,
@@ -2471,7 +2450,8 @@ var Shogiground = (function () {
             scaleDownPieces: true,
             coordinates: {
                 enabled: true,
-                notation: 0 /* sg.Notation.WESTERN */,
+                files: 0 /* sg.Notation.NUMERIC */,
+                ranks: 0 /* sg.Notation.NUMERIC */,
             },
             highlight: {
                 lastDests: true,
@@ -2534,6 +2514,7 @@ var Shogiground = (function () {
                 events: {},
                 prevPromotionHash: '',
             },
+            forsyth: {},
             events: {},
             drawable: {
                 enabled: true,

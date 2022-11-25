@@ -3,7 +3,7 @@ import type { DrawShape, SquareHighlight } from './draw.js';
 import * as sg from './types.js';
 import * as board from './board.js';
 import { addToHand, removeFromHand } from './hands.js';
-import { inferDimensions, writeBoard, writeHands } from './sfen.js';
+import { inferDimensions, boardToSfen, handsToSfen } from './sfen.js';
 import { applyAnimation, Config, configure } from './config.js';
 import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
@@ -52,7 +52,7 @@ export interface Api {
   selectSquare(key: sg.Key | null, prom?: boolean, force?: boolean): void;
 
   // select a piece from hand to drop programatically, by default piece in hand is selected
-  selectPiece(piece: sg.Piece | null, spare?: boolean): void;
+  selectPiece(piece: sg.Piece | null, spare?: boolean, force?: boolean): void;
 
   // play the current premove, if any; returns true if premove was played
   playPremove(): boolean;
@@ -135,9 +135,9 @@ export function start(state: State): Api {
 
     state,
 
-    getBoardSfen: () => writeBoard(state.pieces, state.dimensions),
+    getBoardSfen: () => boardToSfen(state.pieces, state.dimensions, state.forsyth.toForsyth),
 
-    getHandsSfen: () => writeHands(state.hands.handMap, state.hands.roles),
+    getHandsSfen: () => handsToSfen(state.hands.handMap, state.hands.roles, state.forsyth.toForsyth),
 
     toggleOrientation(): void {
       board.toggleOrientation(state);
@@ -175,8 +175,8 @@ export function start(state: State): Api {
       }
     },
 
-    selectPiece(piece, spare): void {
-      if (piece) render(state => board.selectPiece(state, piece, spare), state);
+    selectPiece(piece, spare, force): void {
+      if (piece) render(state => board.selectPiece(state, piece, spare, force), state);
       else if (state.selectedPiece) {
         board.unselect(state);
         redraw(state);
