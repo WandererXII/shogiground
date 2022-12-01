@@ -311,12 +311,20 @@ export function unwantedEvent(e: sg.MouchEvent): boolean {
   return !e.isTrusted || (e.button !== undefined && e.button !== 0) || (!!e.touches && e.touches.length > 1);
 }
 
+function validDestToHover(s: State, key: sg.Key): boolean {
+  return (
+    (!!s.selected && (board.canMove(s, s.selected, key) || board.canPremove(s, s.selected, key))) ||
+    (!!s.selectedPiece && (board.canDrop(s, s.selectedPiece, key) || board.canPredrop(s, s.selectedPiece, key)))
+  );
+}
+
 function updateHoveredSquares(s: State, key: sg.Key | undefined): void {
   const sqaureEls = s.dom.elements.board?.squares.children;
   if (!sqaureEls || s.promotion.current) return;
 
   const prevHover = s.hovered;
-  s.hovered = key;
+  if (s.highlight.hovered || (key && validDestToHover(s, key))) s.hovered = key;
+  else s.hovered = undefined;
 
   const asSente = util.sentePov(s.orientation),
     curIndex = s.hovered && util.domSquareIndexOfKey(s.hovered, asSente, s.dimensions),

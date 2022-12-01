@@ -52,7 +52,12 @@
         selectable: {
           enabled: true,
         },
+        highlight: {
+          hovered: false,
+        },
         movable: {
+          // free: false,
+          dests: new Map([['6g', ['6f']]]),
           events: {
             after: (orig, dest, prom, metadata) => {
               console.log('MOVEAFTER', orig, dest, prom, metadata);
