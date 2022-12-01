@@ -182,6 +182,25 @@ var Shogiground = (function () {
                 state.pieces.delete(key);
         }
     }
+    function setChecks(state, checksValue) {
+        if (Array.isArray(checksValue)) {
+            state.checks = checksValue;
+        }
+        else {
+            if (checksValue === true)
+                checksValue = state.turnColor;
+            if (checksValue) {
+                const checks = [];
+                for (const [k, p] of state.pieces) {
+                    if (state.highlight.checkRoles.includes(p.role) && p.color === checksValue)
+                        checks.push(k);
+                }
+                state.checks = checks;
+            }
+            else
+                state.checks = undefined;
+        }
+    }
     function setPremove(state, orig, dest, prom) {
         unsetPredrop(state);
         state.premovable.current = { orig, dest, prom };
@@ -214,7 +233,7 @@ var Shogiground = (function () {
         state.pieces.set(dest, promPiece || origPiece);
         state.pieces.delete(orig);
         state.lastDests = [orig, dest];
-        state.checks = [];
+        state.checks = undefined;
         callUserFunction(state.events.move, orig, dest, prom, captured);
         callUserFunction(state.events.change);
         return captured || true;
@@ -230,7 +249,7 @@ var Shogiground = (function () {
             unselect$1(state);
         state.pieces.set(key, promPiece || piece);
         state.lastDests = [key];
-        state.checks = [];
+        state.checks = undefined;
         if (!state.droppable.spare)
             removeFromHand(state, piece);
         callUserFunction(state.events.drop, piece, key, prom);
@@ -737,6 +756,8 @@ var Shogiground = (function () {
             state.hands.handMap = sfenToHands(config.sfen.hands, state.forsyth.fromForsyth);
         }
         // apply config values that could be undefined yet meaningful
+        if ('checks' in config)
+            setChecks(state, config.checks || false);
         if ('lastDests' in config && !config.lastDests)
             state.lastDests = undefined;
         // in case of drop last move, there's a single square.
@@ -912,8 +933,9 @@ var Shogiground = (function () {
         if (s.lastDests && s.highlight.lastDests)
             for (const k of s.lastDests)
                 addSquare(squares, k, 'last-dest');
-        for (const check of s.checks)
-            addSquare(squares, check, 'check');
+        if (s.checks && s.highlight.check)
+            for (const check of s.checks)
+                addSquare(squares, check, 'check');
         if (s.hovered)
             addSquare(squares, s.hovered, 'hover');
         if (s.selected) {
@@ -1881,13 +1903,20 @@ var Shogiground = (function () {
     function unwantedEvent(e) {
         return !e.isTrusted || (e.button !== undefined && e.button !== 0) || (!!e.touches && e.touches.length > 1);
     }
+    function validDestToHover(s, key) {
+        return ((!!s.selected && (canMove(s, s.selected, key) || canPremove(s, s.selected, key))) ||
+            (!!s.selectedPiece && (canDrop(s, s.selectedPiece, key) || canPredrop(s, s.selectedPiece, key))));
+    }
     function updateHoveredSquares(s, key) {
         var _a;
         const sqaureEls = (_a = s.dom.elements.board) === null || _a === void 0 ? void 0 : _a.squares.children;
         if (!sqaureEls || s.promotion.current)
             return;
         const prevHover = s.hovered;
-        s.hovered = key;
+        if (s.highlight.hovered || (key && validDestToHover(s, key)))
+            s.hovered = key;
+        else
+            s.hovered = undefined;
         const asSente = sentePov(s.orientation), curIndex = s.hovered && domSquareIndexOfKey(s.hovered, asSente, s.dimensions), curHoverEl = curIndex !== undefined && sqaureEls[curIndex];
         if (curHoverEl)
             curHoverEl.classList.add('hover');
@@ -2442,7 +2471,6 @@ var Shogiground = (function () {
             orientation: 'sente',
             turnColor: 'sente',
             activeColor: 'both',
-            checks: [],
             viewOnly: false,
             squareRatio: [11, 12],
             disableContextMenu: true,
@@ -2456,6 +2484,7 @@ var Shogiground = (function () {
             highlight: {
                 lastDests: true,
                 check: true,
+                checkRoles: ['king'],
                 hovered: false,
             },
             animation: {
