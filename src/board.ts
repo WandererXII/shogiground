@@ -29,6 +29,21 @@ export function setPieces(state: HeadlessState, pieces: sg.PiecesDiff): void {
   }
 }
 
+export function setChecks(state: HeadlessState, checksValue: sg.Key[] | sg.Color | boolean): void {
+  if (Array.isArray(checksValue)) {
+    state.checks = checksValue;
+  } else {
+    if (checksValue === true) checksValue = state.turnColor;
+    if (checksValue) {
+      const checks: sg.Key[] = [];
+      for (const [k, p] of state.pieces) {
+        if (state.highlight.checkRoles.includes(p.role) && p.color === checksValue) checks.push(k);
+      }
+      state.checks = checks;
+    } else state.checks = undefined;
+  }
+}
+
 function setPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom: boolean): void {
   unsetPredrop(state);
   state.premovable.current = { orig, dest, prom };

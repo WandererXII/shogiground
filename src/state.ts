@@ -27,6 +27,7 @@ export interface HeadlessState {
   highlight: {
     lastDests: boolean; // add last-dest class to squares
     check: boolean; // add check class to squares
+    checkRoles: sg.RoleString[]; // roles to be highlighted when check is boolean is passed from config
     hovered: boolean; // add hover class to hovered squares
   };
   animation: {
@@ -160,6 +161,7 @@ export function defaults(): HeadlessState {
     highlight: {
       lastDests: true,
       check: true,
+      checkRoles: ['king'],
       hovered: false,
     },
     animation: {
