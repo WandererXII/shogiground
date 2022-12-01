@@ -320,7 +320,7 @@ function isPredroppable(state: HeadlessState, piece: sg.Piece): boolean {
   );
 }
 
-function canPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
+export function canPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
   return (
     orig !== dest &&
     isPremovable(state, orig) &&
@@ -329,7 +329,7 @@ function canPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
   );
 }
 
-function canPredrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
+export function canPredrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   const destPiece = state.pieces.get(dest);
   return (
     isPredroppable(state, piece) &&
