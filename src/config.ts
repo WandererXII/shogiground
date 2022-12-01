@@ -30,7 +30,7 @@ export interface Config {
   highlight?: {
     lastDests?: boolean; // add last-dest class to squares
     check?: boolean; // add check class to squares
-    checkRoles: sg.RoleString[]; // roles to be highlighted when check is boolean is passed from config
+    checkRoles?: sg.RoleString[]; // roles to be highlighted when check is boolean is passed from config
     hovered?: boolean; // add hover class to hovered squares
   };
   animation?: {
