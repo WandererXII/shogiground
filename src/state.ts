@@ -9,7 +9,7 @@ export interface HeadlessState {
   dimensions: sg.Dimensions; // board dimensions - max 16x16
   turnColor: sg.Color; // turn to play. sente | gote
   activeColor?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
-  checks: sg.Key[]; // squares currently in check ["5a"]
+  checks?: sg.Key[]; // squares currently in check ["5a"]
   lastDests?: sg.Key[]; // squares part of the last move or drop ["2b"; "8h"]
   selected?: sg.Key; // square currently selected "1a"
   selectedPiece?: sg.Piece; // piece in hand currently selected
@@ -147,7 +147,6 @@ export function defaults(): HeadlessState {
     orientation: 'sente',
     turnColor: 'sente',
     activeColor: 'both',
-    checks: [],
     viewOnly: false,
     squareRatio: [11, 12],
     disableContextMenu: true,
