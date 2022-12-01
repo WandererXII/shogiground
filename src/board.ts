@@ -65,7 +65,7 @@ export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom:
   state.pieces.set(dest, promPiece || origPiece);
   state.pieces.delete(orig);
   state.lastDests = [orig, dest];
-  state.checks = [];
+  state.checks = undefined;
   callUserFunction(state.events.move, orig, dest, prom, captured);
   callUserFunction(state.events.change);
   return captured || true;
@@ -82,7 +82,7 @@ export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, pro
     unselect(state);
   state.pieces.set(key, promPiece || piece);
   state.lastDests = [key];
-  state.checks = [];
+  state.checks = undefined;
   if (!state.droppable.spare) removeFromHand(state, piece);
   callUserFunction(state.events.drop, piece, key, prom);
   callUserFunction(state.events.change);
