@@ -102,7 +102,6 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
     shapes.filter(s => !s.shape.customSvg && (!s.shape.piece || s.current)),
     shapesEl,
     shape => renderSVGShape(state, shape, arrowDests),
-    shape => renderDescription(state, shape, arrowDests),
     outsideArrow
   );
   syncShapes(
@@ -117,10 +116,14 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
   if (outsideArrow && !curD.arrow) {
     const orig = pieceOrKeyToPos(curD.orig, state);
     if (orig) {
-      const el = renderArrow(curD.brush, orig, orig, state.squareRatio, true, false, true);
-      el.setAttribute('sgHash', outsideArrowHash);
+      const g = setAttributes(createSVGElement('g'), {
+          class: shapeClass(curD.brush, true, true),
+          sgHash: outsideArrowHash,
+        }),
+        el = renderArrow(curD.brush, orig, orig, state.squareRatio, true, false);
+      g.appendChild(el);
       curD.arrow = el;
-      shapesEl.appendChild(el);
+      shapesEl.appendChild(g);
     }
   }
 }
@@ -148,7 +151,6 @@ export function syncShapes(
   shapes: Shape[],
   root: HTMLElement | SVGElement,
   renderShape: (shape: Shape) => HTMLElement | SVGElement | undefined,
-  renderDesc?: (shape: Shape) => SVGElement | undefined,
   outsideArrow?: boolean
 ): void {
   const hashesInDom = new Map(), // by hash
@@ -172,8 +174,6 @@ export function syncShapes(
     if (!hashesInDom.get(sc.hash)) {
       const shapeEl = renderShape(sc);
       if (shapeEl) root.appendChild(shapeEl);
-      const descEl = sc.shape.description && renderDesc && renderDesc(sc);
-      if (descEl) root.appendChild(descEl);
     }
   }
 }
@@ -212,44 +212,13 @@ function customSvgHash(s: string): Hash {
   return 'custom-' + h.toString();
 }
 
-function renderDescription(state: State, { shape, hash }: Shape, arrowDests: ArrowDests): SVGElement | undefined {
-  const orig = pieceOrKeyToPos(shape.orig, state);
-  if (!orig || !shape.description) return;
-  const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state),
-    diff = dest ? [dest[0] - orig[0], dest[1] - orig[1]] : [0, 0],
-    offset = (arrowDests.get(isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest) || 0) > 1 ? 0.3 : 0.15,
-    close =
-      (diff[0] === 0 || Math.abs(diff[0]) === state.squareRatio[0]) &&
-      (diff[1] === 0 || Math.abs(diff[1]) === state.squareRatio[1]),
-    ratio = dest ? 0.55 - (close ? offset : 0) : 0,
-    mid: sg.Pos = [orig[0] + diff[0] * ratio, orig[1] + diff[1] * ratio],
-    textLength = shape.description.length;
-  const g = setAttributes(createSVGElement('g'), { class: 'description', sgHash: hash }),
-    circle = setAttributes(createSVGElement('ellipse'), {
-      cx: mid[0],
-      cy: mid[1],
-      rx: textLength + 1.5,
-      ry: 2.5,
-    }),
-    text = setAttributes(createSVGElement('text'), {
-      x: mid[0],
-      y: mid[1],
-      'text-anchor': 'middle',
-      'dominant-baseline': 'central',
-    });
-  g.appendChild(circle);
-  text.appendChild(document.createTextNode(shape.description));
-  g.appendChild(text);
-  return g;
-}
-
 function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDests: ArrowDests): SVGElement | undefined {
   const orig = pieceOrKeyToPos(shape.orig, state);
   if (!orig) return;
-  let el: SVGElement | undefined;
   if (shape.customSvg) {
-    el = renderCustomSvg(shape.customSvg, orig, state.squareRatio);
+    return renderCustomSvg(shape.customSvg, orig, state.squareRatio);
   } else {
+    let el: SVGElement | undefined;
     const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state);
     if (dest) {
       el = renderArrow(
@@ -258,8 +227,7 @@ function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDest
         dest,
         state.squareRatio,
         !!current,
-        (arrowDests.get((isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest)!) || 0) > 1,
-        false
+        (arrowDests.get((isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest)!) || 0) > 1
       );
     } else if (samePieceOrKey(shape.dest, shape.orig)) {
       let ratio: sg.NumberPair = state.squareRatio;
@@ -272,14 +240,19 @@ function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDest
           ratio = [heightBase * state.squareRatio[0], heightBase * state.squareRatio[1]];
         }
       }
-      el = renderEllipse(shape.brush, orig, ratio, !!current);
+      el = renderEllipse(orig, ratio, !!current);
     }
+    if (el) {
+      const g = setAttributes(createSVGElement('g'), {
+        class: shapeClass(shape.brush, !!current, false),
+        sgHash: hash,
+      });
+      g.appendChild(el);
+      const descEl = shape.description && renderDescription(state, shape, arrowDests);
+      if (descEl) g.appendChild(descEl);
+      return g;
+    } else return;
   }
-  if (el) {
-    el.setAttribute('sgHash', hash);
-    return el;
-  }
-  return;
 }
 
 function renderCustomSvg(customSvg: string, pos: sg.Pos, ratio: sg.NumberPair): SVGElement {
@@ -300,11 +273,10 @@ function renderCustomSvg(customSvg: string, pos: sg.Pos, ratio: sg.NumberPair): 
   return g;
 }
 
-function renderEllipse(brush: string, pos: sg.Pos, ratio: sg.NumberPair, current: boolean): SVGElement {
+function renderEllipse(pos: sg.Pos, ratio: sg.NumberPair, current: boolean): SVGElement {
   const o = pos,
     widths = ellipseWidth(ratio);
   return setAttributes(createSVGElement('ellipse'), {
-    class: brush,
     'stroke-width': widths[current ? 0 : 1],
     fill: 'none',
     cx: o[0],
@@ -320,8 +292,7 @@ function renderArrow(
   dest: sg.Pos,
   ratio: sg.NumberPair,
   current: boolean,
-  shorten: boolean,
-  outside: boolean
+  shorten: boolean
 ): SVGElement {
   const m = arrowMargin(shorten && !current, ratio),
     a = orig,
@@ -332,7 +303,6 @@ function renderArrow(
     xo = Math.cos(angle) * m,
     yo = Math.sin(angle) * m;
   return setAttributes(createSVGElement('line'), {
-    class: shapeClass(brush, current, outside),
     'stroke-width': lineWidth(current, ratio),
     'stroke-linecap': 'round',
     'marker-end': 'url(#arrowhead-' + brush + ')',
@@ -343,14 +313,13 @@ function renderArrow(
   });
 }
 
-export function renderPiece(state: State, { shape, hash }: Shape): sg.PieceNode | undefined {
+export function renderPiece(state: State, { shape }: Shape): sg.PieceNode | undefined {
   if (!shape.piece || isPiece(shape.orig)) return;
 
   const orig = shape.orig,
     scale = (shape.piece.scale || 1) * (state.scaleDownPieces ? 0.5 : 1);
 
   const pieceEl = createEl('piece', pieceNameOf(shape.piece)) as sg.PieceNode;
-  pieceEl.setAttribute('sgHash', hash);
   pieceEl.sgKey = orig;
   pieceEl.sgScale = scale;
   translateRel(
@@ -361,6 +330,37 @@ export function renderPiece(state: State, { shape, hash }: Shape): sg.PieceNode 
   );
 
   return pieceEl;
+}
+
+function renderDescription(state: State, shape: DrawShape, arrowDests: ArrowDests): SVGElement | undefined {
+  const orig = pieceOrKeyToPos(shape.orig, state);
+  if (!orig || !shape.description) return;
+  const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state),
+    diff = dest ? [dest[0] - orig[0], dest[1] - orig[1]] : [0, 0],
+    offset = (arrowDests.get(isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest) || 0) > 1 ? 0.3 : 0.15,
+    close =
+      (diff[0] === 0 || Math.abs(diff[0]) === state.squareRatio[0]) &&
+      (diff[1] === 0 || Math.abs(diff[1]) === state.squareRatio[1]),
+    ratio = dest ? 0.55 - (close ? offset : 0) : 0,
+    mid: sg.Pos = [orig[0] + diff[0] * ratio, orig[1] + diff[1] * ratio],
+    textLength = shape.description.length;
+  const g = setAttributes(createSVGElement('g'), { class: 'description' }),
+    circle = setAttributes(createSVGElement('ellipse'), {
+      cx: mid[0],
+      cy: mid[1],
+      rx: textLength + 1.5,
+      ry: 2.5,
+    }),
+    text = setAttributes(createSVGElement('text'), {
+      x: mid[0],
+      y: mid[1],
+      'text-anchor': 'middle',
+      'dominant-baseline': 'central',
+    });
+  g.appendChild(circle);
+  text.appendChild(document.createTextNode(shape.description));
+  g.appendChild(text);
+  return g;
 }
 
 function renderMarker(brush: string): SVGElement {
@@ -406,7 +406,7 @@ export function usesBounds(shapes: DrawShape[]): boolean {
   return shapes.some(s => isPiece(s.orig) || isPiece(s.dest));
 }
 
-function shapeClass(brush: string, current: boolean, outside: boolean): string {
+function shapeClass(brush: string, current: boolean, outside: boolean = false): string {
   return brush + (current ? ' current' : '') + (outside ? ' outside' : '');
 }
 
