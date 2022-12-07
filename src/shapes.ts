@@ -132,7 +132,7 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
 function syncDefs(shapes: Shape[], outsideShape: DrawCurrent | undefined, defsEl: SVGElement): void {
   const brushes: Set<string> = new Set();
   for (const s of shapes) {
-    if (!samePieceOrKey(s.shape.dest, s.shape.orig) && s.shape.brush) brushes.add(s.shape.brush);
+    if (!samePieceOrKey(s.shape.dest, s.shape.orig)) brushes.add(s.shape.brush);
   }
   if (outsideShape) brushes.add(outsideShape.brush);
   const keysInDom = new Set();
@@ -142,7 +142,8 @@ function syncDefs(shapes: Shape[], outsideShape: DrawCurrent | undefined, defsEl
     el = el.nextElementSibling as SVGElement | undefined;
   }
   for (const key of brushes) {
-    if (!keysInDom.has(key)) defsEl.appendChild(renderMarker(key));
+    const brush = key || 'primary';
+    if (!keysInDom.has(brush)) defsEl.appendChild(renderMarker(brush));
   }
 }
 
@@ -306,7 +307,7 @@ function renderArrow(
   return setAttributes(createSVGElement('line'), {
     'stroke-width': lineWidth(current, ratio),
     'stroke-linecap': 'round',
-    'marker-end': brush ? 'url(#arrowhead-' + brush + ')' : undefined,
+    'marker-end': 'url(#arrowhead-' + (brush || 'primary') + ')',
     x1: a[0],
     y1: a[1],
     x2: b[0] - xo,
