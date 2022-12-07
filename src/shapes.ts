@@ -93,9 +93,9 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
     </sg-free-pieces>
     </svg>
   */
-  const defsEl = svg.querySelector('defs') as SVGElement;
-  const shapesEl = svg.querySelector('g') as SVGElement;
-  const customSvgsEl = customSvg.querySelector('g') as SVGElement;
+  const defsEl = svg.querySelector('defs') as SVGElement,
+    shapesEl = svg.querySelector('g') as SVGElement,
+    customSvgsEl = customSvg.querySelector('g') as SVGElement;
 
   syncDefs(shapes, outsideArrow ? curD : undefined, defsEl);
   syncShapes(
@@ -132,7 +132,7 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
 function syncDefs(shapes: Shape[], outsideShape: DrawCurrent | undefined, defsEl: SVGElement): void {
   const brushes: Set<string> = new Set();
   for (const s of shapes) {
-    if (!samePieceOrKey(s.shape.dest, s.shape.orig)) brushes.add(s.shape.brush);
+    if (!samePieceOrKey(s.shape.dest, s.shape.orig) && s.shape.brush) brushes.add(s.shape.brush);
   }
   if (outsideShape) brushes.add(outsideShape.brush);
   const keysInDom = new Set();
@@ -216,7 +216,7 @@ function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDest
   const orig = pieceOrKeyToPos(shape.orig, state);
   if (!orig) return;
   if (shape.customSvg) {
-    return renderCustomSvg(shape.customSvg, orig, state.squareRatio);
+    return renderCustomSvg(shape.brush, shape.customSvg, orig, state.squareRatio);
   } else {
     let el: SVGElement | undefined;
     const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state);
@@ -255,13 +255,14 @@ function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDest
   }
 }
 
-function renderCustomSvg(customSvg: string, pos: sg.Pos, ratio: sg.NumberPair): SVGElement {
+function renderCustomSvg(brush: string, customSvg: string, pos: sg.Pos, ratio: sg.NumberPair): SVGElement {
   const [x, y] = pos;
 
   // Translate to top-left of `orig` square
   const g = setAttributes(createSVGElement('g'), { transform: `translate(${x},${y})` });
 
   const svg = setAttributes(createSVGElement('svg'), {
+    class: brush,
     width: ratio[0],
     height: ratio[1],
     viewBox: `0 0 ${ratio[0] * 10} ${ratio[1] * 10}`,
@@ -305,7 +306,7 @@ function renderArrow(
   return setAttributes(createSVGElement('line'), {
     'stroke-width': lineWidth(current, ratio),
     'stroke-linecap': 'round',
-    'marker-end': 'url(#arrowhead-' + brush + ')',
+    'marker-end': brush ? 'url(#arrowhead-' + brush + ')' : undefined,
     x1: a[0],
     y1: a[1],
     x2: b[0] - xo,
@@ -406,7 +407,7 @@ export function usesBounds(shapes: DrawShape[]): boolean {
   return shapes.some(s => isPiece(s.orig) || isPiece(s.dest));
 }
 
-function shapeClass(brush: string, current: boolean, outside: boolean = false): string {
+function shapeClass(brush: string, current: boolean, outside: boolean): string {
   return brush + (current ? ' current' : '') + (outside ? ' outside' : '');
 }
 
