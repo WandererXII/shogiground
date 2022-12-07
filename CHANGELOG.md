@@ -1,3 +1,9 @@
+## v0.7.0
+
+- Brush is also added as class to custom svgs.
+- 'primary' brush class is added for arrows containing empty brush name.
+- Each shape is now inside `g` element. Brush names (classes) and `sgHash` are assigned to these `g` elements - you need to update css.
+
 ## v0.6.2
 
 - Fix `highlight.checkRoles` not being optional in `config`
