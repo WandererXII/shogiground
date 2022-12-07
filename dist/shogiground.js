@@ -137,8 +137,7 @@ var Shogiground = (function () {
             hand.set(piece.role, (hand.get(piece.role) || 0) + cnt);
     }
     function removeFromHand(s, piece, cnt = 1) {
-        const hand = s.hands.handMap.get(piece.color);
-        const num = hand === null || hand === void 0 ? void 0 : hand.get(piece.role);
+        const hand = s.hands.handMap.get(piece.color), num = hand === null || hand === void 0 ? void 0 : hand.get(piece.role);
         if (hand && num)
             hand.set(piece.role, Math.max(num - cnt, 0));
     }
@@ -1079,11 +1078,9 @@ var Shogiground = (function () {
           </sg-free-pieces>
           </svg>
         */
-        const defsEl = svg.querySelector('defs');
-        const shapesEl = svg.querySelector('g');
-        const customSvgsEl = customSvg.querySelector('g');
+        const defsEl = svg.querySelector('defs'), shapesEl = svg.querySelector('g'), customSvgsEl = customSvg.querySelector('g');
         syncDefs(shapes, outsideArrow ? curD : undefined, defsEl);
-        syncShapes(shapes.filter(s => !s.shape.customSvg && (!s.shape.piece || s.current)), shapesEl, shape => renderSVGShape(state, shape, arrowDests), shape => renderDescription(state, shape, arrowDests), outsideArrow);
+        syncShapes(shapes.filter(s => !s.shape.customSvg && (!s.shape.piece || s.current)), shapesEl, shape => renderSVGShape(state, shape, arrowDests), outsideArrow);
         syncShapes(shapes.filter(s => s.shape.customSvg), customSvgsEl, shape => renderSVGShape(state, shape, arrowDests));
         syncShapes(pieceShapes, freePieces, shape => renderPiece(state, shape));
         if (!outsideArrow && curD)
@@ -1091,10 +1088,13 @@ var Shogiground = (function () {
         if (outsideArrow && !curD.arrow) {
             const orig = pieceOrKeyToPos(curD.orig, state);
             if (orig) {
-                const el = renderArrow(curD.brush, orig, orig, state.squareRatio, true, false, true);
-                el.setAttribute('sgHash', outsideArrowHash);
+                const g = setAttributes(createSVGElement('g'), {
+                    class: shapeClass(curD.brush, true, true),
+                    sgHash: outsideArrowHash,
+                }), el = renderArrow(curD.brush, orig, orig, state.squareRatio, true, false);
+                g.appendChild(el);
                 curD.arrow = el;
-                shapesEl.appendChild(el);
+                shapesEl.appendChild(g);
             }
         }
     }
@@ -1114,12 +1114,13 @@ var Shogiground = (function () {
             el = el.nextElementSibling;
         }
         for (const key of brushes) {
-            if (!keysInDom.has(key))
-                defsEl.appendChild(renderMarker(key));
+            const brush = key || 'primary';
+            if (!keysInDom.has(brush))
+                defsEl.appendChild(renderMarker(brush));
         }
     }
     // append and remove only. No updates.
-    function syncShapes(shapes, root, renderShape, renderDesc, outsideArrow) {
+    function syncShapes(shapes, root, renderShape, outsideArrow) {
         const hashesInDom = new Map(), // by hash
         toRemove = [];
         for (const sc of shapes)
@@ -1146,9 +1147,6 @@ var Shogiground = (function () {
                 const shapeEl = renderShape(sc);
                 if (shapeEl)
                     root.appendChild(shapeEl);
-                const descEl = sc.shape.description && renderDesc && renderDesc(sc);
-                if (descEl)
-                    root.appendChild(descEl);
             }
         }
     }
@@ -1178,13 +1176,100 @@ var Shogiground = (function () {
         }
         return 'custom-' + h.toString();
     }
-    function renderDescription(state, { shape, hash }, arrowDests) {
+    function renderSVGShape(state, { shape, current, hash }, arrowDests) {
+        const orig = pieceOrKeyToPos(shape.orig, state);
+        if (!orig)
+            return;
+        if (shape.customSvg) {
+            return renderCustomSvg(shape.brush, shape.customSvg, orig, state.squareRatio);
+        }
+        else {
+            let el;
+            const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state);
+            if (dest) {
+                el = renderArrow(shape.brush, orig, dest, state.squareRatio, !!current, (arrowDests.get((isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest)) || 0) > 1);
+            }
+            else if (samePieceOrKey(shape.dest, shape.orig)) {
+                let ratio = state.squareRatio;
+                if (isPiece(shape.orig)) {
+                    const pieceBounds = state.dom.bounds.hands.pieceBounds().get(pieceNameOf(shape.orig)), bounds = state.dom.bounds.board.bounds();
+                    if (pieceBounds && bounds) {
+                        const heightBase = pieceBounds.height / (bounds.height / state.dimensions.files);
+                        // we want to keep the ratio that is on the board
+                        ratio = [heightBase * state.squareRatio[0], heightBase * state.squareRatio[1]];
+                    }
+                }
+                el = renderEllipse(orig, ratio, !!current);
+            }
+            if (el) {
+                const g = setAttributes(createSVGElement('g'), {
+                    class: shapeClass(shape.brush, !!current, false),
+                    sgHash: hash,
+                });
+                g.appendChild(el);
+                const descEl = shape.description && renderDescription(state, shape, arrowDests);
+                if (descEl)
+                    g.appendChild(descEl);
+                return g;
+            }
+            else
+                return;
+        }
+    }
+    function renderCustomSvg(brush, customSvg, pos, ratio) {
+        const [x, y] = pos;
+        // Translate to top-left of `orig` square
+        const g = setAttributes(createSVGElement('g'), { transform: `translate(${x},${y})` });
+        const svg = setAttributes(createSVGElement('svg'), {
+            class: brush,
+            width: ratio[0],
+            height: ratio[1],
+            viewBox: `0 0 ${ratio[0] * 10} ${ratio[1] * 10}`,
+        });
+        g.appendChild(svg);
+        svg.innerHTML = customSvg;
+        return g;
+    }
+    function renderEllipse(pos, ratio, current) {
+        const o = pos, widths = ellipseWidth(ratio);
+        return setAttributes(createSVGElement('ellipse'), {
+            'stroke-width': widths[current ? 0 : 1],
+            fill: 'none',
+            cx: o[0],
+            cy: o[1],
+            rx: ratio[0] / 2 - widths[1] / 2,
+            ry: ratio[1] / 2 - widths[1] / 2,
+        });
+    }
+    function renderArrow(brush, orig, dest, ratio, current, shorten) {
+        const m = arrowMargin(shorten && !current, ratio), a = orig, b = dest, dx = b[0] - a[0], dy = b[1] - a[1], angle = Math.atan2(dy, dx), xo = Math.cos(angle) * m, yo = Math.sin(angle) * m;
+        return setAttributes(createSVGElement('line'), {
+            'stroke-width': lineWidth(current, ratio),
+            'stroke-linecap': 'round',
+            'marker-end': 'url(#arrowhead-' + (brush || 'primary') + ')',
+            x1: a[0],
+            y1: a[1],
+            x2: b[0] - xo,
+            y2: b[1] - yo,
+        });
+    }
+    function renderPiece(state, { shape }) {
+        if (!shape.piece || isPiece(shape.orig))
+            return;
+        const orig = shape.orig, scale = (shape.piece.scale || 1) * (state.scaleDownPieces ? 0.5 : 1);
+        const pieceEl = createEl('piece', pieceNameOf(shape.piece));
+        pieceEl.sgKey = orig;
+        pieceEl.sgScale = scale;
+        translateRel(pieceEl, posToTranslateRel(state.dimensions)(key2pos(orig), sentePov(state.orientation)), state.scaleDownPieces ? 0.5 : 1, scale);
+        return pieceEl;
+    }
+    function renderDescription(state, shape, arrowDests) {
         const orig = pieceOrKeyToPos(shape.orig, state);
         if (!orig || !shape.description)
             return;
         const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state), diff = dest ? [dest[0] - orig[0], dest[1] - orig[1]] : [0, 0], offset = (arrowDests.get(isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest) || 0) > 1 ? 0.3 : 0.15, close = (diff[0] === 0 || Math.abs(diff[0]) === state.squareRatio[0]) &&
             (diff[1] === 0 || Math.abs(diff[1]) === state.squareRatio[1]), ratio = dest ? 0.55 - (close ? offset : 0) : 0, mid = [orig[0] + diff[0] * ratio, orig[1] + diff[1] * ratio], textLength = shape.description.length;
-        const g = setAttributes(createSVGElement('g'), { class: 'description', sgHash: hash }), circle = setAttributes(createSVGElement('ellipse'), {
+        const g = setAttributes(createSVGElement('g'), { class: 'description' }), circle = setAttributes(createSVGElement('ellipse'), {
             cx: mid[0],
             cy: mid[1],
             rx: textLength + 1.5,
@@ -1199,87 +1284,6 @@ var Shogiground = (function () {
         text.appendChild(document.createTextNode(shape.description));
         g.appendChild(text);
         return g;
-    }
-    function renderSVGShape(state, { shape, current, hash }, arrowDests) {
-        const orig = pieceOrKeyToPos(shape.orig, state);
-        if (!orig)
-            return;
-        let el;
-        if (shape.customSvg) {
-            el = renderCustomSvg(shape.customSvg, orig, state.squareRatio);
-        }
-        else {
-            const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state);
-            if (dest) {
-                el = renderArrow(shape.brush, orig, dest, state.squareRatio, !!current, (arrowDests.get((isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest)) || 0) > 1, false);
-            }
-            else if (samePieceOrKey(shape.dest, shape.orig)) {
-                let ratio = state.squareRatio;
-                if (isPiece(shape.orig)) {
-                    const pieceBounds = state.dom.bounds.hands.pieceBounds().get(pieceNameOf(shape.orig)), bounds = state.dom.bounds.board.bounds();
-                    if (pieceBounds && bounds) {
-                        const heightBase = pieceBounds.height / (bounds.height / state.dimensions.files);
-                        // we want to keep the ratio that is on the board
-                        ratio = [heightBase * state.squareRatio[0], heightBase * state.squareRatio[1]];
-                    }
-                }
-                el = renderEllipse(shape.brush, orig, ratio, !!current);
-            }
-        }
-        if (el) {
-            el.setAttribute('sgHash', hash);
-            return el;
-        }
-        return;
-    }
-    function renderCustomSvg(customSvg, pos, ratio) {
-        const [x, y] = pos;
-        // Translate to top-left of `orig` square
-        const g = setAttributes(createSVGElement('g'), { transform: `translate(${x},${y})` });
-        const svg = setAttributes(createSVGElement('svg'), {
-            width: ratio[0],
-            height: ratio[1],
-            viewBox: `0 0 ${ratio[0] * 10} ${ratio[1] * 10}`,
-        });
-        g.appendChild(svg);
-        svg.innerHTML = customSvg;
-        return g;
-    }
-    function renderEllipse(brush, pos, ratio, current) {
-        const o = pos, widths = ellipseWidth(ratio);
-        return setAttributes(createSVGElement('ellipse'), {
-            class: brush,
-            'stroke-width': widths[current ? 0 : 1],
-            fill: 'none',
-            cx: o[0],
-            cy: o[1],
-            rx: ratio[0] / 2 - widths[1] / 2,
-            ry: ratio[1] / 2 - widths[1] / 2,
-        });
-    }
-    function renderArrow(brush, orig, dest, ratio, current, shorten, outside) {
-        const m = arrowMargin(shorten && !current, ratio), a = orig, b = dest, dx = b[0] - a[0], dy = b[1] - a[1], angle = Math.atan2(dy, dx), xo = Math.cos(angle) * m, yo = Math.sin(angle) * m;
-        return setAttributes(createSVGElement('line'), {
-            class: shapeClass(brush, current, outside),
-            'stroke-width': lineWidth(current, ratio),
-            'stroke-linecap': 'round',
-            'marker-end': 'url(#arrowhead-' + brush + ')',
-            x1: a[0],
-            y1: a[1],
-            x2: b[0] - xo,
-            y2: b[1] - yo,
-        });
-    }
-    function renderPiece(state, { shape, hash }) {
-        if (!shape.piece || isPiece(shape.orig))
-            return;
-        const orig = shape.orig, scale = (shape.piece.scale || 1) * (state.scaleDownPieces ? 0.5 : 1);
-        const pieceEl = createEl('piece', pieceNameOf(shape.piece));
-        pieceEl.setAttribute('sgHash', hash);
-        pieceEl.sgKey = orig;
-        pieceEl.sgScale = scale;
-        translateRel(pieceEl, posToTranslateRel(state.dimensions)(key2pos(orig), sentePov(state.orientation)), state.scaleDownPieces ? 0.5 : 1, scale);
-        return pieceEl;
     }
     function renderMarker(brush) {
         const marker = setAttributes(createSVGElement('marker'), {
@@ -1607,8 +1611,7 @@ var Shogiground = (function () {
     }
     function eventBrush(e) {
         var _a;
-        const modA = (e.shiftKey || e.ctrlKey) && isRightButton(e);
-        const modB = e.altKey || e.metaKey || ((_a = e.getModifierState) === null || _a === void 0 ? void 0 : _a.call(e, 'AltGraph'));
+        const modA = (e.shiftKey || e.ctrlKey) && isRightButton(e), modB = e.altKey || e.metaKey || ((_a = e.getModifierState) === null || _a === void 0 ? void 0 : _a.call(e, 'AltGraph'));
         return brushes[(modA ? 1 : 0) + (modB ? 2 : 0)];
     }
     function addShape(drawable, cur) {
@@ -1618,9 +1621,7 @@ var Shogiground = (function () {
         // separate shape for pieces
         const piece = cur.piece;
         cur.piece = undefined;
-        const similar = drawable.shapes.find(similarShape);
-        const removePiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && samePiece(piece, s.piece));
-        const diffPiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && !samePiece(piece, s.piece));
+        const similar = drawable.shapes.find(similarShape), removePiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && samePiece(piece, s.piece)), diffPiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && !samePiece(piece, s.piece));
         // remove every similar shape
         if (similar)
             drawable.shapes = drawable.shapes.filter(s => !similarShape(s));
@@ -1960,9 +1961,7 @@ var Shogiground = (function () {
             setDisplay(squareOver, false);
             board.appendChild(squareOver);
         }
-        let svg;
-        let customSvg;
-        let freePieces;
+        let svg, customSvg, freePieces;
         if (s.drawable.visible) {
             svg = setAttributes(createSVGElement('svg'), {
                 class: 'sg-shapes',
@@ -2118,8 +2117,7 @@ var Shogiground = (function () {
             new ResizeObserver(onResize(s)).observe(boardEls.board);
         if (s.viewOnly)
             return;
-        const piecesEl = boardEls.pieces;
-        const promotionEl = boardEls.promotion;
+        const piecesEl = boardEls.pieces, promotionEl = boardEls.promotion;
         // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
         const onStart = startDragOrDraw(s);
         piecesEl.addEventListener('touchstart', onStart, {
@@ -2165,8 +2163,7 @@ var Shogiground = (function () {
             unbinds.push(unbindable(document.body, 'shogiground.resize', onResize(s)));
         }
         if (!s.viewOnly) {
-            const onmove = dragOrDraw(s, move, move$1);
-            const onend = dragOrDraw(s, end, end$1);
+            const onmove = dragOrDraw(s, move, move$1), onend = dragOrDraw(s, end, end$1);
             for (const ev of ['touchmove', 'mousemove'])
                 unbinds.push(unbindable(document, ev, onmove));
             for (const ev of ['touchend', 'mouseup'])
