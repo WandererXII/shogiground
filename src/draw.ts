@@ -158,8 +158,8 @@ export function setDrawPiece(state: State, piece: sg.Piece): void {
 }
 
 function eventBrush(e: sg.MouchEvent): string {
-  const modA = (e.shiftKey || e.ctrlKey) && isRightButton(e);
-  const modB = e.altKey || e.metaKey || e.getModifierState?.('AltGraph');
+  const modA = (e.shiftKey || e.ctrlKey) && isRightButton(e),
+    modB = e.altKey || e.metaKey || e.getModifierState?.('AltGraph');
   return brushes[(modA ? 1 : 0) + (modB ? 2 : 0)];
 }
 
@@ -172,9 +172,9 @@ function addShape(drawable: Drawable, cur: DrawCurrent): void {
   const piece = cur.piece;
   cur.piece = undefined;
 
-  const similar = drawable.shapes.find(similarShape);
-  const removePiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && samePiece(piece, s.piece));
-  const diffPiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && !samePiece(piece, s.piece));
+  const similar = drawable.shapes.find(similarShape),
+    removePiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && samePiece(piece, s.piece)),
+    diffPiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && !samePiece(piece, s.piece));
 
   // remove every similar shape
   if (similar) drawable.shapes = drawable.shapes.filter(s => !similarShape(s));

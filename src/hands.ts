@@ -8,8 +8,8 @@ export function addToHand(s: HeadlessState, piece: sg.Piece, cnt = 1): void {
 }
 
 export function removeFromHand(s: HeadlessState, piece: sg.Piece, cnt = 1): void {
-  const hand = s.hands.handMap.get(piece.color);
-  const num = hand?.get(piece.role);
+  const hand = s.hands.handMap.get(piece.color),
+    num = hand?.get(piece.role);
   if (hand && num) hand.set(piece.role, Math.max(num - cnt, 0));
 }
 

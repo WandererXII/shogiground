@@ -55,10 +55,7 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
     board.appendChild(squareOver);
   }
 
-  let svg: SVGElement | undefined;
-  let customSvg: SVGElement | undefined;
-  let freePieces: HTMLElement | undefined;
-
+  let svg, customSvg, freePieces;
   if (s.drawable.visible) {
     svg = setAttributes(createSVGElement('svg'), {
       class: 'sg-shapes',

@@ -36,8 +36,8 @@ export function bindBoard(s: State, boardEls: sg.BoardElements): void {
 
   if (s.viewOnly) return;
 
-  const piecesEl = boardEls.pieces;
-  const promotionEl = boardEls.promotion;
+  const piecesEl = boardEls.pieces,
+    promotionEl = boardEls.promotion;
 
   // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
   const onStart = startDragOrDraw(s);
@@ -87,8 +87,8 @@ export function bindDocument(s: State): sg.Unbind {
   }
 
   if (!s.viewOnly) {
-    const onmove = dragOrDraw(s, drag.move, draw.move);
-    const onend = dragOrDraw(s, drag.end, draw.end);
+    const onmove = dragOrDraw(s, drag.move, draw.move),
+      onend = dragOrDraw(s, drag.end, draw.end);
 
     for (const ev of ['touchmove', 'mousemove']) unbinds.push(unbindable(document, ev, onmove as EventListener));
     for (const ev of ['touchend', 'mouseup']) unbinds.push(unbindable(document, ev, onend as EventListener));
