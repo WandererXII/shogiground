@@ -106,8 +106,8 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
 
   let hands: HandElements | undefined;
   if (s.hands.inlined) {
-    const handWrapTop = createEl('sg-hand-wrap'),
-      handWrapBottom = createEl('sg-hand-wrap');
+    const handWrapTop = createEl('sg-hand-wrap', 'inlined'),
+      handWrapBottom = createEl('sg-hand-wrap', 'inlined');
     boardWrap.insertBefore(handWrapBottom, board.nextElementSibling);
     boardWrap.insertBefore(handWrapTop, board);
     hands = {
