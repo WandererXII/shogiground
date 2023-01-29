@@ -1,7 +1,7 @@
-export type Color = typeof colors[number];
+export type Color = (typeof colors)[number];
 export type Key = `${File}${Rank}`;
-export type File = typeof files[number];
-export type Rank = typeof ranks[number];
+export type File = (typeof files)[number];
+export type Rank = (typeof ranks)[number];
 export type BoardSfen = string;
 export type HandsSfen = string;
 // coordinate system starts at top right
