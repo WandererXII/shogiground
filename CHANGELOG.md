@@ -1,3 +1,7 @@
+## v0.7.1
+
+- Inlined hand wrapper element (`sg-hand-wrap`) now has `inlined` class.
+
 ## v0.7.0
 
 - Brush is also added as class to custom svgs.
