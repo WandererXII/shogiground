@@ -1,3 +1,8 @@
+## v0.8.0
+
+- Renamed `cancelMove` to `cancelMoveOrDrop` to better reflect what it actually does.
+- Added an option to drop spare pieces (`selectabled.forceSpares`) by selecting a square even with selectable disabled.
+
 ## v0.7.1
 
 - Inlined hand wrapper element (`sg-hand-wrap`) now has `inlined` class.
