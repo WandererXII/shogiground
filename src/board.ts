@@ -224,7 +224,11 @@ export function selectSquare(state: HeadlessState, key: sg.Key, prom?: boolean, 
   }
 
   // try moving/dropping
-  if (state.selectable.enabled || force) {
+  if (
+    state.selectable.enabled ||
+    force ||
+    (state.selectable.forceSpares && state.selectedPiece && state.droppable.spare)
+  ) {
     if (state.selectedPiece && userDrop(state, state.selectedPiece, key, prom)) return;
     else if (state.selected && userMove(state, state.selected, key, prom)) return;
   }

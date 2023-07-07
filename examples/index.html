@@ -50,7 +50,8 @@
           enabled: false,
         },
         selectable: {
-          enabled: true,
+          enabled: false,
+          forceSpares: false,
         },
         highlight: {
           hovered: false,
@@ -80,6 +81,9 @@
           },
           pieceUnselect: p => {
             console.log('pieceUnselect', p);
+          },
+          select: s => {
+            console.log('select', s);
           },
           unselect: s => {
             console.log('unselect', s);

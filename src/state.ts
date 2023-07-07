@@ -100,6 +100,7 @@ export interface HeadlessState {
   };
   selectable: {
     enabled: boolean; // disable to enforce dragging over click-click move
+    forceSpares: boolean; // allow dropping spare pieces even with selectable disabled
     deleteOnTouch: boolean; // selecting a piece on the board or in hand will remove it - board editor
   };
   promotion: {
@@ -209,6 +210,7 @@ export function defaults(): HeadlessState {
     },
     selectable: {
       enabled: true,
+      forceSpares: false,
       deleteOnTouch: false,
     },
     promotion: {
