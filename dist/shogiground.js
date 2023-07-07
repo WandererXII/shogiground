@@ -367,7 +367,9 @@ var Shogiground = (function () {
             return;
         }
         // try moving/dropping
-        if (state.selectable.enabled || force) {
+        if (state.selectable.enabled ||
+            force ||
+            (state.selectable.forceSpares && state.selectedPiece && state.droppable.spare)) {
             if (state.selectedPiece && userDrop(state, state.selectedPiece, key, prom))
                 return;
             else if (state.selected && userMove(state, state.selected, key, prom))
@@ -2430,7 +2432,7 @@ var Shogiground = (function () {
             cancelPredrop() {
                 render(unsetPredrop, state);
             },
-            cancelMove() {
+            cancelMoveOrDrop() {
                 render(state => {
                     cancelMoveOrDrop(state);
                     cancel(state);
@@ -2529,6 +2531,7 @@ var Shogiground = (function () {
             },
             selectable: {
                 enabled: true,
+                forceSpares: false,
                 deleteOnTouch: false,
             },
             promotion: {
