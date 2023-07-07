@@ -66,8 +66,8 @@ export interface Api {
   // cancel the current predrop, if any
   cancelPredrop(): void;
 
-  // cancel the current move being made, premoves and predrops
-  cancelMove(): void;
+  // cancel the current move or drop being made, premoves and predrops
+  cancelMoveOrDrop(): void;
 
   // cancel current move and prevent further ones
   stop(): void;
@@ -209,7 +209,7 @@ export function start(state: State): Api {
       render(board.unsetPredrop, state);
     },
 
-    cancelMove(): void {
+    cancelMoveOrDrop(): void {
       render(state => {
         board.cancelMoveOrDrop(state);
         dragCancel(state);
