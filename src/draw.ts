@@ -11,7 +11,6 @@ import {
   sentePov,
 } from './util.js';
 import { isPiece, pos2user, samePieceOrKey, setAttributes } from './shapes.js';
-import { redraw, redrawNow } from './redraw.js';
 
 export interface DrawShape {
   orig: sg.Key | sg.Piece;
@@ -105,7 +104,7 @@ export function processDraw(state: State): void {
         getHandPieceAtDomPos(cur.pos, state.hands.roles, state.dom.bounds.hands.pieceBounds());
       if (cur.dest !== dest && !(cur.dest && dest && samePieceOrKey(dest, cur.dest))) {
         cur.dest = dest;
-        redrawNow(state);
+        state.dom.redrawNow();
       }
       if (!cur.dest && cur.arrow) {
         const dest = pos2user(
@@ -137,7 +136,7 @@ export function end(state: State, _: sg.MouchEvent): void {
 export function cancel(state: State): void {
   if (state.drawable.current) {
     state.drawable.current = undefined;
-    redraw(state);
+    state.dom.redraw();
   }
 }
 
@@ -146,7 +145,7 @@ export function clear(state: State): void {
   if (drawableLength || state.drawable.piece) {
     state.drawable.shapes = [];
     state.drawable.piece = undefined;
-    redraw(state);
+    state.dom.redraw();
     if (drawableLength) onChange(state.drawable);
   }
 }
@@ -154,7 +153,7 @@ export function clear(state: State): void {
 export function setDrawPiece(state: State, piece: sg.Piece): void {
   if (state.drawable.piece && samePiece(state.drawable.piece, piece)) state.drawable.piece = undefined;
   else state.drawable.piece = piece;
-  redraw(state);
+  state.dom.redraw();
 }
 
 function eventBrush(e: sg.MouchEvent): string {

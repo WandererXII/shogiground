@@ -81,6 +81,9 @@ export interface Dom {
   wrapElements: WrapElements;
   elements: Elements;
   bounds: Bounds;
+  redrawNow: (skipShapes?: boolean) => void;
+  redraw: () => void;
+  redrawShapes: () => void;
   unbind: Unbind;
   destroyed: boolean;
 }
@@ -121,9 +124,7 @@ export interface Memo<A> {
   clear: () => void;
 }
 
-export type Redraw = () => void;
 export type Unbind = () => void;
-export type Milliseconds = number;
 export type KHz = number;
 
 export const colors = ['sente', 'gote'] as const;

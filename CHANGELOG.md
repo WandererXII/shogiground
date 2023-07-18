@@ -1,3 +1,7 @@
+## v0.8.1
+
+- Fix redrawing with multiple instances of shogiground.
+
 ## v0.8.0
 
 - Renamed `cancelMove` to `cancelMoveOrDrop` to better reflect what it actually does.

@@ -13,8 +13,6 @@ export function redrawShapesNow(state: State): void {
     );
 }
 
-export const redrawShapes: (state: State) => void = debounceRedraw(redrawShapesNow);
-
 export function redrawNow(state: State, skipShapes?: boolean): void {
   const boardEls = state.dom.elements.board;
   if (boardEls) {
@@ -27,18 +25,4 @@ export function redrawNow(state: State, skipShapes?: boolean): void {
     if (handEls.top) renderHand(state, handEls.top);
     if (handEls.bottom) renderHand(state, handEls.bottom);
   }
-}
-
-export const redraw: (s: State, skipShapes?: boolean) => void = debounceRedraw(redrawNow);
-
-function debounceRedraw(f: (...args: any[]) => void): (...args: any[]) => void {
-  let redrawing = false;
-  return (...args: any[]) => {
-    if (redrawing) return;
-    redrawing = true;
-    requestAnimationFrame(() => {
-      f(...args);
-      redrawing = false;
-    });
-  };
 }

@@ -7,7 +7,6 @@ import { inferDimensions, boardToSfen, handsToSfen } from './sfen.js';
 import { applyAnimation, Config, configure } from './config.js';
 import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
-import { redraw } from './redraw.js';
 import { detachElements, redrawAll } from './dom.js';
 
 export interface Api {
@@ -171,7 +170,7 @@ export function start(state: State): Api {
       if (key) anim(state => board.selectSquare(state, key, prom, force), state);
       else if (state.selected) {
         board.unselect(state);
-        redraw(state);
+        state.dom.redraw();
       }
     },
 
@@ -179,7 +178,7 @@ export function start(state: State): Api {
       if (piece) render(state => board.selectPiece(state, piece, spare, force), state);
       else if (state.selectedPiece) {
         board.unselect(state);
-        redraw(state);
+        state.dom.redraw();
       }
     },
 
@@ -187,7 +186,7 @@ export function start(state: State): Api {
       if (state.premovable.current) {
         if (anim(board.playPremove, state)) return true;
         // if the premove couldn't be played, redraw to clear it up
-        redraw(state);
+        state.dom.redraw();
       }
       return false;
     },
@@ -196,7 +195,7 @@ export function start(state: State): Api {
       if (state.predroppable.current) {
         if (anim(board.playPredrop, state)) return true;
         // if the predrop couldn't be played, redraw to clear it up
-        redraw(state);
+        state.dom.redraw();
       }
       return false;
     },

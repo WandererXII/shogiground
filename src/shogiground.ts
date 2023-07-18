@@ -5,10 +5,15 @@ import { defaults, State } from './state.js';
 import * as util from './util.js';
 import { redrawAll } from './dom.js';
 import { bindDocument } from './events.js';
+import { redrawNow, redrawShapesNow } from './redraw.js';
 
 export function Shogiground(config?: Config, wrapElements?: WrapElements): Api {
   const state = defaults() as State;
   configure(state, config || {});
+
+  const redrawStateNow = (skipShapes?: boolean) => {
+    redrawNow(state, skipShapes);
+  };
 
   state.dom = {
     wrapElements: wrapElements || {},
@@ -51,6 +56,9 @@ export function Shogiground(config?: Config, wrapElements?: WrapElements): Api {
         }),
       },
     },
+    redrawNow: redrawStateNow,
+    redraw: debounceRedraw(redrawStateNow),
+    redrawShapes: debounceRedraw(() => redrawShapesNow(state)),
     unbind: bindDocument(state),
     destroyed: false,
   };
@@ -58,4 +66,16 @@ export function Shogiground(config?: Config, wrapElements?: WrapElements): Api {
   if (wrapElements) redrawAll(wrapElements, state);
 
   return start(state);
+}
+
+function debounceRedraw(f: (...args: any[]) => void): (...args: any[]) => void {
+  let redrawing = false;
+  return (...args: any[]) => {
+    if (redrawing) return;
+    redrawing = true;
+    requestAnimationFrame(() => {
+      f(...args);
+      redrawing = false;
+    });
+  };
 }

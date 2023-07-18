@@ -787,236 +787,141 @@ var Shogiground = (function () {
         return proto === Object.prototype || proto === null;
     }
 
-    function render$1(s, boardEls) {
-        var _a, _b, _c;
-        const asSente = sentePov(s.orientation), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = posToTranslateRel(s.dimensions), squaresEl = boardEls.squares, piecesEl = boardEls.pieces, draggedEl = boardEls.dragged, squareOverEl = boardEls.squareOver, promotionEl = boardEls.promotion, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), promotions = curAnim ? curAnim.plan.promotions : new Map(), curDrag = s.draggable.current, curPromKey = ((_a = s.promotion.current) === null || _a === void 0 ? void 0 : _a.dragged) ? s.selected : undefined, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
-        // if piece not being dragged anymore, hide it
-        if (!curDrag && (draggedEl === null || draggedEl === void 0 ? void 0 : draggedEl.sgDragging)) {
-            draggedEl.sgDragging = false;
-            setDisplay(draggedEl, false);
-            if (squareOverEl)
-                setDisplay(squareOverEl, false);
+    function anim(mutation, state) {
+        return state.animation.enabled ? animate(mutation, state) : render$1(mutation, state);
+    }
+    function render$1(mutation, state) {
+        const result = mutation(state);
+        state.dom.redraw();
+        return result;
+    }
+    function makePiece(key, piece) {
+        return {
+            key: key,
+            pos: key2pos(key),
+            piece: piece,
+        };
+    }
+    function closer(piece, pieces) {
+        return pieces.sort((p1, p2) => {
+            return distanceSq(piece.pos, p1.pos) - distanceSq(piece.pos, p2.pos);
+        })[0];
+    }
+    function computePlan(prevPieces, prevHands, current) {
+        const anims = new Map(), animedOrigs = [], fadings = new Map(), promotions = new Map(), missings = [], news = [], prePieces = new Map();
+        for (const [k, p] of prevPieces) {
+            prePieces.set(k, makePiece(k, p));
         }
-        let k, el, pieceAtKey, elPieceName, anim, fading, prom, pMvdset, pMvd;
-        // walk over all board dom elements, apply animations and flag moved pieces
-        el = piecesEl.firstElementChild;
-        while (el) {
-            if (isPieceNode(el)) {
-                k = el.sgKey;
-                pieceAtKey = pieces.get(k);
-                anim = anims.get(k);
-                fading = fadings.get(k);
-                prom = promotions.get(k);
-                elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
-                // if piece dragged add or remove ghost class or if promotion dialog is active for the piece add prom class
-                if ((((curDrag === null || curDrag === void 0 ? void 0 : curDrag.started) && ((_b = curDrag.fromBoard) === null || _b === void 0 ? void 0 : _b.orig) === k) || (curPromKey && curPromKey === k)) && !el.sgGhost) {
-                    el.sgGhost = true;
-                    el.classList.add('ghost');
-                }
-                else if (el.sgGhost && (!curDrag || ((_c = curDrag.fromBoard) === null || _c === void 0 ? void 0 : _c.orig) !== k) && (!curPromKey || curPromKey !== k)) {
-                    el.sgGhost = false;
-                    el.classList.remove('ghost');
-                }
-                // remove fading class if it still remains
-                if (!fading && el.sgFading) {
-                    el.sgFading = false;
-                    el.classList.remove('fading');
-                }
-                // there is now a piece at this dom key
-                if (pieceAtKey) {
-                    // continue animation if already animating and same piece or promoting piece
-                    // (otherwise it could animate a captured piece)
-                    if (anim &&
-                        el.sgAnimating &&
-                        (elPieceName === pieceNameOf(pieceAtKey) || (prom && elPieceName === pieceNameOf(prom)))) {
-                        const pos = key2pos(k);
-                        pos[0] += anim[2];
-                        pos[1] += anim[3];
-                        translateRel(el, posToTranslate(pos, asSente), scaleDown);
+        for (const key of allKeys) {
+            const curP = current.pieces.get(key), preP = prePieces.get(key);
+            if (curP) {
+                if (preP) {
+                    if (!samePiece(curP, preP.piece)) {
+                        missings.push(preP);
+                        news.push(makePiece(key, curP));
                     }
-                    else if (el.sgAnimating) {
-                        el.sgAnimating = false;
-                        el.classList.remove('anim');
-                        translateRel(el, posToTranslate(key2pos(k), asSente), scaleDown);
-                    }
-                    // same piece: flag as same
-                    if (elPieceName === pieceNameOf(pieceAtKey) && (!fading || !el.sgFading)) {
-                        samePieces.add(k);
-                    }
-                    // different piece: flag as moved unless it is a fading piece or an animated promoting piece
-                    else {
-                        if (fading && elPieceName === pieceNameOf(fading)) {
-                            el.sgFading = true;
-                            el.classList.add('fading');
-                        }
-                        else if (prom && elPieceName === pieceNameOf(prom)) {
-                            samePieces.add(k);
-                        }
-                        else {
-                            appendValue(movedPieces, elPieceName, el);
+                }
+                else
+                    news.push(makePiece(key, curP));
+            }
+            else if (preP)
+                missings.push(preP);
+        }
+        if (current.animation.hands) {
+            for (const color of colors) {
+                const curH = current.hands.handMap.get(color), preH = prevHands.get(color);
+                if (preH && curH) {
+                    for (const [role, n] of preH) {
+                        const piece = { role, color }, curN = curH.get(role) || 0;
+                        if (curN < n) {
+                            const handPieceOffset = current.dom.bounds.hands.pieceBounds().get(pieceNameOf(piece)), bounds = current.dom.bounds.board.bounds();
+                            if (handPieceOffset && bounds)
+                                missings.push({
+                                    pos: posOfOutsideEl(handPieceOffset.left, handPieceOffset.top, sentePov(current.orientation), current.dimensions, bounds),
+                                    piece: piece,
+                                });
                         }
                     }
                 }
-                // no piece: flag as moved
-                else {
-                    appendValue(movedPieces, elPieceName, el);
-                }
-            }
-            el = el.nextElementSibling;
-        }
-        // walk over all squares and apply classes
-        let sqEl = squaresEl.firstElementChild;
-        while (sqEl && isSquareNode(sqEl)) {
-            sqEl.className = squares.get(sqEl.sgKey) || '';
-            sqEl = sqEl.nextElementSibling;
-        }
-        // walk over all pieces in current set, apply dom changes to moved pieces
-        // or append new pieces
-        for (const [k, p] of pieces) {
-            const piece = promotions.get(k) || p;
-            anim = anims.get(k);
-            if (!samePieces.has(k)) {
-                pMvdset = movedPieces.get(pieceNameOf(piece));
-                pMvd = pMvdset && pMvdset.pop();
-                // a same piece was moved
-                if (pMvd) {
-                    // apply dom changes
-                    pMvd.sgKey = k;
-                    if (pMvd.sgFading) {
-                        pMvd.sgFading = false;
-                        pMvd.classList.remove('fading');
-                    }
-                    const pos = key2pos(k);
-                    if (anim) {
-                        pMvd.sgAnimating = true;
-                        pMvd.classList.add('anim');
-                        pos[0] += anim[2];
-                        pos[1] += anim[3];
-                    }
-                    translateRel(pMvd, posToTranslate(pos, asSente), scaleDown);
-                }
-                // no piece in moved obj: insert the new piece
-                else {
-                    const pieceNode = createEl('piece', pieceNameOf(p)), pos = key2pos(k);
-                    pieceNode.sgColor = p.color;
-                    pieceNode.sgRole = p.role;
-                    pieceNode.sgKey = k;
-                    if (anim) {
-                        pieceNode.sgAnimating = true;
-                        pos[0] += anim[2];
-                        pos[1] += anim[3];
-                    }
-                    translateRel(pieceNode, posToTranslate(pos, asSente), scaleDown);
-                    piecesEl.appendChild(pieceNode);
-                }
             }
         }
-        // remove any element that remains in the moved sets
-        for (const nodes of movedPieces.values())
-            removeNodes(s, nodes);
-        if (promotionEl)
-            renderPromotion(s, promotionEl);
-    }
-    function removeNodes(s, nodes) {
-        for (const node of nodes)
-            s.dom.elements.board.pieces.removeChild(node);
-    }
-    function appendValue(map, key, value) {
-        const arr = map.get(key);
-        if (arr)
-            arr.push(value);
-        else
-            map.set(key, [value]);
-    }
-    function computeSquareClasses(s) {
-        var _a, _b;
-        const squares = new Map();
-        if (s.lastDests && s.highlight.lastDests)
-            for (const k of s.lastDests)
-                addSquare(squares, k, 'last-dest');
-        if (s.checks && s.highlight.check)
-            for (const check of s.checks)
-                addSquare(squares, check, 'check');
-        if (s.hovered)
-            addSquare(squares, s.hovered, 'hover');
-        if (s.selected) {
-            if (s.activeColor === 'both' || s.activeColor === s.turnColor)
-                addSquare(squares, s.selected, 'selected');
-            else
-                addSquare(squares, s.selected, 'preselected');
-            if (s.movable.showDests) {
-                const dests = (_a = s.movable.dests) === null || _a === void 0 ? void 0 : _a.get(s.selected);
-                if (dests)
-                    for (const k of dests) {
-                        addSquare(squares, k, 'dest' + (s.pieces.has(k) ? ' oc' : ''));
-                    }
-                const pDests = s.premovable.dests;
-                if (pDests)
-                    for (const k of pDests) {
-                        addSquare(squares, k, 'pre-dest' + (s.pieces.has(k) ? ' oc' : ''));
-                    }
+        for (const newP of news) {
+            const preP = closer(newP, missings.filter(p => {
+                if (samePiece(newP.piece, p.piece))
+                    return true;
+                // checking whether promoted pieces are the same
+                const pRole = current.promotion.promotesTo(p.piece.role), pPiece = pRole && { color: p.piece.color, role: pRole };
+                const nRole = current.promotion.promotesTo(newP.piece.role), nPiece = nRole && { color: newP.piece.color, role: nRole };
+                return (!!pPiece && samePiece(newP.piece, pPiece)) || (!!nPiece && samePiece(nPiece, p.piece));
+            }));
+            if (preP) {
+                const vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];
+                anims.set(newP.key, vector.concat(vector));
+                if (preP.key)
+                    animedOrigs.push(preP.key);
+                if (!samePiece(newP.piece, preP.piece) && newP.key)
+                    promotions.set(newP.key, preP.piece);
             }
         }
-        else if (s.selectedPiece) {
-            if (s.droppable.showDests) {
-                const dests = (_b = s.droppable.dests) === null || _b === void 0 ? void 0 : _b.get(pieceNameOf(s.selectedPiece));
-                if (dests)
-                    for (const k of dests) {
-                        addSquare(squares, k, 'dest');
-                    }
-                const pDests = s.predroppable.dests;
-                if (pDests)
-                    for (const k of pDests) {
-                        addSquare(squares, k, 'pre-dest' + (s.pieces.has(k) ? ' oc' : ''));
-                    }
-            }
+        for (const p of missings) {
+            if (p.key && !animedOrigs.includes(p.key))
+                fadings.set(p.key, p.piece);
         }
-        const premove = s.premovable.current;
-        if (premove) {
-            addSquare(squares, premove.orig, 'current-pre');
-            addSquare(squares, premove.dest, 'current-pre' + (premove.prom ? ' prom' : ''));
-        }
-        else if (s.predroppable.current)
-            addSquare(squares, s.predroppable.current.key, 'current-pre' + (s.predroppable.current.prom ? ' prom' : ''));
-        for (const sqh of s.drawable.squares) {
-            addSquare(squares, sqh.key, sqh.className);
-        }
-        return squares;
+        return {
+            anims: anims,
+            fadings: fadings,
+            promotions: promotions,
+        };
     }
-    function addSquare(squares, key, klass) {
-        const classes = squares.get(key);
-        if (classes)
-            squares.set(key, `${classes} ${klass}`);
-        else
-            squares.set(key, klass);
-    }
-    function renderPromotion(s, promotionEl) {
-        const cur = s.promotion.current, key = cur && cur.key, pieces = cur ? [cur.promotedPiece, cur.piece] : [], hash = promotionHash(!!cur, key, pieces);
-        if (s.promotion.prevPromotionHash === hash)
+    function step(state, now) {
+        const cur = state.animation.current;
+        if (cur === undefined) {
+            // animation was canceled :(
+            if (!state.dom.destroyed)
+                state.dom.redrawNow();
             return;
-        s.promotion.prevPromotionHash = hash;
-        if (key) {
-            const asSente = sentePov(s.orientation), initPos = key2pos(key), color = cur.piece.color, promotionSquare = createEl('sg-promotion-square'), promotionChoices = createEl('sg-promotion-choices');
-            if (s.orientation !== color)
-                promotionChoices.classList.add('reversed');
-            translateRel(promotionSquare, posToTranslateRel(s.dimensions)(initPos, asSente), 1);
-            for (const p of pieces) {
-                const pieceNode = createEl('piece', pieceNameOf(p));
-                pieceNode.sgColor = p.color;
-                pieceNode.sgRole = p.role;
-                promotionChoices.appendChild(pieceNode);
-            }
-            promotionEl.innerHTML = '';
-            promotionSquare.appendChild(promotionChoices);
-            promotionEl.appendChild(promotionSquare);
-            setDisplay(promotionEl, true);
+        }
+        const rest = 1 - (now - cur.start) * cur.frequency;
+        if (rest <= 0) {
+            state.animation.current = undefined;
+            state.dom.redrawNow();
         }
         else {
-            setDisplay(promotionEl, false);
+            const ease = easing(rest);
+            for (const cfg of cur.plan.anims.values()) {
+                cfg[2] = cfg[0] * ease;
+                cfg[3] = cfg[1] * ease;
+            }
+            state.dom.redrawNow(true); // optimisation: don't render SVG changes during animations
+            requestAnimationFrame((now = performance.now()) => step(state, now));
         }
     }
-    function promotionHash(active, key, pieces) {
-        return [active, key, pieces.map(p => pieceNameOf(p)).join(' ')].join(' ');
+    function animate(mutation, state) {
+        // clone state before mutating it
+        const prevPieces = new Map(state.pieces), prevHands = new Map([
+            ['sente', new Map(state.hands.handMap.get('sente'))],
+            ['gote', new Map(state.hands.handMap.get('gote'))],
+        ]);
+        const result = mutation(state), plan = computePlan(prevPieces, prevHands, state);
+        if (plan.anims.size || plan.fadings.size) {
+            const alreadyRunning = state.animation.current && state.animation.current.start;
+            state.animation.current = {
+                start: performance.now(),
+                frequency: 1 / state.animation.duration,
+                plan: plan,
+            };
+            if (!alreadyRunning)
+                step(state, performance.now());
+        }
+        else {
+            // don't animate, just render right away
+            state.dom.redraw();
+        }
+        return result;
+    }
+    // https://gist.github.com/gre/1650294
+    function easing(t) {
+        return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
     }
 
     function createSVGElement(tagName) {
@@ -1349,178 +1254,6 @@ var Shogiground = (function () {
             return pos2user(key2pos(kp), state.orientation, state.dimensions, state.squareRatio);
     }
 
-    function redrawShapesNow(state) {
-        var _a;
-        if ((_a = state.dom.elements.board) === null || _a === void 0 ? void 0 : _a.svg)
-            renderShapes(state, state.dom.elements.board.svg, state.dom.elements.board.customSvg, state.dom.elements.board.freePieces);
-    }
-    const redrawShapes = debounceRedraw(redrawShapesNow);
-    function redrawNow(state, skipShapes) {
-        const boardEls = state.dom.elements.board;
-        if (boardEls) {
-            render$1(state, boardEls);
-            if (!skipShapes)
-                redrawShapesNow(state);
-        }
-        const handEls = state.dom.elements.hands;
-        if (handEls) {
-            if (handEls.top)
-                renderHand$1(state, handEls.top);
-            if (handEls.bottom)
-                renderHand$1(state, handEls.bottom);
-        }
-    }
-    const redraw = debounceRedraw(redrawNow);
-    function debounceRedraw(f) {
-        let redrawing = false;
-        return (...args) => {
-            if (redrawing)
-                return;
-            redrawing = true;
-            requestAnimationFrame(() => {
-                f(...args);
-                redrawing = false;
-            });
-        };
-    }
-
-    function anim(mutation, state) {
-        return state.animation.enabled ? animate(mutation, state) : render(mutation, state);
-    }
-    function render(mutation, state) {
-        const result = mutation(state);
-        redraw(state);
-        return result;
-    }
-    function makePiece(key, piece) {
-        return {
-            key: key,
-            pos: key2pos(key),
-            piece: piece,
-        };
-    }
-    function closer(piece, pieces) {
-        return pieces.sort((p1, p2) => {
-            return distanceSq(piece.pos, p1.pos) - distanceSq(piece.pos, p2.pos);
-        })[0];
-    }
-    function computePlan(prevPieces, prevHands, current) {
-        const anims = new Map(), animedOrigs = [], fadings = new Map(), promotions = new Map(), missings = [], news = [], prePieces = new Map();
-        for (const [k, p] of prevPieces) {
-            prePieces.set(k, makePiece(k, p));
-        }
-        for (const key of allKeys) {
-            const curP = current.pieces.get(key), preP = prePieces.get(key);
-            if (curP) {
-                if (preP) {
-                    if (!samePiece(curP, preP.piece)) {
-                        missings.push(preP);
-                        news.push(makePiece(key, curP));
-                    }
-                }
-                else
-                    news.push(makePiece(key, curP));
-            }
-            else if (preP)
-                missings.push(preP);
-        }
-        if (current.animation.hands) {
-            for (const color of colors) {
-                const curH = current.hands.handMap.get(color), preH = prevHands.get(color);
-                if (preH && curH) {
-                    for (const [role, n] of preH) {
-                        const piece = { role, color }, curN = curH.get(role) || 0;
-                        if (curN < n) {
-                            const handPieceOffset = current.dom.bounds.hands.pieceBounds().get(pieceNameOf(piece)), bounds = current.dom.bounds.board.bounds();
-                            if (handPieceOffset && bounds)
-                                missings.push({
-                                    pos: posOfOutsideEl(handPieceOffset.left, handPieceOffset.top, sentePov(current.orientation), current.dimensions, bounds),
-                                    piece: piece,
-                                });
-                        }
-                    }
-                }
-            }
-        }
-        for (const newP of news) {
-            const preP = closer(newP, missings.filter(p => {
-                if (samePiece(newP.piece, p.piece))
-                    return true;
-                // checking whether promoted pieces are the same
-                const pRole = current.promotion.promotesTo(p.piece.role), pPiece = pRole && { color: p.piece.color, role: pRole };
-                const nRole = current.promotion.promotesTo(newP.piece.role), nPiece = nRole && { color: newP.piece.color, role: nRole };
-                return (!!pPiece && samePiece(newP.piece, pPiece)) || (!!nPiece && samePiece(nPiece, p.piece));
-            }));
-            if (preP) {
-                const vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];
-                anims.set(newP.key, vector.concat(vector));
-                if (preP.key)
-                    animedOrigs.push(preP.key);
-                if (!samePiece(newP.piece, preP.piece) && newP.key)
-                    promotions.set(newP.key, preP.piece);
-            }
-        }
-        for (const p of missings) {
-            if (p.key && !animedOrigs.includes(p.key))
-                fadings.set(p.key, p.piece);
-        }
-        return {
-            anims: anims,
-            fadings: fadings,
-            promotions: promotions,
-        };
-    }
-    function step(state, now) {
-        const cur = state.animation.current;
-        if (cur === undefined) {
-            // animation was canceled :(
-            if (!state.dom.destroyed)
-                redrawNow(state);
-            return;
-        }
-        const rest = 1 - (now - cur.start) * cur.frequency;
-        if (rest <= 0) {
-            state.animation.current = undefined;
-            redrawNow(state);
-        }
-        else {
-            const ease = easing(rest);
-            for (const cfg of cur.plan.anims.values()) {
-                cfg[2] = cfg[0] * ease;
-                cfg[3] = cfg[1] * ease;
-            }
-            redrawNow(state, true); // optimisation: don't render SVG changes during animations
-            requestAnimationFrame((now = performance.now()) => step(state, now));
-        }
-    }
-    function animate(mutation, state) {
-        // clone state before mutating it
-        const prevPieces = new Map(state.pieces), prevHands = new Map([
-            ['sente', new Map(state.hands.handMap.get('sente'))],
-            ['gote', new Map(state.hands.handMap.get('gote'))],
-        ]);
-        const result = mutation(state), plan = computePlan(prevPieces, prevHands, state);
-        if (plan.anims.size || plan.fadings.size) {
-            const alreadyRunning = state.animation.current && state.animation.current.start;
-            state.animation.current = {
-                start: performance.now(),
-                frequency: 1 / state.animation.duration,
-                plan: plan,
-            };
-            if (!alreadyRunning)
-                step(state, performance.now());
-        }
-        else {
-            // don't animate, just render right away
-            redraw(state);
-        }
-        return result;
-    }
-    // https://gist.github.com/gre/1650294
-    function easing(t) {
-        return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-    }
-
     const brushes = ['primary', 'alternative0', 'alternative1', 'alternative2'];
     function start$2(state, e) {
         // support one finger touch only
@@ -1567,7 +1300,7 @@ var Shogiground = (function () {
                     getHandPieceAtDomPos(cur.pos, state.hands.roles, state.dom.bounds.hands.pieceBounds());
                 if (cur.dest !== dest && !(cur.dest && dest && samePieceOrKey(dest, cur.dest))) {
                     cur.dest = dest;
-                    redrawNow(state);
+                    state.dom.redrawNow();
                 }
                 if (!cur.dest && cur.arrow) {
                     const dest = pos2user(posOfOutsideEl(cur.pos[0], cur.pos[1], sentePov(state.orientation), state.dimensions, bounds), state.orientation, state.dimensions, state.squareRatio);
@@ -1591,7 +1324,7 @@ var Shogiground = (function () {
     function cancel$1(state) {
         if (state.drawable.current) {
             state.drawable.current = undefined;
-            redraw(state);
+            state.dom.redraw();
         }
     }
     function clear(state) {
@@ -1599,7 +1332,7 @@ var Shogiground = (function () {
         if (drawableLength || state.drawable.piece) {
             state.drawable.shapes = [];
             state.drawable.piece = undefined;
-            redraw(state);
+            state.dom.redraw();
             if (drawableLength)
                 onChange(state.drawable);
         }
@@ -1609,7 +1342,7 @@ var Shogiground = (function () {
             state.drawable.piece = undefined;
         else
             state.drawable.piece = piece;
-        redraw(state);
+        state.dom.redraw();
     }
     function eventBrush(e) {
         var _a;
@@ -1711,7 +1444,7 @@ var Shogiground = (function () {
             if (hadPredrop)
                 unsetPredrop(s);
         }
-        redraw(s);
+        s.dom.redraw();
     }
     function pieceCloseTo(s, pos, bounds) {
         const asSente = sentePov(s.orientation), radiusSq = Math.pow(bounds.width / s.dimensions.files, 2);
@@ -1758,7 +1491,7 @@ var Shogiground = (function () {
             if (hadPredrop)
                 unsetPredrop(s);
         }
-        redraw(s);
+        s.dom.redraw();
     }
     function processDrag(s) {
         requestAnimationFrame(() => {
@@ -1776,7 +1509,7 @@ var Shogiground = (function () {
             else {
                 if (!cur.started && distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 2)) {
                     cur.started = true;
-                    redraw(s);
+                    s.dom.redraw();
                 }
                 if (cur.started) {
                     translateAbs(draggedEl, [
@@ -1883,7 +1616,7 @@ var Shogiground = (function () {
         s.draggable.current = undefined;
         if (!s.highlight.hovered && !s.promotion.current)
             s.hovered = undefined;
-        redraw(s);
+        s.dom.redraw();
     }
     function unselect(s, cur, dest) {
         var _a;
@@ -1899,7 +1632,7 @@ var Shogiground = (function () {
             if (!s.highlight.hovered)
                 s.hovered = undefined;
             unselect$1(s);
-            redraw(s);
+            s.dom.redraw();
         }
     }
     // support one finger touch only or left click
@@ -2111,7 +1844,7 @@ var Shogiground = (function () {
         return () => {
             clearBounds(s);
             if (usesBounds(s.drawable.shapes.concat(s.drawable.autoShapes)))
-                redrawShapes(s);
+                s.dom.redrawShapes();
         };
     }
     function bindBoard(s, boardEls) {
@@ -2150,7 +1883,7 @@ var Shogiground = (function () {
         handEl.addEventListener('click', () => {
             if (s.promotion.current) {
                 cancelPromotion(s);
-                redraw(s);
+                s.dom.redraw();
             }
         });
         if (s.disableContextMenu || s.drawable.enabled)
@@ -2250,7 +1983,239 @@ var Shogiground = (function () {
         else
             anim(s => cancelPromotion(s), s);
         s.promotion.current = undefined;
-        redraw(s);
+        s.dom.redraw();
+    }
+
+    function render(s, boardEls) {
+        var _a, _b, _c;
+        const asSente = sentePov(s.orientation), scaleDown = s.scaleDownPieces ? 0.5 : 1, posToTranslate = posToTranslateRel(s.dimensions), squaresEl = boardEls.squares, piecesEl = boardEls.pieces, draggedEl = boardEls.dragged, squareOverEl = boardEls.squareOver, promotionEl = boardEls.promotion, pieces = s.pieces, curAnim = s.animation.current, anims = curAnim ? curAnim.plan.anims : new Map(), fadings = curAnim ? curAnim.plan.fadings : new Map(), promotions = curAnim ? curAnim.plan.promotions : new Map(), curDrag = s.draggable.current, curPromKey = ((_a = s.promotion.current) === null || _a === void 0 ? void 0 : _a.dragged) ? s.selected : undefined, squares = computeSquareClasses(s), samePieces = new Set(), movedPieces = new Map();
+        // if piece not being dragged anymore, hide it
+        if (!curDrag && (draggedEl === null || draggedEl === void 0 ? void 0 : draggedEl.sgDragging)) {
+            draggedEl.sgDragging = false;
+            setDisplay(draggedEl, false);
+            if (squareOverEl)
+                setDisplay(squareOverEl, false);
+        }
+        let k, el, pieceAtKey, elPieceName, anim, fading, prom, pMvdset, pMvd;
+        // walk over all board dom elements, apply animations and flag moved pieces
+        el = piecesEl.firstElementChild;
+        while (el) {
+            if (isPieceNode(el)) {
+                k = el.sgKey;
+                pieceAtKey = pieces.get(k);
+                anim = anims.get(k);
+                fading = fadings.get(k);
+                prom = promotions.get(k);
+                elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
+                // if piece dragged add or remove ghost class or if promotion dialog is active for the piece add prom class
+                if ((((curDrag === null || curDrag === void 0 ? void 0 : curDrag.started) && ((_b = curDrag.fromBoard) === null || _b === void 0 ? void 0 : _b.orig) === k) || (curPromKey && curPromKey === k)) && !el.sgGhost) {
+                    el.sgGhost = true;
+                    el.classList.add('ghost');
+                }
+                else if (el.sgGhost && (!curDrag || ((_c = curDrag.fromBoard) === null || _c === void 0 ? void 0 : _c.orig) !== k) && (!curPromKey || curPromKey !== k)) {
+                    el.sgGhost = false;
+                    el.classList.remove('ghost');
+                }
+                // remove fading class if it still remains
+                if (!fading && el.sgFading) {
+                    el.sgFading = false;
+                    el.classList.remove('fading');
+                }
+                // there is now a piece at this dom key
+                if (pieceAtKey) {
+                    // continue animation if already animating and same piece or promoting piece
+                    // (otherwise it could animate a captured piece)
+                    if (anim &&
+                        el.sgAnimating &&
+                        (elPieceName === pieceNameOf(pieceAtKey) || (prom && elPieceName === pieceNameOf(prom)))) {
+                        const pos = key2pos(k);
+                        pos[0] += anim[2];
+                        pos[1] += anim[3];
+                        translateRel(el, posToTranslate(pos, asSente), scaleDown);
+                    }
+                    else if (el.sgAnimating) {
+                        el.sgAnimating = false;
+                        el.classList.remove('anim');
+                        translateRel(el, posToTranslate(key2pos(k), asSente), scaleDown);
+                    }
+                    // same piece: flag as same
+                    if (elPieceName === pieceNameOf(pieceAtKey) && (!fading || !el.sgFading)) {
+                        samePieces.add(k);
+                    }
+                    // different piece: flag as moved unless it is a fading piece or an animated promoting piece
+                    else {
+                        if (fading && elPieceName === pieceNameOf(fading)) {
+                            el.sgFading = true;
+                            el.classList.add('fading');
+                        }
+                        else if (prom && elPieceName === pieceNameOf(prom)) {
+                            samePieces.add(k);
+                        }
+                        else {
+                            appendValue(movedPieces, elPieceName, el);
+                        }
+                    }
+                }
+                // no piece: flag as moved
+                else {
+                    appendValue(movedPieces, elPieceName, el);
+                }
+            }
+            el = el.nextElementSibling;
+        }
+        // walk over all squares and apply classes
+        let sqEl = squaresEl.firstElementChild;
+        while (sqEl && isSquareNode(sqEl)) {
+            sqEl.className = squares.get(sqEl.sgKey) || '';
+            sqEl = sqEl.nextElementSibling;
+        }
+        // walk over all pieces in current set, apply dom changes to moved pieces
+        // or append new pieces
+        for (const [k, p] of pieces) {
+            const piece = promotions.get(k) || p;
+            anim = anims.get(k);
+            if (!samePieces.has(k)) {
+                pMvdset = movedPieces.get(pieceNameOf(piece));
+                pMvd = pMvdset && pMvdset.pop();
+                // a same piece was moved
+                if (pMvd) {
+                    // apply dom changes
+                    pMvd.sgKey = k;
+                    if (pMvd.sgFading) {
+                        pMvd.sgFading = false;
+                        pMvd.classList.remove('fading');
+                    }
+                    const pos = key2pos(k);
+                    if (anim) {
+                        pMvd.sgAnimating = true;
+                        pMvd.classList.add('anim');
+                        pos[0] += anim[2];
+                        pos[1] += anim[3];
+                    }
+                    translateRel(pMvd, posToTranslate(pos, asSente), scaleDown);
+                }
+                // no piece in moved obj: insert the new piece
+                else {
+                    const pieceNode = createEl('piece', pieceNameOf(p)), pos = key2pos(k);
+                    pieceNode.sgColor = p.color;
+                    pieceNode.sgRole = p.role;
+                    pieceNode.sgKey = k;
+                    if (anim) {
+                        pieceNode.sgAnimating = true;
+                        pos[0] += anim[2];
+                        pos[1] += anim[3];
+                    }
+                    translateRel(pieceNode, posToTranslate(pos, asSente), scaleDown);
+                    piecesEl.appendChild(pieceNode);
+                }
+            }
+        }
+        // remove any element that remains in the moved sets
+        for (const nodes of movedPieces.values())
+            removeNodes(s, nodes);
+        if (promotionEl)
+            renderPromotion(s, promotionEl);
+    }
+    function removeNodes(s, nodes) {
+        for (const node of nodes)
+            s.dom.elements.board.pieces.removeChild(node);
+    }
+    function appendValue(map, key, value) {
+        const arr = map.get(key);
+        if (arr)
+            arr.push(value);
+        else
+            map.set(key, [value]);
+    }
+    function computeSquareClasses(s) {
+        var _a, _b;
+        const squares = new Map();
+        if (s.lastDests && s.highlight.lastDests)
+            for (const k of s.lastDests)
+                addSquare(squares, k, 'last-dest');
+        if (s.checks && s.highlight.check)
+            for (const check of s.checks)
+                addSquare(squares, check, 'check');
+        if (s.hovered)
+            addSquare(squares, s.hovered, 'hover');
+        if (s.selected) {
+            if (s.activeColor === 'both' || s.activeColor === s.turnColor)
+                addSquare(squares, s.selected, 'selected');
+            else
+                addSquare(squares, s.selected, 'preselected');
+            if (s.movable.showDests) {
+                const dests = (_a = s.movable.dests) === null || _a === void 0 ? void 0 : _a.get(s.selected);
+                if (dests)
+                    for (const k of dests) {
+                        addSquare(squares, k, 'dest' + (s.pieces.has(k) ? ' oc' : ''));
+                    }
+                const pDests = s.premovable.dests;
+                if (pDests)
+                    for (const k of pDests) {
+                        addSquare(squares, k, 'pre-dest' + (s.pieces.has(k) ? ' oc' : ''));
+                    }
+            }
+        }
+        else if (s.selectedPiece) {
+            if (s.droppable.showDests) {
+                const dests = (_b = s.droppable.dests) === null || _b === void 0 ? void 0 : _b.get(pieceNameOf(s.selectedPiece));
+                if (dests)
+                    for (const k of dests) {
+                        addSquare(squares, k, 'dest');
+                    }
+                const pDests = s.predroppable.dests;
+                if (pDests)
+                    for (const k of pDests) {
+                        addSquare(squares, k, 'pre-dest' + (s.pieces.has(k) ? ' oc' : ''));
+                    }
+            }
+        }
+        const premove = s.premovable.current;
+        if (premove) {
+            addSquare(squares, premove.orig, 'current-pre');
+            addSquare(squares, premove.dest, 'current-pre' + (premove.prom ? ' prom' : ''));
+        }
+        else if (s.predroppable.current)
+            addSquare(squares, s.predroppable.current.key, 'current-pre' + (s.predroppable.current.prom ? ' prom' : ''));
+        for (const sqh of s.drawable.squares) {
+            addSquare(squares, sqh.key, sqh.className);
+        }
+        return squares;
+    }
+    function addSquare(squares, key, klass) {
+        const classes = squares.get(key);
+        if (classes)
+            squares.set(key, `${classes} ${klass}`);
+        else
+            squares.set(key, klass);
+    }
+    function renderPromotion(s, promotionEl) {
+        const cur = s.promotion.current, key = cur && cur.key, pieces = cur ? [cur.promotedPiece, cur.piece] : [], hash = promotionHash(!!cur, key, pieces);
+        if (s.promotion.prevPromotionHash === hash)
+            return;
+        s.promotion.prevPromotionHash = hash;
+        if (key) {
+            const asSente = sentePov(s.orientation), initPos = key2pos(key), color = cur.piece.color, promotionSquare = createEl('sg-promotion-square'), promotionChoices = createEl('sg-promotion-choices');
+            if (s.orientation !== color)
+                promotionChoices.classList.add('reversed');
+            translateRel(promotionSquare, posToTranslateRel(s.dimensions)(initPos, asSente), 1);
+            for (const p of pieces) {
+                const pieceNode = createEl('piece', pieceNameOf(p));
+                pieceNode.sgColor = p.color;
+                pieceNode.sgRole = p.role;
+                promotionChoices.appendChild(pieceNode);
+            }
+            promotionEl.innerHTML = '';
+            promotionSquare.appendChild(promotionChoices);
+            promotionEl.appendChild(promotionSquare);
+            setDisplay(promotionEl, true);
+        }
+        else {
+            setDisplay(promotionEl, false);
+        }
+    }
+    function promotionHash(active, key, pieces) {
+        return [active, key, pieces.map(p => pieceNameOf(p)).join(' ')].join(' ');
     }
 
     function attachBoard(state, boardWrap) {
@@ -2264,7 +2229,7 @@ var Shogiground = (function () {
         bindBoard(state, elements);
         state.drawable.prevSvgHash = '';
         state.promotion.prevPromotionHash = '';
-        render$1(state, elements);
+        render(state, elements);
     }
     function attachHands(state, handTopWrap, handBottomWrap) {
         if (!state.dom.elements.hands)
@@ -2297,7 +2262,7 @@ var Shogiground = (function () {
         if (wrapElements.hands && !state.hands.inlined)
             attachHands(state, wrapElements.hands.top, wrapElements.hands.bottom);
         // shapes might depend both on board and hands - redraw only after both are done
-        redrawShapes(state);
+        state.dom.redrawShapes();
         state.events.insert &&
             state.events.insert(wrapElements.board && state.dom.elements.board, {
                 top: ((_a = wrapElements.hands) === null || _a === void 0 ? void 0 : _a.top) && ((_b = state.dom.elements.hands) === null || _b === void 0 ? void 0 : _b.top),
@@ -2364,7 +2329,7 @@ var Shogiground = (function () {
                 }
                 else {
                     applyAnimation(state, config);
-                    (((_c = config.sfen) === null || _c === void 0 ? void 0 : _c.board) && !skipAnimation ? anim : render)(state => configure(state, config), state);
+                    (((_c = config.sfen) === null || _c === void 0 ? void 0 : _c.board) && !skipAnimation ? anim : render$1)(state => configure(state, config), state);
                 }
             },
             state,
@@ -2387,25 +2352,25 @@ var Shogiground = (function () {
                 anim(state => setPieces(state, pieces), state);
             },
             addToHand(piece, count) {
-                render(state => addToHand(state, piece, count), state);
+                render$1(state => addToHand(state, piece, count), state);
             },
             removeFromHand(piece, count) {
-                render(state => removeFromHand(state, piece, count), state);
+                render$1(state => removeFromHand(state, piece, count), state);
             },
             selectSquare(key, prom, force) {
                 if (key)
                     anim(state => selectSquare(state, key, prom, force), state);
                 else if (state.selected) {
                     unselect$1(state);
-                    redraw(state);
+                    state.dom.redraw();
                 }
             },
             selectPiece(piece, spare, force) {
                 if (piece)
-                    render(state => selectPiece(state, piece, spare, force), state);
+                    render$1(state => selectPiece(state, piece, spare, force), state);
                 else if (state.selectedPiece) {
                     unselect$1(state);
-                    redraw(state);
+                    state.dom.redraw();
                 }
             },
             playPremove() {
@@ -2413,7 +2378,7 @@ var Shogiground = (function () {
                     if (anim(playPremove, state))
                         return true;
                     // if the premove couldn't be played, redraw to clear it up
-                    redraw(state);
+                    state.dom.redraw();
                 }
                 return false;
             },
@@ -2422,35 +2387,35 @@ var Shogiground = (function () {
                     if (anim(playPredrop, state))
                         return true;
                     // if the predrop couldn't be played, redraw to clear it up
-                    redraw(state);
+                    state.dom.redraw();
                 }
                 return false;
             },
             cancelPremove() {
-                render(unsetPremove, state);
+                render$1(unsetPremove, state);
             },
             cancelPredrop() {
-                render(unsetPredrop, state);
+                render$1(unsetPredrop, state);
             },
             cancelMoveOrDrop() {
-                render(state => {
+                render$1(state => {
                     cancelMoveOrDrop(state);
                     cancel(state);
                 }, state);
             },
             stop() {
-                render(state => {
+                render$1(state => {
                     stop(state);
                 }, state);
             },
             setAutoShapes(shapes) {
-                render(state => (state.drawable.autoShapes = shapes), state);
+                render$1(state => (state.drawable.autoShapes = shapes), state);
             },
             setShapes(shapes) {
-                render(state => (state.drawable.shapes = shapes), state);
+                render$1(state => (state.drawable.shapes = shapes), state);
             },
             setSquareHighlights(squares) {
-                render(state => (state.drawable.squares = squares), state);
+                render$1(state => (state.drawable.squares = squares), state);
             },
             dragNewPiece(piece, event, spare) {
                 dragNewPiece(state, piece, event, spare);
@@ -2557,9 +2522,33 @@ var Shogiground = (function () {
         };
     }
 
+    function redrawShapesNow(state) {
+        var _a;
+        if ((_a = state.dom.elements.board) === null || _a === void 0 ? void 0 : _a.svg)
+            renderShapes(state, state.dom.elements.board.svg, state.dom.elements.board.customSvg, state.dom.elements.board.freePieces);
+    }
+    function redrawNow(state, skipShapes) {
+        const boardEls = state.dom.elements.board;
+        if (boardEls) {
+            render(state, boardEls);
+            if (!skipShapes)
+                redrawShapesNow(state);
+        }
+        const handEls = state.dom.elements.hands;
+        if (handEls) {
+            if (handEls.top)
+                renderHand$1(state, handEls.top);
+            if (handEls.bottom)
+                renderHand$1(state, handEls.bottom);
+        }
+    }
+
     function Shogiground(config, wrapElements) {
         const state = defaults();
         configure(state, config || {});
+        const redrawStateNow = (skipShapes) => {
+            redrawNow(state, skipShapes);
+        };
         state.dom = {
             wrapElements: wrapElements || {},
             elements: {},
@@ -2598,12 +2587,27 @@ var Shogiground = (function () {
                     }),
                 },
             },
+            redrawNow: redrawStateNow,
+            redraw: debounceRedraw(redrawStateNow),
+            redrawShapes: debounceRedraw(() => redrawShapesNow(state)),
             unbind: bindDocument(state),
             destroyed: false,
         };
         if (wrapElements)
             redrawAll(wrapElements, state);
         return start(state);
+    }
+    function debounceRedraw(f) {
+        let redrawing = false;
+        return (...args) => {
+            if (redrawing)
+                return;
+            redrawing = true;
+            requestAnimationFrame(() => {
+                f(...args);
+                redrawing = false;
+            });
+        };
     }
 
     return Shogiground;

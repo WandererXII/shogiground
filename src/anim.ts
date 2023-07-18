@@ -1,7 +1,6 @@
 import type { State } from './state.js';
 import * as sg from './types.js';
 import * as util from './util.js';
-import { redraw, redrawNow } from './redraw.js';
 
 export type Mutation<A> = (state: State) => A;
 
@@ -33,7 +32,7 @@ export function anim<A>(mutation: Mutation<A>, state: State): A {
 
 export function render<A>(mutation: Mutation<A>, state: State): A {
   const result = mutation(state);
-  redraw(state);
+  state.dom.redraw();
   return result;
 }
 
@@ -144,20 +143,20 @@ function step(state: State, now: DOMHighResTimeStamp): void {
   const cur = state.animation.current;
   if (cur === undefined) {
     // animation was canceled :(
-    if (!state.dom.destroyed) redrawNow(state);
+    if (!state.dom.destroyed) state.dom.redrawNow();
     return;
   }
   const rest = 1 - (now - cur.start) * cur.frequency;
   if (rest <= 0) {
     state.animation.current = undefined;
-    redrawNow(state);
+    state.dom.redrawNow();
   } else {
     const ease = easing(rest);
     for (const cfg of cur.plan.anims.values()) {
       cfg[2] = cfg[0] * ease;
       cfg[3] = cfg[1] * ease;
     }
-    redrawNow(state, true); // optimisation: don't render SVG changes during animations
+    state.dom.redrawNow(true); // optimisation: don't render SVG changes during animations
     requestAnimationFrame((now = performance.now()) => step(state, now));
   }
 }
@@ -182,7 +181,7 @@ function animate<A>(mutation: Mutation<A>, state: State): A {
     if (!alreadyRunning) step(state, performance.now());
   } else {
     // don't animate, just render right away
-    redraw(state);
+    state.dom.redraw();
   }
   return result;
 }

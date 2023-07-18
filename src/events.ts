@@ -12,7 +12,6 @@ import {
 } from './util.js';
 import { anim } from './anim.js';
 import { userDrop, userMove, cancelPromotion, selectSquare } from './board.js';
-import { redraw, redrawShapes } from './redraw.js';
 import { usesBounds } from './shapes.js';
 
 type MouchBind = (e: sg.MouchEvent) => void;
@@ -27,7 +26,7 @@ function clearBounds(s: State): void {
 function onResize(s: State): () => void {
   return () => {
     clearBounds(s);
-    if (usesBounds(s.drawable.shapes.concat(s.drawable.autoShapes))) redrawShapes(s);
+    if (usesBounds(s.drawable.shapes.concat(s.drawable.autoShapes))) s.dom.redrawShapes();
   };
 }
 
@@ -69,7 +68,7 @@ export function bindHand(s: State, handEl: HTMLElement): void {
   handEl.addEventListener('click', () => {
     if (s.promotion.current) {
       cancelPromotion(s);
-      redraw(s);
+      s.dom.redraw();
     }
   });
 
@@ -170,5 +169,5 @@ function promote(s: State, e: sg.MouchEvent): void {
   } else anim(s => cancelPromotion(s), s);
   s.promotion.current = undefined;
 
-  redraw(s);
+  s.dom.redraw();
 }

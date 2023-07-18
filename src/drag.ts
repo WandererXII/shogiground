@@ -5,7 +5,6 @@ import { addToHand, removeFromHand } from './hands.js';
 import * as util from './util.js';
 import { clear as drawClear } from './draw.js';
 import { anim } from './anim.js';
-import { redraw } from './redraw.js';
 
 export interface DragCurrent {
   piece: sg.Piece; // piece being dragged
@@ -97,7 +96,7 @@ export function start(s: State, e: sg.MouchEvent): void {
     if (hadPremove) board.unsetPremove(s);
     if (hadPredrop) board.unsetPredrop(s);
   }
-  redraw(s);
+  s.dom.redraw();
 }
 
 function pieceCloseTo(s: State, pos: sg.NumberPair, bounds: DOMRect): boolean {
@@ -150,7 +149,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
     if (hadPremove) board.unsetPremove(s);
     if (hadPredrop) board.unsetPredrop(s);
   }
-  redraw(s);
+  s.dom.redraw();
 }
 
 function processDrag(s: State): void {
@@ -167,7 +166,7 @@ function processDrag(s: State): void {
     else {
       if (!cur.started && util.distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 2)) {
         cur.started = true;
-        redraw(s);
+        s.dom.redraw();
       }
       if (cur.started) {
         util.translateAbs(
@@ -287,7 +286,7 @@ export function end(s: State, e: sg.MouchEvent): void {
 
   s.draggable.current = undefined;
   if (!s.highlight.hovered && !s.promotion.current) s.hovered = undefined;
-  redraw(s);
+  s.dom.redraw();
 }
 
 function unselect(s: State, cur: DragCurrent, dest?: sg.Key): void {
@@ -302,7 +301,7 @@ export function cancel(s: State): void {
     s.draggable.current = undefined;
     if (!s.highlight.hovered) s.hovered = undefined;
     board.unselect(s);
-    redraw(s);
+    s.dom.redraw();
   }
 }
 

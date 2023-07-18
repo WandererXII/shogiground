@@ -3,7 +3,6 @@ import type { WrapElements, WrapElementsBoolean } from './types.js';
 import { wrapBoard, wrapHand } from './wrap.js';
 import * as events from './events.js';
 import { renderHand } from './hands.js';
-import { redrawShapes } from './redraw.js';
 import { render } from './render.js';
 
 function attachBoard(state: State, boardWrap: HTMLElement): void {
@@ -54,7 +53,7 @@ export function redrawAll(wrapElements: WrapElements, state: State): void {
   if (wrapElements.hands && !state.hands.inlined) attachHands(state, wrapElements.hands.top, wrapElements.hands.bottom);
 
   // shapes might depend both on board and hands - redraw only after both are done
-  redrawShapes(state);
+  state.dom.redrawShapes();
 
   state.events.insert &&
     state.events.insert(wrapElements.board && state.dom.elements.board, {
