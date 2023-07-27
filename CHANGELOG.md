@@ -1,3 +1,7 @@
+## v0.8.2
+
+- Added `shogiground.js` and `shogiground.min.js` in dist to npm.
+
 ## v0.8.1
 
 - Fix redrawing with multiple instances of shogiground.
