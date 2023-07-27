@@ -29,8 +29,8 @@
     "/*.js",
     "/*.d.ts",
     "/*.js.map",
-    "/assets/*.css",
     "/src/*.ts",
+    "/dist/*.js",
     "!/rollup.config.js"
   ],
   "repository": "https://github.com/WandererXII/shogiground",
