@@ -2,10 +2,11 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <link rel="stylesheet" href="assets/css/base.css" />
     <link rel="stylesheet" href="assets/css/shogiground.css" />
-    <link rel="stylesheet" href="assets/css/d12x12.css" />
-    <link rel="stylesheet" href="assets/css/themes/bird.css" />
+    <link rel="stylesheet" href="assets/css/d9x10.css" />
+    <link rel="stylesheet" href="assets/css/themes/wood-grid.css" />
     <link rel="stylesheet" href="assets/css/pieces/ryoko.css" />
   </head>
 
@@ -16,9 +17,10 @@
         <a href="hands.html">Board - hands</a>
         <a href="minis.html">Mini Boards</a>
         <a href="d5x5.html">Small Board (5x5)</a>
+        <a href="d12x12.html">Big Board (12x12)</a>
         <a href="d9x10.html">Rectangular board (9x10)</a>
       </nav>
-      <div style="width: 500px; height: 500px" id="main-wrap" class="main-board">
+      <div style="width: 500px; height: 556px" id="main-wrap" class="main-board">
         <div id="dirty" class="sg-wrap"></div>
       </div>
     </div>
@@ -29,15 +31,17 @@
       <button onclick="flip()">FLIP</button>
       <button onclick="pieceSVG()">PIECE</button>
       <button onclick="move()">MOVE</button>
-      <button onclick="promote()">PROMOTION</button>
       <button onclick="setPieces()">PIECES</button>
-      <button onclick="tmout(0)">TIMEOUT</button>
+      <button onclick="to5x5()">TO 5x5</button>
+      <button onclick="tmout(1500)">TIMEOUT</button>
+      <button onclick="detach()">detach</button>
+      <button onclick="attach()">atttach</button>
     </div>
     <script src="../dist/shogiground.js"></script>
     <script>
       const config = {
         sfen: {
-          board: '1lnsgkkgsnl1/12/2r6b2/pppppppppppp/12/11p/P10P/12/PPPPPPPPPPPP/2B6R2/12/1LNSGKKGS+NL1',
+          board: 'lnsgkgsnl/1r5b1/+ppppppppp/9/9/9/9/PPPP1PPPP/1B5R1/LNSGKGS+NL',
         },
         activeColor: 'sente',
         coordinates: {
@@ -46,16 +50,60 @@
         hands: {
           enabled: false,
         },
+        selectable: {
+          enabled: false,
+          forceSpares: false,
+        },
+        highlight: {
+          hovered: false,
+        },
         movable: {
+          // free: false,
+          dests: new Map([['6g', ['6f']]]),
           events: {
-            after: (orig, dest, metadata) => {
-              console.log(orig, dest, metadata);
+            after: (orig, dest, prom, metadata) => {
+              console.log('MOVEAFTER', orig, dest, prom, metadata);
+            },
+          },
+        },
+        droppable: {
+          events: {
+            after: (piece, key, prom, metadata) => {
+              console.log('DROPAFTER', piece, key, prom, metadata);
             },
           },
         },
         events: {
-          select: key => {
-            console.log(key);
+          move: () => {
+            console.log('move');
+          },
+          drop: () => {
+            console.log('drop');
+          },
+          pieceUnselect: p => {
+            console.log('pieceUnselect', p);
+          },
+          select: s => {
+            console.log('select', s);
+          },
+          unselect: s => {
+            console.log('unselect', s);
+          },
+        },
+        promotion: {
+          promotesTo: role => {
+            if (role === 'bishop') return 'horse';
+            if (role === 'pawn') return 'tokin';
+            if (role === 'knight') return 'promotedknight';
+            if (role === 'silver') return 'promotedsilver';
+            if (role === 'rook') return 'dragon';
+            if (role === 'lance') return 'promotedlance';
+          },
+          movePromotionDialog: (_orig, dest) => {
+            return dest.endsWith('c') || dest.endsWith('b');
+          },
+          forceMovePromotion: (_orig, dest) => {
+            return dest.endsWith('a');
           },
         },
       };
@@ -66,22 +114,17 @@
       function pieceSVG() {
         const shape = {
           orig: '5e',
-          brush: 'green',
-          piece: {
-            role: 'horse',
-            color: 'sente',
-          },
+          dest: '7e',
+          brush: '',
+          description: '+',
         };
-        ground.setShapes([shape]);
+        ground.setAutoShapes([shape]);
+        ground.setSquareHighlights([{ key: '5e', className: 'orange' }]);
       }
       function move() {
-        ground.move('1g', '1e');
-      }
-      function promote() {
-        ground.startPromotion('5c', [
-          { role: 'tokin', color: 'sente' },
-          { role: 'pawn', color: 'sente' },
-        ]);
+        ground.move('8h', '2b', true);
+        ground.set({ turnColor: 'gote' });
+        //ground.playPremove();
       }
       function setPieces() {
         ground.setPieces(
@@ -114,7 +157,16 @@
         });
       }
       function tmout(ms) {
-        setTimeout(reconf, ms);
+        setTimeout(pieceSVG, ms);
+      }
+      function to5x5() {
+        ground.set({ sfen: { board: 'ppppp/5/5/5/PPPPP' } });
+      }
+      function detach() {
+        ground.detach({ board: true });
+      }
+      function attach() {
+        ground.attach({ board: document.getElementById('dirty') });
       }
     </script>
     <script>
@@ -123,7 +175,7 @@
       // Update the current slider value (each time you drag the slider handle)
       slider.oninput = function () {
         board.style.width = (450 + parseInt(this.value)).toString() + 'px';
-        board.style.height = (450 + parseInt(this.value)).toString() + 'px';
+        board.style.height = (500 + (parseInt(this.value) * 10) / 9).toString() + 'px';
         document.dispatchEvent(new Event('shogiground.resize'));
       };
     </script>

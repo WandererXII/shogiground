@@ -200,7 +200,7 @@ function renderSquares(dims: Dimensions, orientation: Color): HTMLElement {
     sq.sgKey =
       orientation === 'sente'
         ? pos2key([dims.files - 1 - (i % dims.files), Math.floor(i / dims.files)])
-        : pos2key([i % dims.files, dims.files - 1 - Math.floor(i / dims.files)]);
+        : pos2key([i % dims.files, dims.ranks - 1 - Math.floor(i / dims.files)]);
     squares.appendChild(sq);
   }
 
