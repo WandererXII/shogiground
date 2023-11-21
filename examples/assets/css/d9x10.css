@@ -1,0 +1,15 @@
+.sg-wrap sg-squares {
+  grid-template: repeat(10, 1fr) / repeat(9, 1fr);
+  border-top: 1px solid black;
+  border-left: 1px solid black;
+}
+
+sg-promotion sg-promotion-square {
+  width: calc(100% / 9);
+  height: calc(100% / 10);
+}
+
+sg-board piece {
+  width: calc(200% / 9);
+  height: calc(200% / 10);
+}

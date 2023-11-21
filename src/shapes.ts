@@ -236,7 +236,7 @@ function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDest
         const pieceBounds = state.dom.bounds.hands.pieceBounds().get(pieceNameOf(shape.orig)),
           bounds = state.dom.bounds.board.bounds();
         if (pieceBounds && bounds) {
-          const heightBase = pieceBounds.height / (bounds.height / state.dimensions.files);
+          const heightBase = pieceBounds.height / (bounds.height / state.dimensions.ranks);
           // we want to keep the ratio that is on the board
           ratio = [heightBase * state.squareRatio[0], heightBase * state.squareRatio[1]];
         }

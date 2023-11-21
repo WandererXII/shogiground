@@ -129,7 +129,7 @@ export function domSquareIndexOfKey(key: sg.Key, asSente: boolean, dims: sg.Dime
   return index;
 }
 
-export function isInsideRect(rect: DOMRect, pos: sg.Pos): boolean {
+export function isInsideRect(rect: DOMRect, pos: sg.NumberPair): boolean {
   return (
     rect.left <= pos[0] && rect.top <= pos[1] && rect.left + rect.width > pos[0] && rect.top + rect.height > pos[1]
   );
