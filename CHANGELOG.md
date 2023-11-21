@@ -1,3 +1,8 @@
+## v0.8.3
+
+- Fix square rendering for non-square boards (https://github.com/WandererXII/shogiground/pull/10).
+- Dependencies updated.
+
 ## v0.8.2
 
 - Added `shogiground.js` and `shogiground.min.js` in dist to npm.
