@@ -5,11 +5,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
-          node-version: '14'
-          cache: yarn
+          node-version: '16'
+          cache: 'npm'
       - run: |
-          yarn install
-          yarn run lint
-          yarn run dist
+          npm install
+          npm run check-format
+          npm run lint
+          npm run dist
