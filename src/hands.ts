@@ -3,14 +3,16 @@ import * as sg from './types.js';
 import { samePiece } from './util.js';
 
 export function addToHand(s: HeadlessState, piece: sg.Piece, cnt = 1): void {
-  const hand = s.hands.handMap.get(piece.color);
-  if (hand && s.hands.roles.includes(piece.role)) hand.set(piece.role, (hand.get(piece.role) || 0) + cnt);
+  const hand = s.hands.handMap.get(piece.color),
+    role = (s.hands.roles.includes(piece.role) ? piece.role : s.promotion.unpromotesTo(piece.role)) || piece.role;
+  if (hand && s.hands.roles.includes(role)) hand.set(role, (hand.get(role) || 0) + cnt);
 }
 
 export function removeFromHand(s: HeadlessState, piece: sg.Piece, cnt = 1): void {
   const hand = s.hands.handMap.get(piece.color),
-    num = hand?.get(piece.role);
-  if (hand && num) hand.set(piece.role, Math.max(num - cnt, 0));
+    role = (s.hands.roles.includes(piece.role) ? piece.role : s.promotion.unpromotesTo(piece.role)) || piece.role,
+    num = hand?.get(role);
+  if (hand && num) hand.set(role, Math.max(num - cnt, 0));
 }
 
 export function renderHand(s: HeadlessState, handEl: HTMLElement): void {

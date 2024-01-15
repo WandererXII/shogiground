@@ -118,6 +118,7 @@ export interface Config {
   };
   promotion?: {
     promotesTo?: (role: sg.RoleString) => sg.RoleString | undefined;
+    unpromotesTo?: (role: sg.RoleString) => sg.RoleString | undefined;
     movePromotionDialog?: (orig: sg.Key, dest: sg.Key) => boolean; // activate promotion dialog
     forceMovePromotion?: (orig: sg.Key, dest: sg.Key) => boolean; // auto promote after move
     dropPromotionDialog?: (piece: sg.Piece, key: sg.Key) => boolean; // activate promotion dialog

@@ -105,6 +105,7 @@ export interface HeadlessState {
   };
   promotion: {
     promotesTo: (role: sg.RoleString) => sg.RoleString | undefined;
+    unpromotesTo: (role: sg.RoleString) => sg.RoleString | undefined;
     movePromotionDialog: (orig: sg.Key, dest: sg.Key) => boolean;
     forceMovePromotion: (orig: sg.Key, dest: sg.Key) => boolean;
     dropPromotionDialog: (piece: sg.Piece, key: sg.Key) => boolean;
@@ -219,6 +220,7 @@ export function defaults(): HeadlessState {
       dropPromotionDialog: () => false,
       forceDropPromotion: () => false,
       promotesTo: () => undefined,
+      unpromotesTo: () => undefined,
       events: {},
       prevPromotionHash: '',
     },
