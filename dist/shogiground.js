@@ -132,14 +132,14 @@ var Shogiground = (function () {
     }
 
     function addToHand(s, piece, cnt = 1) {
-        const hand = s.hands.handMap.get(piece.color);
-        if (hand && s.hands.roles.includes(piece.role))
-            hand.set(piece.role, (hand.get(piece.role) || 0) + cnt);
+        const hand = s.hands.handMap.get(piece.color), role = (s.hands.roles.includes(piece.role) ? piece.role : s.promotion.unpromotesTo(piece.role)) || piece.role;
+        if (hand && s.hands.roles.includes(role))
+            hand.set(role, (hand.get(role) || 0) + cnt);
     }
     function removeFromHand(s, piece, cnt = 1) {
-        const hand = s.hands.handMap.get(piece.color), num = hand === null || hand === void 0 ? void 0 : hand.get(piece.role);
+        const hand = s.hands.handMap.get(piece.color), role = (s.hands.roles.includes(piece.role) ? piece.role : s.promotion.unpromotesTo(piece.role)) || piece.role, num = hand === null || hand === void 0 ? void 0 : hand.get(role);
         if (hand && num)
-            hand.set(piece.role, Math.max(num - cnt, 0));
+            hand.set(role, Math.max(num - cnt, 0));
     }
     function renderHand$1(s, handEl) {
         var _a;
@@ -380,10 +380,14 @@ var Shogiground = (function () {
             setSelected(state, key);
         }
     }
-    function selectPiece(state, piece, spare, force) {
+    function selectPiece(state, piece, spare, force, api) {
         callUserFunction(state.events.pieceSelect, piece);
-        // unselect if selecting the selected piece, keep selected for drag
-        if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) {
+        if (state.selectable.addSparesToHand && state.droppable.spare && state.selectedPiece) {
+            addToHand(state, { role: state.selectedPiece.role, color: piece.color });
+            callUserFunction(state.events.change);
+            unselect$1(state);
+        }
+        else if (!api && !state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) {
             callUserFunction(state.events.pieceUnselect, piece);
             unselect$1(state);
         }
@@ -2367,7 +2371,7 @@ var Shogiground = (function () {
             },
             selectPiece(piece, spare, force) {
                 if (piece)
-                    render$1(state => selectPiece(state, piece, spare, force), state);
+                    render$1(state => selectPiece(state, piece, spare, force, true), state);
                 else if (state.selectedPiece) {
                     unselect$1(state);
                     state.dom.redraw();
@@ -2498,6 +2502,7 @@ var Shogiground = (function () {
                 enabled: true,
                 forceSpares: false,
                 deleteOnTouch: false,
+                addSparesToHand: false,
             },
             promotion: {
                 movePromotionDialog: () => false,
@@ -2505,14 +2510,15 @@ var Shogiground = (function () {
                 dropPromotionDialog: () => false,
                 forceDropPromotion: () => false,
                 promotesTo: () => undefined,
+                unpromotesTo: () => undefined,
                 events: {},
                 prevPromotionHash: '',
             },
             forsyth: {},
             events: {},
             drawable: {
-                enabled: true,
-                visible: true,
+                enabled: true, // can draw
+                visible: true, // can view
                 eraseOnClick: true,
                 shapes: [],
                 autoShapes: [],
