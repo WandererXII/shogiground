@@ -1,7 +1,7 @@
 import type { HeadlessState } from './state.js';
 import * as sg from './types.js';
 import { callUserFunction, opposite, pieceNameOf, samePiece } from './util.js';
-import { removeFromHand } from './hands.js';
+import { addToHand, removeFromHand } from './hands.js';
 
 export function toggleOrientation(state: HeadlessState): void {
   state.orientation = opposite(state.orientation);
@@ -241,11 +241,20 @@ export function selectSquare(state: HeadlessState, key: sg.Key, prom?: boolean, 
   }
 }
 
-export function selectPiece(state: HeadlessState, piece: sg.Piece, spare?: boolean, force?: boolean): void {
+export function selectPiece(
+  state: HeadlessState,
+  piece: sg.Piece,
+  spare?: boolean,
+  force?: boolean,
+  api?: boolean
+): void {
   callUserFunction(state.events.pieceSelect, piece);
 
-  // unselect if selecting the selected piece, keep selected for drag
-  if (!state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) {
+  if (state.selectable.addSparesToHand && state.droppable.spare && state.selectedPiece) {
+    addToHand(state, { role: state.selectedPiece.role, color: piece.color });
+    callUserFunction(state.events.change);
+    unselect(state);
+  } else if (!api && !state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) {
     callUserFunction(state.events.pieceUnselect, piece);
     unselect(state);
   } else if (

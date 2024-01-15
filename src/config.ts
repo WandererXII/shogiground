@@ -56,7 +56,7 @@ export interface Config {
     showDests?: boolean; // whether to add the dest class on squares
     spare?: boolean; // whether to remove dropped piece from hand after drop - board editor
     events?: {
-      after?: (role: sg.Piece, key: sg.Key, prom: boolean, metadata: sg.MoveMetadata) => void; // called after the drop has been played
+      after?: (piece: sg.Piece, key: sg.Key, prom: boolean, metadata: sg.MoveMetadata) => void; // called after the drop has been played
     };
   };
   premovable?: {
@@ -92,6 +92,7 @@ export interface Config {
     enabled?: boolean; // disable to enforce dragging over click-click move
     forceSpares?: boolean; // allow dropping spare pieces even with selectable disabled
     deleteOnTouch?: boolean; // selecting a piece on the board or in hand will remove it - board editor
+    addSparesToHand?: boolean; // add selected spare piece to hand - board editor
   };
   events?: {
     change?: () => void; // called after the situation changes on the board

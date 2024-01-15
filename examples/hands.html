@@ -52,6 +52,7 @@
         },
         selectable: {
           enabled: true,
+          addSparesToHand: false,
         },
         movable: {
           free: false,
@@ -101,7 +102,7 @@
           top: document.getElementById('hand-top'),
         },
       });
-      sg.selectSquare('3g');
+      // sg.selectSquare('3g');
       function flip() {
         sg.toggleOrientation();
       }
@@ -114,7 +115,7 @@
         });
       }
       function sp() {
-        sg.selectPiece({ role: 'pawn', color: 'sente' });
+        sg.selectPiece({ role: 'pawn', color: 'sente' }, true);
       }
       function sq() {
         sg.selectSquare('5e');

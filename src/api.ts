@@ -175,7 +175,7 @@ export function start(state: State): Api {
     },
 
     selectPiece(piece, spare, force): void {
-      if (piece) render(state => board.selectPiece(state, piece, spare, force), state);
+      if (piece) render(state => board.selectPiece(state, piece, spare, force, true), state);
       else if (state.selectedPiece) {
         board.unselect(state);
         state.dom.redraw();
