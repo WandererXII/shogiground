@@ -1,3 +1,10 @@
+## v0.8.4
+
+- Added `unpromotesTo` to `promotion` in config. If a piece can't be added to or removed from hand, due to not being in `hands.roles`, unpromotion will be attempted. Return `undefined` by default.
+- Calling `selectPiece` in api now correctly always selects specified piece and unselects only when null is provided.
+- Added `addSparesToHand` to `selectable` in config. If true - clicking on a piece in hand while having a spare piece selected will result in adding the spare piece's role to hand. Defaults to `false`.
+- Dependencies bumped.
+
 ## v0.8.3
 
 - Fix square rendering for non-square boards (https://github.com/WandererXII/shogiground/pull/10).
