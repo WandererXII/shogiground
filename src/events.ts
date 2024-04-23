@@ -113,7 +113,7 @@ function startDragOrDraw(s: State): MouchBind {
   return e => {
     if (s.draggable.current) drag.cancel(s);
     else if (s.drawable.current) draw.cancel(s);
-    else if (e.shiftKey || isRightButton(e)) {
+    else if (e.shiftKey || isRightButton(e) || s.drawable.forced) {
       if (s.drawable.enabled) draw.start(s, e);
     } else if (!s.viewOnly && !drag.unwantedEvent(e)) drag.start(s, e);
   };
@@ -142,7 +142,7 @@ function startDragFromHand(s: State): MouchBind {
           if (e.cancelable !== false) e.preventDefault();
           draw.setDrawPiece(s, piece);
         }
-      } else if (e.shiftKey || isRightButton(e)) {
+      } else if (e.shiftKey || isRightButton(e) || s.drawable.forced) {
         if (s.drawable.enabled) draw.startFromHand(s, piece, e);
       } else if (!s.viewOnly && !drag.unwantedEvent(e)) {
         if (e.cancelable !== false) e.preventDefault();

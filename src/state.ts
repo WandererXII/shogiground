@@ -231,6 +231,7 @@ export function defaults(): HeadlessState {
     drawable: {
       enabled: true, // can draw
       visible: true, // can view
+      forced: false, // can only draw
       eraseOnClick: true,
       shapes: [],
       autoShapes: [],

@@ -62,6 +62,9 @@
           free: false,
           dests: new Map([['sente bishop', ['5e']]]),
         },
+        drawable: {
+          forced: false,
+        },
         promotion: {
           promotesTo: role => {
             if (role === 'bishop') return 'horse';

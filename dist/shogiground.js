@@ -1274,7 +1274,7 @@ var Shogiground = (function () {
             dest: undefined,
             pos,
             piece,
-            brush: eventBrush(e),
+            brush: eventBrush(e, isRightButton(e) || state.drawable.forced),
         };
         processDraw(state);
     }
@@ -1292,7 +1292,7 @@ var Shogiground = (function () {
             orig: piece,
             dest: undefined,
             pos,
-            brush: eventBrush(e),
+            brush: eventBrush(e, isRightButton(e) || state.drawable.forced),
         };
         processDraw(state);
     }
@@ -1348,9 +1348,9 @@ var Shogiground = (function () {
             state.drawable.piece = piece;
         state.dom.redraw();
     }
-    function eventBrush(e) {
+    function eventBrush(e, allowFirstModifier) {
         var _a;
-        const modA = (e.shiftKey || e.ctrlKey) && isRightButton(e), modB = e.altKey || e.metaKey || ((_a = e.getModifierState) === null || _a === void 0 ? void 0 : _a.call(e, 'AltGraph'));
+        const modA = allowFirstModifier && (e.shiftKey || e.ctrlKey), modB = e.altKey || e.metaKey || ((_a = e.getModifierState) === null || _a === void 0 ? void 0 : _a.call(e, 'AltGraph'));
         return brushes[(modA ? 1 : 0) + (modB ? 2 : 0)];
     }
     function addShape(drawable, cur) {
@@ -1922,7 +1922,7 @@ var Shogiground = (function () {
                 cancel(s);
             else if (s.drawable.current)
                 cancel$1(s);
-            else if (e.shiftKey || isRightButton(e)) {
+            else if (e.shiftKey || isRightButton(e) || s.drawable.forced) {
                 if (s.drawable.enabled)
                     start$2(s, e);
             }
@@ -1957,7 +1957,7 @@ var Shogiground = (function () {
                         setDrawPiece(s, piece);
                     }
                 }
-                else if (e.shiftKey || isRightButton(e)) {
+                else if (e.shiftKey || isRightButton(e) || s.drawable.forced) {
                     if (s.drawable.enabled)
                         startFromHand(s, piece, e);
                 }
@@ -2519,6 +2519,7 @@ var Shogiground = (function () {
             drawable: {
                 enabled: true, // can draw
                 visible: true, // can view
+                forced: false, // can only draw
                 eraseOnClick: true,
                 shapes: [],
                 autoShapes: [],

@@ -327,7 +327,6 @@ sg-square-over {
 }
 .sg-wrap .sg-shapes g.alternative2 line {
   stroke: #e68f00;
-  stroke-width: 0.2;
 }
 .sg-wrap .sg-shapes marker#arrowhead-alternative2 path {
   fill: #e68f00;

@@ -35,6 +35,7 @@ export interface DrawShapePiece {
 export interface Drawable {
   enabled: boolean; // can draw
   visible: boolean; // can view
+  forced: boolean; // can only draw
   eraseOnClick: boolean;
   onChange?: (shapes: DrawShape[]) => void;
   shapes: DrawShape[]; // user shapes
@@ -72,7 +73,7 @@ export function start(state: State, e: sg.MouchEvent): void {
     dest: undefined,
     pos,
     piece,
-    brush: eventBrush(e),
+    brush: eventBrush(e, isRightButton(e) || state.drawable.forced),
   };
   processDraw(state);
 }
@@ -89,7 +90,7 @@ export function startFromHand(state: State, piece: sg.Piece, e: sg.MouchEvent): 
     orig: piece,
     dest: undefined,
     pos,
-    brush: eventBrush(e),
+    brush: eventBrush(e, isRightButton(e) || state.drawable.forced),
   };
   processDraw(state);
 }
@@ -156,8 +157,8 @@ export function setDrawPiece(state: State, piece: sg.Piece): void {
   state.dom.redraw();
 }
 
-function eventBrush(e: sg.MouchEvent): string {
-  const modA = (e.shiftKey || e.ctrlKey) && isRightButton(e),
+function eventBrush(e: sg.MouchEvent, allowFirstModifier: boolean): string {
+  const modA = allowFirstModifier && (e.shiftKey || e.ctrlKey),
     modB = e.altKey || e.metaKey || e.getModifierState?.('AltGraph');
   return brushes[(modA ? 1 : 0) + (modB ? 2 : 0)];
 }

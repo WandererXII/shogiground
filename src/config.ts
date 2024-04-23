@@ -107,6 +107,7 @@ export interface Config {
   drawable?: {
     enabled?: boolean; // can draw
     visible?: boolean; // can view
+    forced?: boolean; // can only draw
     eraseOnClick?: boolean;
     shapes?: DrawShape[];
     autoShapes?: DrawShape[];

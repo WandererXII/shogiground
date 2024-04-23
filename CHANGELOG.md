@@ -1,3 +1,8 @@
+## v0.8.5
+
+- Added to `drawable.forced` to config. When set to true moving/dropping is not possible and only shapes will be drawn.
+- Dependencies bumped.
+
 ## v0.8.4
 
 - Added `unpromotesTo` to `promotion` in config. If a piece can't be added to or removed from hand, due to not being in `hands.roles`, unpromotion will be attempted. Return `undefined` by default.
