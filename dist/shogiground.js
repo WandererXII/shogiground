@@ -122,6 +122,8 @@ var Shogiground = (function () {
     }
     function posOfOutsideEl(left, top, asSente, dims, boardBounds) {
         const sqW = boardBounds.width / dims.files, sqH = boardBounds.height / dims.ranks;
+        if (!sqW || !sqH)
+            return;
         let xOff = (left - boardBounds.left) / sqW;
         if (asSente)
             xOff = dims.files - 1 - xOff;
@@ -838,10 +840,12 @@ var Shogiground = (function () {
                     for (const [role, n] of preH) {
                         const piece = { role, color }, curN = curH.get(role) || 0;
                         if (curN < n) {
-                            const handPieceOffset = current.dom.bounds.hands.pieceBounds().get(pieceNameOf(piece)), bounds = current.dom.bounds.board.bounds();
-                            if (handPieceOffset && bounds)
+                            const handPieceOffset = current.dom.bounds.hands.pieceBounds().get(pieceNameOf(piece)), bounds = current.dom.bounds.board.bounds(), outPos = handPieceOffset && bounds
+                                ? posOfOutsideEl(handPieceOffset.left, handPieceOffset.top, sentePov(current.orientation), current.dimensions, bounds)
+                                : undefined;
+                            if (outPos)
                                 missings.push({
-                                    pos: posOfOutsideEl(handPieceOffset.left, handPieceOffset.top, sentePov(current.orientation), current.dimensions, bounds),
+                                    pos: outPos,
                                     piece: piece,
                                 });
                         }
@@ -911,7 +915,7 @@ var Shogiground = (function () {
             const alreadyRunning = state.animation.current && state.animation.current.start;
             state.animation.current = {
                 start: performance.now(),
-                frequency: 1 / state.animation.duration,
+                frequency: 1 / Math.max(state.animation.duration, 1),
                 plan: plan,
             };
             if (!alreadyRunning)
@@ -1306,8 +1310,9 @@ var Shogiground = (function () {
                     cur.dest = dest;
                     state.dom.redrawNow();
                 }
-                if (!cur.dest && cur.arrow) {
-                    const dest = pos2user(posOfOutsideEl(cur.pos[0], cur.pos[1], sentePov(state.orientation), state.dimensions, bounds), state.orientation, state.dimensions, state.squareRatio);
+                const outPos = posOfOutsideEl(cur.pos[0], cur.pos[1], sentePov(state.orientation), state.dimensions, bounds);
+                if (!cur.dest && cur.arrow && outPos) {
+                    const dest = pos2user(outPos, state.orientation, state.dimensions, state.squareRatio);
                     setAttributes(cur.arrow, { x2: dest[0] - state.squareRatio[0] / 2, y2: dest[1] - state.squareRatio[1] / 2 });
                 }
                 processDraw(state);
