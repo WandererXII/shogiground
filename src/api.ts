@@ -68,7 +68,7 @@ export interface Api {
   // cancel the current move or drop being made, premoves and predrops
   cancelMoveOrDrop(): void;
 
-  // cancel current move and prevent further ones
+  // cancel current move or drop and prevent further ones
   stop(): void;
 
   // programmatically draw user shapes
