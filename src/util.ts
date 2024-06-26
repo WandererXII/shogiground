@@ -169,9 +169,10 @@ export function posOfOutsideEl(
   asSente: boolean,
   dims: sg.Dimensions,
   boardBounds: DOMRect
-): sg.Pos {
+): sg.Pos | undefined {
   const sqW = boardBounds.width / dims.files,
     sqH = boardBounds.height / dims.ranks;
+  if (!sqW || !sqH) return;
   let xOff = (left - boardBounds.left) / sqW;
   if (asSente) xOff = dims.files - 1 - xOff;
   let yOff = (top - boardBounds.top) / sqH;

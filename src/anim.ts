@@ -91,16 +91,20 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
             curN = curH.get(role) || 0;
           if (curN < n) {
             const handPieceOffset = current.dom.bounds.hands.pieceBounds().get(util.pieceNameOf(piece)),
-              bounds = current.dom.bounds.board.bounds();
-            if (handPieceOffset && bounds)
+              bounds = current.dom.bounds.board.bounds(),
+              outPos =
+                handPieceOffset && bounds
+                  ? util.posOfOutsideEl(
+                      handPieceOffset.left,
+                      handPieceOffset.top,
+                      util.sentePov(current.orientation),
+                      current.dimensions,
+                      bounds
+                    )
+                  : undefined;
+            if (outPos)
               missings.push({
-                pos: util.posOfOutsideEl(
-                  handPieceOffset.left,
-                  handPieceOffset.top,
-                  util.sentePov(current.orientation),
-                  current.dimensions,
-                  bounds
-                ),
+                pos: outPos,
                 piece: piece,
               });
           }
@@ -175,7 +179,7 @@ function animate<A>(mutation: Mutation<A>, state: State): A {
     const alreadyRunning = state.animation.current && state.animation.current.start;
     state.animation.current = {
       start: performance.now(),
-      frequency: 1 / state.animation.duration,
+      frequency: 1 / Math.max(state.animation.duration, 1),
       plan: plan,
     };
     if (!alreadyRunning) step(state, performance.now());

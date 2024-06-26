@@ -1,3 +1,7 @@
+## v0.8.6
+
+- Fixed possible division by zero resulting in NaN positions, while calculating positions of outside elements, that have no width/height.
+
 ## v0.8.5
 
 - Added to `drawable.forced` to config. When set to true moving/dropping is not possible and only shapes will be drawn.
