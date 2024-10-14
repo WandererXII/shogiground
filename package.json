@@ -3,13 +3,30 @@
   "version": "0.8.6",
   "description": "lishogi.org shogi ui",
   "type": "module",
-  "module": "shogiground.js",
-  "typings": "shogiground.d.ts",
-  "dependencies": {},
+  "module": "esm/shogiground.js",
+  "types": "esm/shogiground.d.ts",
+  "exports": {
+    ".": {
+      "types": "./esm/shogiground.d.ts",
+      "import": "./esm/shogiground.js"
+    },
+    "./*": {
+      "types": "./esm/*.d.ts",
+      "import": "./esm/*.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "esm/*"
+      ]
+    }
+  },
   "devDependencies": {
     "@rollup/plugin-typescript": "^8",
     "@typescript-eslint/eslint-plugin": "^7",
     "@typescript-eslint/parser": "^7",
+    "del-cli": "^6",
     "eslint": "^8",
     "prettier": "^3",
     "rollup": "^2",
@@ -19,21 +36,27 @@
   },
   "scripts": {
     "prepare": "$npm_execpath run compile",
-    "compile": "tsc --outDir . --sourceMap --declaration",
-    "lint": "eslint src/*.ts",
+    "precompile": "del esm",
+    "compile": "tsc",
+    "lint": "eslint",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "dist": "rollup --config"
   },
   "files": [
-    "/*.js",
-    "/*.d.ts",
-    "/*.js.map",
-    "/src/*.ts",
-    "/dist/*.js",
-    "!/rollup.config.js"
+    "dist",
+    "esm",
+    "src"
   ],
-  "repository": "https://github.com/WandererXII/shogiground",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WandererXII/shogiground"
+  },
+  "author": "Thibault Duplessis (https://github.com/ornicar); WandererXII - modified for shogi",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/WandererXII/shogiground/issues"
+  },
   "keywords": [
     "shogi",
     "lishogi",
@@ -42,10 +65,5 @@
     "ui",
     "typescript"
   ],
-  "author": "Thibault Duplessis (https://github.com/ornicar); WandererXII - modified for shogi",
-  "license": "GPL-3.0-or-later",
-  "bugs": {
-    "url": "https://github.com/WandererXII/shogiground/issues"
-  },
   "funding": "https://lishogi.org/patron"
 }

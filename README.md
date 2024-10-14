@@ -2,6 +2,7 @@
 
 [![Continuous Integration](https://github.com/WandererXII/shogiground/workflows/Continuous%20Integration/badge.svg)](https://github.com/WandererXII/shogiground/actions?query=workflow%3A%22Continuous+Integration%22)
 [![npm](https://img.shields.io/npm/v/shogiground)](https://www.npmjs.com/package/shogiground)
+[![jsdelivr](https://img.shields.io/npm/v/shogiground.svg?label=jsdelivr)](https://cdn.jsdelivr.net/npm/shogiground@latest/dist/shogigorund.min.js)
 
 ![Shogiground](/screenshot/board1.png)
 
@@ -66,7 +67,7 @@ npm install --save shogiground
 ### Usage
 
 ```js
-const Shogiground = require('shogiground').Shogiground;
+import { Shogiground } from 'shogiground';
 
 const config = {
   sfen: {
@@ -76,13 +77,25 @@ const config = {
 const ground = Shogiground(config, { board: document.body });
 ```
 
+#### Non-module environments
+
+Or you can simply pull the latest version from `jsdelivr`.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/shogiground@latest/dist/shogiground.min.js"></script>
+```
+
+#### CSS
+
+To actually see and use the board you need some CSS. You can use the CSS in `examples/assets` as a starting point. But it will take some work to get it exactly how you want it.
+
 ## Documentation
 
 - [Config types](https://github.com/WandererXII/shogiground/tree/master/src/config.ts)
 - [Default config values](https://github.com/WandererXII/shogiground/tree/master/src/state.ts)
 - [API type signatures](https://github.com/WandererXII/shogiground/tree/master/src/api.ts)
 - [Quick examples](https://github.com/WandererXII/shogiground/tree/master/examples/index.html)
-- [Base CSS](https://github.com/WandererXII/shogiground/tree/master/assets/css/shogiground.css)
+- [Base CSS](https://github.com/WandererXII/shogiground/tree/master/examples/assets/css/shogiground.css)
 
 ## Development
 

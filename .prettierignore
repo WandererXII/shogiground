@@ -1,7 +1,1 @@
-dist/
-
-*.js
-*.d.ts
-*.js.map
-
-!rollup.config.js
+/dist/
