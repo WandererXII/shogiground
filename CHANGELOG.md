@@ -1,3 +1,11 @@
+## v0.9.0
+
+- Files are now built to `esm` directory.
+- Constants were moved from `types.ts` into `constants.ts`.
+- `Notation` was moved from `types.ts` into `notation.ts`.
+- Type guards were moved from `types.ts` into `util.ts`.
+- `allKeys` was moved from `util.ts` into `constants.ts`.
+
 ## v0.8.6
 
 - Fixed possible division by zero resulting in NaN positions, while calculating positions of outside elements, that have no width/height.
