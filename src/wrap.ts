@@ -1,17 +1,9 @@
 import type { State } from './state.js';
-import {
-  colors,
-  Notation,
-  Dimensions,
-  SquareNode,
-  Color,
-  PieceNode,
-  RoleString,
-  HandElements,
-  BoardElements,
-} from './types.js';
+import type { Dimensions, SquareNode, Color, PieceNode, RoleString, HandElements, BoardElements } from './types.js';
+import { colors } from './constants.js';
 import { createEl, opposite, pieceNameOf, pos2key, setDisplay } from './util.js';
 import { createSVGElement, setAttributes } from './shapes.js';
+import { coords } from './notation.js';
 
 export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   // .sg-wrap (element passed to Shogiground)
@@ -87,8 +79,8 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
 
   if (s.coordinates.enabled) {
     const orientClass = s.orientation === 'gote' ? ' gote' : '',
-      ranks = coordsByNotation(s.coordinates.ranks),
-      files = coordsByNotation(s.coordinates.files);
+      ranks = coords(s.coordinates.ranks),
+      files = coords(s.coordinates.files);
     board.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
     board.appendChild(renderCoords(files, 'files' + orientClass, s.dimensions.files));
   }
@@ -153,36 +145,6 @@ export function wrapHand(handWrap: HTMLElement, pos: 'top' | 'bottom', s: State)
   handWrap.classList.toggle('manipulable', !s.viewOnly);
 
   return hand;
-}
-
-function coordsByNotation(notation: Notation): string[] {
-  switch (notation) {
-    case Notation.JAPANESE:
-      return [
-        '十六',
-        '十五',
-        '十四',
-        '十三',
-        '十二',
-        '十一',
-        '十',
-        '九',
-        '八',
-        '七',
-        '六',
-        '五',
-        '四',
-        '三',
-        '二',
-        '一',
-      ];
-    case Notation.ENGINE:
-      return ['p', 'o', 'n', 'm', 'l', 'k', 'j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
-    case Notation.HEX:
-      return ['10', 'f', 'e', 'd', 'c', 'b', 'a', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
-    default:
-      return ['16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
-  }
 }
 
 function renderCoords(elems: readonly string[], className: string, trim: number): HTMLElement {

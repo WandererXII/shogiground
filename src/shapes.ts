@@ -1,6 +1,6 @@
 import type { State } from './state.js';
 import type { DrawShape, DrawShapePiece, DrawCurrent } from './draw.js';
-import * as sg from './types.js';
+import type * as sg from './types.js';
 import {
   createEl,
   key2pos,
@@ -34,7 +34,7 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
     cur = curD?.dest ? (curD as DrawShape) : undefined,
     outsideArrow = !!curD && !cur,
     arrowDests: ArrowDests = new Map(),
-    pieceMap: Map<sg.Key, DrawShape> = new Map();
+    pieceMap = new Map<sg.Key, DrawShape>();
 
   const hashBounds = () => {
     // todo also possible piece bounds
@@ -130,7 +130,7 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
 
 // append only. Don't try to update/remove.
 function syncDefs(shapes: Shape[], outsideShape: DrawCurrent | undefined, defsEl: SVGElement): void {
-  const brushes: Set<string> = new Set();
+  const brushes = new Set<string>();
   for (const s of shapes) {
     if (!samePieceOrKey(s.shape.dest, s.shape.orig)) brushes.add(s.shape.brush);
   }
@@ -161,7 +161,7 @@ export function syncShapes(
   let el: SVGElement | undefined = root.firstElementChild as SVGElement,
     elHash: Hash;
   while (el) {
-    elHash = el.getAttribute('sgHash') as Hash;
+    elHash = el.getAttribute('sgHash')!;
     // found a shape element that's here to stay
     if (hashesInDom.has(elHash)) hashesInDom.set(elHash, true);
     // or remove it
@@ -383,7 +383,7 @@ function renderMarker(brush: string): SVGElement {
   return marker;
 }
 
-export function setAttributes(el: SVGElement, attrs: { [key: string]: any }): SVGElement {
+export function setAttributes(el: SVGElement, attrs: Record<string, any>): SVGElement {
   for (const key in attrs) {
     if (Object.prototype.hasOwnProperty.call(attrs, key)) el.setAttribute(key, attrs[key]);
   }

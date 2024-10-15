@@ -1,5 +1,5 @@
 import type { HeadlessState } from './state.js';
-import * as sg from './types.js';
+import type * as sg from './types.js';
 import { samePiece } from './util.js';
 
 export function addToHand(s: HeadlessState, piece: sg.Piece, cnt = 1): void {

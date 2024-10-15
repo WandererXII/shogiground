@@ -1,5 +1,5 @@
 import type { State } from './state.js';
-import * as sg from './types.js';
+import type * as sg from './types.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
 import {
@@ -7,6 +7,7 @@ import {
   eventPosition,
   getHandPieceAtDomPos,
   isMiddleButton,
+  isPieceNode,
   isRightButton,
   samePiece,
 } from './util.js';
@@ -157,7 +158,7 @@ function promote(s: State, e: sg.MouchEvent): void {
 
   const target = e.target as HTMLElement | null,
     cur = s.promotion.current;
-  if (target && sg.isPieceNode(target) && cur) {
+  if (target && isPieceNode(target) && cur) {
     const piece = { color: target.sgColor, role: target.sgRole },
       prom = !samePiece(cur.piece, piece);
     if (cur.dragged || (s.turnColor !== s.activeColor && s.activeColor !== 'both')) {

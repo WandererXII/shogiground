@@ -1,7 +1,10 @@
 import type { DOMRectMap, PieceName, PieceNode, WrapElements } from './types.js';
-import { Api, start } from './api.js';
-import { Config, configure } from './config.js';
-import { defaults, State } from './state.js';
+import type { Api } from './api.js';
+import type { Config } from './config.js';
+import type { State } from './state.js';
+import { start } from './api.js';
+import { configure } from './config.js';
+import { defaults } from './state.js';
 import * as util from './util.js';
 import { redrawAll } from './dom.js';
 import { bindDocument } from './events.js';

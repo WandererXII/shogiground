@@ -1,10 +1,11 @@
+import type { Config } from './config.js';
 import type { State } from './state.js';
 import type { DrawShape, SquareHighlight } from './draw.js';
-import * as sg from './types.js';
+import type * as sg from './types.js';
 import * as board from './board.js';
 import { addToHand, removeFromHand } from './hands.js';
 import { inferDimensions, boardToSfen, handsToSfen } from './sfen.js';
-import { applyAnimation, Config, configure } from './config.js';
+import { applyAnimation, configure } from './config.js';
 import { anim, render } from './anim.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
 import { detachElements, redrawAll } from './dom.js';
@@ -120,7 +121,7 @@ export function start(state: State): Api {
           return cRes && cRes !== getByPath(p, state);
         }) ||
         !!(newDims && (newDims.files !== state.dimensions.files || newDims.ranks !== state.dimensions.ranks)) ||
-        !!(config.hands?.roles && config.hands.roles.every((r, i) => r === state.hands.roles[i]));
+        !!config.hands?.roles?.every((r, i) => r === state.hands.roles[i]);
 
       if (toRedraw) {
         board.reset(state);

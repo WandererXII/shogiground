@@ -1,5 +1,5 @@
 import type { State } from './state.js';
-import * as sg from './types.js';
+import type * as sg from './types.js';
 import { unselect, cancelMoveOrDrop } from './board.js';
 import {
   eventPosition,

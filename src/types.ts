@@ -1,7 +1,9 @@
+import type { colors, files, ranks } from './constants.js';
+
 export type Color = (typeof colors)[number];
-export type Key = `${File}${Rank}`;
 export type File = (typeof files)[number];
 export type Rank = (typeof ranks)[number];
+export type Key = `${File}${Rank}`;
 export type BoardSfen = string;
 export type HandsSfen = string;
 // coordinate system starts at top right
@@ -18,6 +20,11 @@ export type Hands = Map<Color, Hand>;
 export type Hand = Map<RoleString, number>;
 
 export type PiecesDiff = Map<Key, Piece | undefined>;
+
+export interface Dimensions {
+  files: number;
+  ranks: number;
+}
 
 export type KeyPair = [Key, Key];
 
@@ -118,13 +125,6 @@ export interface SquareNode extends KeyedNode {
   tagName: 'SQ';
 }
 
-export function isPieceNode(el: HTMLElement): el is PieceNode {
-  return el.tagName === 'PIECE';
-}
-export function isSquareNode(el: HTMLElement): el is SquareNode {
-  return el.tagName === 'SQ';
-}
-
 export interface Memo<A> {
   (): A;
   clear: () => void;
@@ -132,19 +132,3 @@ export interface Memo<A> {
 
 export type Unbind = () => void;
 export type KHz = number;
-
-export const colors = ['sente', 'gote'] as const;
-export const files = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'] as const;
-export const ranks = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'] as const;
-
-export const enum Notation {
-  NUMERIC,
-  JAPANESE,
-  ENGINE,
-  HEX,
-}
-
-export type Dimensions = {
-  files: number;
-  ranks: number;
-};

@@ -1,5 +1,6 @@
 import type { State } from './state.js';
-import * as sg from './types.js';
+import type * as sg from './types.js';
+import { allKeys, colors } from './constants.js';
 import * as util from './util.js';
 
 export type Mutation<A> = (state: State) => A;
@@ -63,12 +64,12 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
     promotions: AnimPromotions = new Map(),
     missings: AnimPiece[] = [],
     news: AnimPiece[] = [],
-    prePieces: Map<sg.Key, AnimPiece> = new Map();
+    prePieces = new Map<sg.Key, AnimPiece>();
 
   for (const [k, p] of prevPieces) {
     prePieces.set(k, makePiece(k, p));
   }
-  for (const key of util.allKeys) {
+  for (const key of allKeys) {
     const curP = current.pieces.get(key),
       preP = prePieces.get(key);
     if (curP) {
@@ -81,7 +82,7 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
     } else if (preP) missings.push(preP);
   }
   if (current.animation.hands) {
-    for (const color of sg.colors) {
+    for (const color of colors) {
       const curH = current.hands.handMap.get(color),
         preH = prevHands.get(color);
       if (preH && curH) {
@@ -175,7 +176,7 @@ function animate<A>(mutation: Mutation<A>, state: State): A {
   const result = mutation(state),
     plan = computePlan(prevPieces, prevHands, state);
   if (plan.anims.size || plan.fadings.size) {
-    const alreadyRunning = state.animation.current && state.animation.current.start;
+    const alreadyRunning = state.animation.current?.start !== undefined;
     state.animation.current = {
       start: performance.now(),
       frequency: 1 / Math.max(state.animation.duration, 1),

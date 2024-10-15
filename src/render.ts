@@ -1,8 +1,18 @@
 import type { State } from './state.js';
 import type { AnimCurrent, AnimVectors, AnimVector, AnimFadings, AnimPromotions } from './anim.js';
 import type { DragCurrent } from './drag.js';
-import * as sg from './types.js';
-import { key2pos, createEl, setDisplay, posToTranslateRel, translateRel, pieceNameOf, sentePov } from './util.js';
+import type * as sg from './types.js';
+import {
+  key2pos,
+  createEl,
+  setDisplay,
+  posToTranslateRel,
+  translateRel,
+  pieceNameOf,
+  sentePov,
+  isPieceNode,
+  isSquareNode,
+} from './util.js';
 
 type SquareClasses = Map<sg.Key, string>;
 
@@ -23,8 +33,8 @@ export function render(s: State, boardEls: sg.BoardElements): void {
     curDrag: DragCurrent | undefined = s.draggable.current,
     curPromKey: sg.Key | undefined = s.promotion.current?.dragged ? s.selected : undefined,
     squares: SquareClasses = computeSquareClasses(s),
-    samePieces: Set<sg.Key> = new Set(),
-    movedPieces: Map<sg.PieceName, sg.PieceNode[]> = new Map();
+    samePieces = new Set<sg.Key>(),
+    movedPieces = new Map<sg.PieceName, sg.PieceNode[]>();
 
   // if piece not being dragged anymore, hide it
   if (!curDrag && draggedEl?.sgDragging) {
@@ -46,7 +56,7 @@ export function render(s: State, boardEls: sg.BoardElements): void {
   // walk over all board dom elements, apply animations and flag moved pieces
   el = piecesEl.firstElementChild as HTMLElement | undefined;
   while (el) {
-    if (sg.isPieceNode(el)) {
+    if (isPieceNode(el)) {
       k = el.sgKey;
       pieceAtKey = pieces.get(k);
       anim = anims.get(k);
@@ -111,7 +121,7 @@ export function render(s: State, boardEls: sg.BoardElements): void {
 
   // walk over all squares and apply classes
   let sqEl = squaresEl.firstElementChild as HTMLElement | undefined;
-  while (sqEl && sg.isSquareNode(sqEl)) {
+  while (sqEl && isSquareNode(sqEl)) {
     sqEl.className = squares.get(sqEl.sgKey) || '';
     sqEl = sqEl.nextElementSibling as HTMLElement | undefined;
   }
@@ -123,7 +133,7 @@ export function render(s: State, boardEls: sg.BoardElements): void {
     anim = anims.get(k);
     if (!samePieces.has(k)) {
       pMvdset = movedPieces.get(pieceNameOf(piece));
-      pMvd = pMvdset && pMvdset.pop();
+      pMvd = pMvdset?.pop();
       // a same piece was moved
       if (pMvd) {
         // apply dom changes
@@ -232,7 +242,7 @@ function addSquare(squares: SquareClasses, key: sg.Key, klass: string): void {
 
 function renderPromotion(s: State, promotionEl: HTMLElement): void {
   const cur = s.promotion.current,
-    key = cur && cur.key,
+    key = cur?.key,
     pieces = cur ? [cur.promotedPiece, cur.piece] : [],
     hash = promotionHash(!!cur, key, pieces);
   if (s.promotion.prevPromotionHash === hash) return;

@@ -1,5 +1,5 @@
 import type { HeadlessState } from './state.js';
-import * as sg from './types.js';
+import type * as sg from './types.js';
 import { callUserFunction, opposite, pieceNameOf, samePiece } from './util.js';
 import { addToHand, removeFromHand } from './hands.js';
 

@@ -1,6 +1,7 @@
 import type { HeadlessState } from './state.js';
 import type { DrawShape, SquareHighlight } from './draw.js';
-import * as sg from './types.js';
+import type { Notation } from './notation.js';
+import type * as sg from './types.js';
 import { setChecks, setPreDests } from './board.js';
 import { inferDimensions, sfenToBoard, sfenToHands } from './sfen.js';
 
@@ -24,8 +25,8 @@ export interface Config {
   scaleDownPieces?: boolean; // helpful for pngs - https://ctidd.com/2015/svg-background-scaling
   coordinates?: {
     enabled?: boolean; // include coords attributes
-    files?: sg.Notation;
-    ranks?: sg.Notation;
+    files?: Notation;
+    ranks?: Notation;
   };
   highlight?: {
     lastDests?: boolean; // add last-dest class to squares

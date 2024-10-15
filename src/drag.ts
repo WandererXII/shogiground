@@ -1,5 +1,5 @@
 import type { State } from './state.js';
-import * as sg from './types.js';
+import type * as sg from './types.js';
 import * as board from './board.js';
 import { addToHand, removeFromHand } from './hands.js';
 import * as util from './util.js';

@@ -1,4 +1,5 @@
-import * as sg from './types.js';
+import type * as sg from './types.js';
+import { files, ranks } from './constants.js';
 import { pos2key } from './util.js';
 
 export function inferDimensions(boardSfen: sg.BoardSfen): sg.Dimensions {
@@ -69,8 +70,8 @@ export function boardToSfen(
   toForsyth?: (role: sg.RoleString) => string | undefined
 ): sg.BoardSfen {
   const sfenRenderer = toForsyth || standardToForsyth,
-    reversedFiles = sg.files.slice(0, dims.files).reverse();
-  return sg.ranks
+    reversedFiles = files.slice(0, dims.files).reverse();
+  return ranks
     .slice(0, dims.ranks)
     .map(y =>
       reversedFiles

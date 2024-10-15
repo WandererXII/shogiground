@@ -1,7 +1,5 @@
-import * as sg from './types.js';
-
-// 1a, 2a, 3a ...
-export const allKeys: readonly sg.Key[] = Array.prototype.concat(...sg.ranks.map(r => sg.files.map(f => f + r)));
+import type * as sg from './types.js';
+import { allKeys, colors } from './constants.js';
 
 export const pos2key = (pos: sg.Pos): sg.Key => allKeys[pos[0] + 16 * pos[1]];
 
@@ -102,6 +100,13 @@ export function parsePieceName(pieceName: sg.PieceName): sg.Piece {
   return { color: splitted[0] as sg.Color, role: splitted[1] };
 }
 
+export function isPieceNode(el: HTMLElement): el is sg.PieceNode {
+  return el.tagName === 'PIECE';
+}
+export function isSquareNode(el: HTMLElement): el is sg.SquareNode {
+  return el.tagName === 'SQ';
+}
+
 export function computeSquareCenter(
   key: sg.Key,
   asSente: boolean,
@@ -151,7 +156,7 @@ export function getHandPieceAtDomPos(
   roles: sg.RoleString[],
   bounds: Map<sg.PieceName, DOMRect>
 ): sg.Piece | undefined {
-  for (const color of sg.colors) {
+  for (const color of colors) {
     for (const role of roles) {
       const piece = { color, role },
         pieceRect = bounds.get(pieceNameOf(piece));

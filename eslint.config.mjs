@@ -16,16 +16,17 @@ export default tseslint.config(
       },
     },
     rules: {
+      'linebreak-style': ['error', 'unix'],
+      eqeqeq: ['error', 'always'],
+      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/consistent-type-exports': 'error',
+      '@typescript-eslint/no-empty-function': 'error',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      'linebreak-style': ['error', 'unix'],
-      'no-duplicate-imports': 'error',
-      eqeqeq: ['error', 'always'],
-      '@typescript-eslint/no-empty-function': 'error',
-      '@typescript-eslint/no-unnecessary-condition': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -36,6 +37,6 @@ export default tseslint.config(
     files: ['src/**/*.ts'],
   },
   {
-    ignores: ['src/index.ts', 'eslint.config.mjs', 'rollup.config.js', 'esm', 'dist'],
+    ignores: ['src/index.ts', 'eslint.config.mjs', 'rollup.config.mjs', 'esm', 'dist'],
   }
 );
