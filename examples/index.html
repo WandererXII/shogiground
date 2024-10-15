@@ -51,15 +51,15 @@
           enabled: false,
         },
         selectable: {
-          enabled: false,
+          enabled: true,
           forceSpares: false,
         },
         highlight: {
           hovered: false,
         },
         movable: {
-          // free: false,
-          dests: new Map([['6g', ['6f']]]),
+          free: true,
+          // dests: new Map([['6g', ['6f']]]),
           events: {
             after: (orig, dest, prom, metadata) => {
               console.log('MOVEAFTER', orig, dest, prom, metadata);
