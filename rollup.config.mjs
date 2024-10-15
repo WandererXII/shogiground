@@ -1,5 +1,5 @@
 import typescript from '@rollup/plugin-typescript';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 
 export default {
   input: 'src/index.ts',
@@ -16,5 +16,13 @@ export default {
       plugins: [terser()],
     },
   ],
-  plugins: [typescript()],
+  plugins: [
+    typescript({
+      outDir: 'dist',
+      declarationDir: null,
+      declaration: false,
+      declarationMap: false,
+      sourceMap: false,
+    }),
+  ],
 };
