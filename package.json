@@ -2,6 +2,23 @@
   "name": "shogiground",
   "version": "0.8.6",
   "description": "lishogi.org shogi ui",
+  "author": "Thibault Duplessis (https://github.com/ornicar); WandererXII - modified for shogi",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WandererXII/shogiground"
+  },
+  "bugs": "https://github.com/WandererXII/shogiground/issues",
+  "funding": "https://lishogi.org/patron",
+  "keywords": [
+    "shogi",
+    "将棋",
+    "将棋板",
+    "shogiboard",
+    "lishogi",
+    "lishogi.org",
+    "typescript"
+  ],
   "type": "module",
   "module": "esm/shogiground.js",
   "types": "esm/shogiground.d.ts",
@@ -48,23 +65,5 @@
     "dist",
     "esm",
     "src"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/WandererXII/shogiground"
-  },
-  "author": "Thibault Duplessis (https://github.com/ornicar); WandererXII - modified for shogi",
-  "license": "GPL-3.0-or-later",
-  "bugs": {
-    "url": "https://github.com/WandererXII/shogiground/issues"
-  },
-  "keywords": [
-    "shogi",
-    "lishogi",
-    "lishogi.org",
-    "shogiboard",
-    "ui",
-    "typescript"
-  ],
-  "funding": "https://lishogi.org/patron"
+  ]
 }
