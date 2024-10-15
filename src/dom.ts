@@ -50,7 +50,8 @@ function attachHands(state: State, handTopWrap?: HTMLElement, handBottomWrap?: H
 
 export function redrawAll(wrapElements: WrapElements, state: State): void {
   if (wrapElements.board) attachBoard(state, wrapElements.board);
-  if (wrapElements.hands && !state.hands.inlined) attachHands(state, wrapElements.hands.top, wrapElements.hands.bottom);
+  if (wrapElements.hands && !state.hands.inlined)
+    attachHands(state, wrapElements.hands.top, wrapElements.hands.bottom);
 
   // shapes might depend both on board and hands - redraw only after both are done
   state.dom.redrawShapes();

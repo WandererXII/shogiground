@@ -65,10 +65,17 @@ export function render(s: State, boardEls: sg.BoardElements): void {
       elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
 
       // if piece dragged add or remove ghost class or if promotion dialog is active for the piece add prom class
-      if (((curDrag?.started && curDrag.fromBoard?.orig === k) || (curPromKey && curPromKey === k)) && !el.sgGhost) {
+      if (
+        ((curDrag?.started && curDrag.fromBoard?.orig === k) || (curPromKey && curPromKey === k)) &&
+        !el.sgGhost
+      ) {
         el.sgGhost = true;
         el.classList.add('ghost');
-      } else if (el.sgGhost && (!curDrag || curDrag.fromBoard?.orig !== k) && (!curPromKey || curPromKey !== k)) {
+      } else if (
+        el.sgGhost &&
+        (!curDrag || curDrag.fromBoard?.orig !== k) &&
+        (!curPromKey || curPromKey !== k)
+      ) {
         el.sgGhost = false;
         el.classList.remove('ghost');
       }
@@ -188,11 +195,14 @@ function appendValue<K, V>(map: Map<K, V[]>, key: K, value: V): void {
 
 function computeSquareClasses(s: State): SquareClasses {
   const squares: SquareClasses = new Map();
-  if (s.lastDests && s.highlight.lastDests) for (const k of s.lastDests) addSquare(squares, k, 'last-dest');
-  if (s.checks && s.highlight.check) for (const check of s.checks) addSquare(squares, check, 'check');
+  if (s.lastDests && s.highlight.lastDests)
+    for (const k of s.lastDests) addSquare(squares, k, 'last-dest');
+  if (s.checks && s.highlight.check)
+    for (const check of s.checks) addSquare(squares, check, 'check');
   if (s.hovered) addSquare(squares, s.hovered, 'hover');
   if (s.selected) {
-    if (s.activeColor === 'both' || s.activeColor === s.turnColor) addSquare(squares, s.selected, 'selected');
+    if (s.activeColor === 'both' || s.activeColor === s.turnColor)
+      addSquare(squares, s.selected, 'selected');
     else addSquare(squares, s.selected, 'preselected');
     if (s.movable.showDests) {
       const dests = s.movable.dests?.get(s.selected);
@@ -225,7 +235,11 @@ function computeSquareClasses(s: State): SquareClasses {
     addSquare(squares, premove.orig, 'current-pre');
     addSquare(squares, premove.dest, 'current-pre' + (premove.prom ? ' prom' : ''));
   } else if (s.predroppable.current)
-    addSquare(squares, s.predroppable.current.key, 'current-pre' + (s.predroppable.current.prom ? ' prom' : ''));
+    addSquare(
+      squares,
+      s.predroppable.current.key,
+      'current-pre' + (s.predroppable.current.prom ? ' prom' : '')
+    );
 
   for (const sqh of s.drawable.squares) {
     addSquare(squares, sqh.key, sqh.className);

@@ -90,7 +90,13 @@
           },
         },
       };
-      console.log('STATUS:', ' drag:', config.draggable.enabled, ' select: ', config.selectable.enabled);
+      console.log(
+        'STATUS:',
+        ' drag:',
+        config.draggable.enabled,
+        ' select: ',
+        config.selectable.enabled
+      );
       sg.set(config);
       sg.attach({
         board: document.getElementById('dirty'),

@@ -47,7 +47,8 @@ export function bindBoard(s: State, boardEls: sg.BoardElements): void {
   piecesEl.addEventListener('mousedown', onStart as EventListener, {
     passive: false,
   });
-  if (s.disableContextMenu || s.drawable.enabled) piecesEl.addEventListener('contextmenu', e => e.preventDefault());
+  if (s.disableContextMenu || s.drawable.enabled)
+    piecesEl.addEventListener('contextmenu', e => e.preventDefault());
 
   if (promotionEl) {
     const pieceSelection = (e: sg.MouchEvent) => promote(s, e);
@@ -73,7 +74,8 @@ export function bindHand(s: State, handEl: HTMLElement): void {
     }
   });
 
-  if (s.disableContextMenu || s.drawable.enabled) handEl.addEventListener('contextmenu', e => e.preventDefault());
+  if (s.disableContextMenu || s.drawable.enabled)
+    handEl.addEventListener('contextmenu', e => e.preventDefault());
 }
 
 // returns the unbind function
@@ -90,10 +92,14 @@ export function bindDocument(s: State): sg.Unbind {
     const onmove = dragOrDraw(s, drag.move, draw.move),
       onend = dragOrDraw(s, drag.end, draw.end);
 
-    for (const ev of ['touchmove', 'mousemove']) unbinds.push(unbindable(document, ev, onmove as EventListener));
-    for (const ev of ['touchend', 'mouseup']) unbinds.push(unbindable(document, ev, onend as EventListener));
+    for (const ev of ['touchmove', 'mousemove'])
+      unbinds.push(unbindable(document, ev, onmove as EventListener));
+    for (const ev of ['touchend', 'mouseup'])
+      unbinds.push(unbindable(document, ev, onend as EventListener));
 
-    unbinds.push(unbindable(document, 'scroll', () => clearBounds(s), { capture: true, passive: true }));
+    unbinds.push(
+      unbindable(document, 'scroll', () => clearBounds(s), { capture: true, passive: true })
+    );
     unbinds.push(unbindable(window, 'resize', () => clearBounds(s), { passive: true }));
   }
 

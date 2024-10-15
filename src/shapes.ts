@@ -28,7 +28,12 @@ type Hash = string;
 
 const outsideArrowHash = 'outsideArrow';
 
-export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElement, freePieces: HTMLElement): void {
+export function renderShapes(
+  state: State,
+  svg: SVGElement,
+  customSvg: SVGElement,
+  freePieces: HTMLElement
+): void {
   const d = state.drawable,
     curD = d.current,
     cur = curD?.dest ? (curD as DrawShape) : undefined,
@@ -44,7 +49,8 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
 
   for (const s of d.shapes.concat(d.autoShapes).concat(cur ? [cur] : [])) {
     const destName = isPiece(s.dest) ? pieceNameOf(s.dest) : s.dest;
-    if (!samePieceOrKey(s.dest, s.orig)) arrowDests.set(destName, (arrowDests.get(destName) || 0) + 1);
+    if (!samePieceOrKey(s.dest, s.orig))
+      arrowDests.set(destName, (arrowDests.get(destName) || 0) + 1);
   }
 
   for (const s of d.shapes.concat(cur ? [cur] : []).concat(d.autoShapes)) {
@@ -129,7 +135,11 @@ export function renderShapes(state: State, svg: SVGElement, customSvg: SVGElemen
 }
 
 // append only. Don't try to update/remove.
-function syncDefs(shapes: Shape[], outsideShape: DrawCurrent | undefined, defsEl: SVGElement): void {
+function syncDefs(
+  shapes: Shape[],
+  outsideShape: DrawCurrent | undefined,
+  defsEl: SVGElement
+): void {
   const brushes = new Set<string>();
   for (const s of shapes) {
     if (!samePieceOrKey(s.shape.dest, s.shape.orig)) brushes.add(s.shape.brush);
@@ -213,7 +223,11 @@ function customSvgHash(s: string): Hash {
   return 'custom-' + h.toString();
 }
 
-function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDests: ArrowDests): SVGElement | undefined {
+function renderSVGShape(
+  state: State,
+  { shape, current, hash }: Shape,
+  arrowDests: ArrowDests
+): SVGElement | undefined {
   const orig = pieceOrKeyToPos(shape.orig, state);
   if (!orig) return;
   if (shape.customSvg) {
@@ -256,7 +270,12 @@ function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDest
   }
 }
 
-function renderCustomSvg(brush: string, customSvg: string, pos: sg.Pos, ratio: sg.NumberPair): SVGElement {
+function renderCustomSvg(
+  brush: string,
+  customSvg: string,
+  pos: sg.Pos,
+  ratio: sg.NumberPair
+): SVGElement {
   const [x, y] = pos;
 
   // Translate to top-left of `orig` square
@@ -334,12 +353,19 @@ export function renderPiece(state: State, { shape }: Shape): sg.PieceNode | unde
   return pieceEl;
 }
 
-function renderDescription(state: State, shape: DrawShape, arrowDests: ArrowDests): SVGElement | undefined {
+function renderDescription(
+  state: State,
+  shape: DrawShape,
+  arrowDests: ArrowDests
+): SVGElement | undefined {
   const orig = pieceOrKeyToPos(shape.orig, state);
   if (!orig || !shape.description) return;
   const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state),
     diff = dest ? [dest[0] - orig[0], dest[1] - orig[1]] : [0, 0],
-    offset = (arrowDests.get(isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest) || 0) > 1 ? 0.3 : 0.15,
+    offset =
+      (arrowDests.get(isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest) || 0) > 1
+        ? 0.3
+        : 0.15,
     close =
       (diff[0] === 0 || Math.abs(diff[0]) === state.squareRatio[0]) &&
       (diff[1] === 0 || Math.abs(diff[1]) === state.squareRatio[1]),
@@ -390,7 +416,12 @@ export function setAttributes(el: SVGElement, attrs: Record<string, any>): SVGEl
   return el;
 }
 
-export function pos2user(pos: sg.Pos, color: sg.Color, dims: sg.Dimensions, ratio: sg.NumberPair): sg.NumberPair {
+export function pos2user(
+  pos: sg.Pos,
+  color: sg.Color,
+  dims: sg.Dimensions,
+  ratio: sg.NumberPair
+): sg.NumberPair {
   return color === 'sente'
     ? [(dims.files - 1 - pos[0]) * ratio[0], pos[1] * ratio[1]]
     : [pos[0] * ratio[0], (dims.ranks - 1 - pos[1]) * ratio[1]];
@@ -444,7 +475,13 @@ function pieceOrKeyToPos(kp: sg.Key | sg.Piece, state: State): sg.Pos | undefine
           bounds
         );
     return (
-      pos && pos2user([pos[0] + offset[0], pos[1] + offset[1]], state.orientation, state.dimensions, state.squareRatio)
+      pos &&
+      pos2user(
+        [pos[0] + offset[0], pos[1] + offset[1]],
+        state.orientation,
+        state.dimensions,
+        state.squareRatio
+      )
     );
   } else return pos2user(key2pos(kp), state.orientation, state.dimensions, state.squareRatio);
 }

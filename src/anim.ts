@@ -90,7 +90,9 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
           const piece: sg.Piece = { role, color },
             curN = curH.get(role) || 0;
           if (curN < n) {
-            const handPieceOffset = current.dom.bounds.hands.pieceBounds().get(util.pieceNameOf(piece)),
+            const handPieceOffset = current.dom.bounds.hands
+                .pieceBounds()
+                .get(util.pieceNameOf(piece)),
               bounds = current.dom.bounds.board.bounds(),
               outPos =
                 handPieceOffset && bounds
@@ -122,7 +124,10 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
           pPiece = pRole && { color: p.piece.color, role: pRole };
         const nRole = current.promotion.promotesTo(newP.piece.role),
           nPiece = nRole && { color: newP.piece.color, role: nRole };
-        return (!!pPiece && util.samePiece(newP.piece, pPiece)) || (!!nPiece && util.samePiece(nPiece, p.piece));
+        return (
+          (!!pPiece && util.samePiece(newP.piece, pPiece)) ||
+          (!!nPiece && util.samePiece(nPiece, p.piece))
+        );
       })
     );
     if (preP) {

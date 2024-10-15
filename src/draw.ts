@@ -68,7 +68,8 @@ export function start(state: State, e: sg.MouchEvent): void {
 
   const pos = eventPosition(e),
     bounds = state.dom.bounds.board.bounds(),
-    orig = pos && bounds && getKeyAtDomPos(pos, sentePov(state.orientation), state.dimensions, bounds),
+    orig =
+      pos && bounds && getKeyAtDomPos(pos, sentePov(state.orientation), state.dimensions, bounds),
     piece = state.drawable.piece;
   if (!orig) return;
   state.drawable.current = {
@@ -113,11 +114,20 @@ function processDraw(state: State): void {
         cur.dest = dest;
         state.dom.redrawNow();
       }
-      const outPos = posOfOutsideEl(cur.pos[0], cur.pos[1], sentePov(state.orientation), state.dimensions, bounds);
+      const outPos = posOfOutsideEl(
+        cur.pos[0],
+        cur.pos[1],
+        sentePov(state.orientation),
+        state.dimensions,
+        bounds
+      );
       if (!cur.dest && cur.arrow && outPos) {
         const dest = pos2user(outPos, state.orientation, state.dimensions, state.squareRatio);
 
-        setAttributes(cur.arrow, { x2: dest[0] - state.squareRatio[0] / 2, y2: dest[1] - state.squareRatio[1] / 2 });
+        setAttributes(cur.arrow, {
+          x2: dest[0] - state.squareRatio[0] / 2,
+          y2: dest[1] - state.squareRatio[1] / 2,
+        });
       }
       processDraw(state);
     }
@@ -154,7 +164,8 @@ export function clear(state: State): void {
 }
 
 export function setDrawPiece(state: State, piece: sg.Piece): void {
-  if (state.drawable.piece && samePiece(state.drawable.piece, piece)) state.drawable.piece = undefined;
+  if (state.drawable.piece && samePiece(state.drawable.piece, piece))
+    state.drawable.piece = undefined;
   else state.drawable.piece = piece;
   state.dom.redraw();
 }
@@ -176,8 +187,12 @@ function addShape(drawable: Drawable, cur: DrawCurrent): void {
   cur.piece = undefined;
 
   const similar = drawable.shapes.find(similarShape),
-    removePiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && samePiece(piece, s.piece)),
-    diffPiece = drawable.shapes.find(s => similarShape(s) && piece && s.piece && !samePiece(piece, s.piece));
+    removePiece = drawable.shapes.find(
+      s => similarShape(s) && piece && s.piece && samePiece(piece, s.piece)
+    ),
+    diffPiece = drawable.shapes.find(
+      s => similarShape(s) && piece && s.piece && !samePiece(piece, s.piece)
+    );
 
   // remove every similar shape
   if (similar) drawable.shapes = drawable.shapes.filter(s => !similarShape(s));
@@ -185,7 +200,8 @@ function addShape(drawable: Drawable, cur: DrawCurrent): void {
   if (!isPiece(cur.orig) && piece && !removePiece) {
     drawable.shapes.push({ orig: cur.orig, dest: cur.orig, piece: piece, brush: cur.brush });
     // force circle around drawn pieces
-    if (!samePieceOrKey(cur.orig, cur.dest)) drawable.shapes.push({ orig: cur.orig, dest: cur.orig, brush: cur.brush });
+    if (!samePieceOrKey(cur.orig, cur.dest))
+      drawable.shapes.push({ orig: cur.orig, dest: cur.orig, brush: cur.brush });
   }
 
   if (!similar || diffPiece || similar.brush !== cur.brush) drawable.shapes.push(cur as DrawShape);

@@ -120,7 +120,10 @@ export function start(state: State): Api {
           const cRes = getByPath(p, config);
           return cRes && cRes !== getByPath(p, state);
         }) ||
-        !!(newDims && (newDims.files !== state.dimensions.files || newDims.ranks !== state.dimensions.ranks)) ||
+        !!(
+          newDims &&
+          (newDims.files !== state.dimensions.files || newDims.ranks !== state.dimensions.ranks)
+        ) ||
         !!config.hands?.roles?.every((r, i) => r === state.hands.roles[i]);
 
       if (toRedraw) {
@@ -129,7 +132,10 @@ export function start(state: State): Api {
         redrawAll(state.dom.wrapElements, state);
       } else {
         applyAnimation(state, config);
-        (config.sfen?.board && !skipAnimation ? anim : render)(state => configure(state, config), state);
+        (config.sfen?.board && !skipAnimation ? anim : render)(
+          state => configure(state, config),
+          state
+        );
       }
     },
 
@@ -137,7 +143,8 @@ export function start(state: State): Api {
 
     getBoardSfen: () => boardToSfen(state.pieces, state.dimensions, state.forsyth.toForsyth),
 
-    getHandsSfen: () => handsToSfen(state.hands.handMap, state.hands.roles, state.forsyth.toForsyth),
+    getHandsSfen: () =>
+      handsToSfen(state.hands.handMap, state.hands.roles, state.forsyth.toForsyth),
 
     toggleOrientation(): void {
       board.toggleOrientation(state);
@@ -145,7 +152,11 @@ export function start(state: State): Api {
     },
 
     move(orig, dest, prom): void {
-      anim(state => board.baseMove(state, orig, dest, prom || state.promotion.forceMovePromotion(orig, dest)), state);
+      anim(
+        state =>
+          board.baseMove(state, orig, dest, prom || state.promotion.forceMovePromotion(orig, dest)),
+        state
+      );
     },
 
     drop(piece, key, prom, spare): void {

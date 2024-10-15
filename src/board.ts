@@ -70,7 +70,12 @@ export function unsetPredrop(state: HeadlessState): void {
   }
 }
 
-export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom: boolean): sg.Piece | boolean {
+export function baseMove(
+  state: HeadlessState,
+  orig: sg.Key,
+  dest: sg.Key,
+  prom: boolean
+): sg.Piece | boolean {
   const origPiece = state.pieces.get(orig),
     destPiece = state.pieces.get(dest);
   if (orig === dest || !origPiece) return false;
@@ -86,13 +91,21 @@ export function baseMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom:
   return captured || true;
 }
 
-export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, prom: boolean): boolean {
+export function baseDrop(
+  state: HeadlessState,
+  piece: sg.Piece,
+  key: sg.Key,
+  prom: boolean
+): boolean {
   const pieceCount = state.hands.handMap.get(piece.color)?.get(piece.role) || 0;
   if (!pieceCount && !state.droppable.spare) return false;
   const promPiece = prom && promotePiece(state, piece);
   if (
     key === state.selected ||
-    (!state.droppable.spare && pieceCount === 1 && state.selectedPiece && samePiece(state.selectedPiece, piece))
+    (!state.droppable.spare &&
+      pieceCount === 1 &&
+      state.selectedPiece &&
+      samePiece(state.selectedPiece, piece))
   )
     unselect(state);
   state.pieces.set(key, promPiece || piece);
@@ -104,7 +117,12 @@ export function baseDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, pro
   return true;
 }
 
-function baseUserMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom: boolean): sg.Piece | boolean {
+function baseUserMove(
+  state: HeadlessState,
+  orig: sg.Key,
+  dest: sg.Key,
+  prom: boolean
+): sg.Piece | boolean {
   const result = baseMove(state, orig, dest, prom);
   if (result) {
     state.movable.dests = undefined;
@@ -126,7 +144,12 @@ function baseUserDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, prom: 
   return result;
 }
 
-export function userDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, prom?: boolean): boolean {
+export function userDrop(
+  state: HeadlessState,
+  piece: sg.Piece,
+  key: sg.Key,
+  prom?: boolean
+): boolean {
   const realProm = prom || state.promotion.forceDropPromotion(piece, key);
   if (canDrop(state, piece, key)) {
     const result = baseUserDrop(state, piece, key, realProm);
@@ -146,7 +169,12 @@ export function userDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key, pro
   return false;
 }
 
-export function userMove(state: HeadlessState, orig: sg.Key, dest: sg.Key, prom?: boolean): boolean {
+export function userMove(
+  state: HeadlessState,
+  orig: sg.Key,
+  dest: sg.Key,
+  prom?: boolean
+): boolean {
   const realProm = prom || state.promotion.forceMovePromotion(orig, dest);
   if (canMove(state, orig, dest)) {
     const result = baseUserMove(state, orig, dest, realProm);
@@ -184,7 +212,10 @@ export function basePromotionDialog(state: HeadlessState, piece: sg.Piece, key: 
 }
 
 export function promotionDialogDrop(state: HeadlessState, piece: sg.Piece, key: sg.Key): boolean {
-  if (canDropPromote(state, piece, key) && (canDrop(state, piece, key) || canPredrop(state, piece, key))) {
+  if (
+    canDropPromote(state, piece, key) &&
+    (canDrop(state, piece, key) || canPredrop(state, piece, key))
+  ) {
     if (basePromotionDialog(state, piece, key)) {
       callUserFunction(state.promotion.events.initiated);
       return true;
@@ -194,7 +225,10 @@ export function promotionDialogDrop(state: HeadlessState, piece: sg.Piece, key: 
 }
 
 export function promotionDialogMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
-  if (canMovePromote(state, orig, dest) && (canMove(state, orig, dest) || canPremove(state, orig, dest))) {
+  if (
+    canMovePromote(state, orig, dest) &&
+    (canMove(state, orig, dest) || canPremove(state, orig, dest))
+  ) {
     const piece = state.pieces.get(orig);
     if (piece && basePromotionDialog(state, piece, dest)) {
       callUserFunction(state.promotion.events.initiated);
@@ -213,7 +247,12 @@ export function deletePiece(state: HeadlessState, key: sg.Key): void {
   if (state.pieces.delete(key)) callUserFunction(state.events.change);
 }
 
-export function selectSquare(state: HeadlessState, key: sg.Key, prom?: boolean, force?: boolean): void {
+export function selectSquare(
+  state: HeadlessState,
+  key: sg.Key,
+  prom?: boolean,
+  force?: boolean
+): void {
   callUserFunction(state.events.select, key);
 
   // unselect if selecting selected key, keep selected for drag
@@ -254,7 +293,12 @@ export function selectPiece(
     addToHand(state, { role: state.selectedPiece.role, color: piece.color });
     callUserFunction(state.events.change);
     unselect(state);
-  } else if (!api && !state.draggable.enabled && state.selectedPiece && samePiece(state.selectedPiece, piece)) {
+  } else if (
+    !api &&
+    !state.draggable.enabled &&
+    state.selectedPiece &&
+    samePiece(state.selectedPiece, piece)
+  ) {
     callUserFunction(state.events.pieceUnselect, piece);
     unselect(state);
   } else if (
@@ -285,7 +329,11 @@ export function setPreDests(state: HeadlessState): void {
 
   if (state.selected && isPremovable(state, state.selected) && state.premovable.generate)
     state.premovable.dests = state.premovable.generate(state.selected, state.pieces);
-  else if (state.selectedPiece && isPredroppable(state, state.selectedPiece) && state.predroppable.generate)
+  else if (
+    state.selectedPiece &&
+    isPredroppable(state, state.selectedPiece) &&
+    state.predroppable.generate
+  )
     state.predroppable.dests = state.predroppable.generate(state.selectedPiece, state.pieces);
 }
 
@@ -301,27 +349,34 @@ export function unselect(state: HeadlessState): void {
 function isMovable(state: HeadlessState, orig: sg.Key): boolean {
   const piece = state.pieces.get(orig);
   return (
-    !!piece && (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color))
+    !!piece &&
+    (state.activeColor === 'both' ||
+      (state.activeColor === piece.color && state.turnColor === piece.color))
   );
 }
 
 function isDroppable(state: HeadlessState, piece: sg.Piece, spare: boolean): boolean {
   return (
     (spare || !!state.hands.handMap.get(piece.color)?.get(piece.role)) &&
-    (state.activeColor === 'both' || (state.activeColor === piece.color && state.turnColor === piece.color))
+    (state.activeColor === 'both' ||
+      (state.activeColor === piece.color && state.turnColor === piece.color))
   );
 }
 
 export function canMove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
   return (
-    orig !== dest && isMovable(state, orig) && (state.movable.free || !!state.movable.dests?.get(orig)?.includes(dest))
+    orig !== dest &&
+    isMovable(state, orig) &&
+    (state.movable.free || !!state.movable.dests?.get(orig)?.includes(dest))
   );
 }
 
 export function canDrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   return (
     isDroppable(state, piece, state.droppable.spare) &&
-    (state.droppable.free || state.droppable.spare || !!state.droppable.dests?.get(pieceNameOf(piece))?.includes(dest))
+    (state.droppable.free ||
+      state.droppable.spare ||
+      !!state.droppable.dests?.get(pieceNameOf(piece))?.includes(dest))
   );
 }
 
@@ -336,7 +391,12 @@ function canDropPromote(state: HeadlessState, piece: sg.Piece, key: sg.Key): boo
 
 function isPremovable(state: HeadlessState, orig: sg.Key): boolean {
   const piece = state.pieces.get(orig);
-  return !!piece && state.premovable.enabled && state.activeColor === piece.color && state.turnColor !== piece.color;
+  return (
+    !!piece &&
+    state.premovable.enabled &&
+    state.activeColor === piece.color &&
+    state.turnColor !== piece.color
+  );
 }
 
 function isPredroppable(state: HeadlessState, piece: sg.Piece): boolean {
@@ -371,7 +431,8 @@ export function isDraggable(state: HeadlessState, piece: sg.Piece): boolean {
   return (
     state.draggable.enabled &&
     (state.activeColor === 'both' ||
-      (state.activeColor === piece.color && (state.turnColor === piece.color || state.premovable.enabled)))
+      (state.activeColor === piece.color &&
+        (state.turnColor === piece.color || state.premovable.enabled)))
   );
 }
 

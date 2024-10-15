@@ -20,7 +20,10 @@ export function memo<A>(f: () => A): sg.Memo<A> {
   return ret;
 }
 
-export function callUserFunction<T extends (...args: any[]) => void>(f: T | undefined, ...args: Parameters<T>): void {
+export function callUserFunction<T extends (...args: any[]) => void>(
+  f: T | undefined,
+  ...args: Parameters<T>
+): void {
   if (f) setTimeout(() => f(...args), 1);
 }
 
@@ -34,7 +37,8 @@ export const distanceSq = (pos1: sg.Pos, pos2: sg.Pos): number => {
   return dx * dx + dy * dy;
 };
 
-export const samePiece = (p1: sg.Piece, p2: sg.Piece): boolean => p1.role === p2.role && p1.color === p2.color;
+export const samePiece = (p1: sg.Piece, p2: sg.Piece): boolean =>
+  p1.role === p2.role && p1.color === p2.color;
 
 const posToTranslateBase = (
   pos: sg.Pos,
@@ -65,7 +69,12 @@ export const translateAbs = (el: HTMLElement, pos: sg.NumberPair, scale: number)
   el.style.transform = `translate(${pos[0]}px,${pos[1]}px) scale(${scale}`;
 };
 
-export const translateRel = (el: HTMLElement, percents: sg.NumberPair, scaleFactor: number, scale?: number): void => {
+export const translateRel = (
+  el: HTMLElement,
+  percents: sg.NumberPair,
+  scaleFactor: number,
+  scale?: number
+): void => {
   el.style.transform = `translate(${percents[0] * scaleFactor}%,${percents[1] * scaleFactor}%) scale(${
     scale || scaleFactor
   })`;
@@ -120,7 +129,9 @@ export function computeSquareCenter(
   }
   return [
     bounds.left + (bounds.width * pos[0]) / dims.files + bounds.width / (dims.files * 2),
-    bounds.top + (bounds.height * (dims.ranks - 1 - pos[1])) / dims.ranks + bounds.height / (dims.ranks * 2),
+    bounds.top +
+      (bounds.height * (dims.ranks - 1 - pos[1])) / dims.ranks +
+      bounds.height / (dims.ranks * 2),
   ];
 }
 
@@ -134,7 +145,10 @@ export function domSquareIndexOfKey(key: sg.Key, asSente: boolean, dims: sg.Dime
 
 export function isInsideRect(rect: DOMRect, pos: sg.NumberPair): boolean {
   return (
-    rect.left <= pos[0] && rect.top <= pos[1] && rect.left + rect.width > pos[0] && rect.top + rect.height > pos[1]
+    rect.left <= pos[0] &&
+    rect.top <= pos[1] &&
+    rect.left + rect.width > pos[0] &&
+    rect.top + rect.height > pos[1]
   );
 }
 
@@ -148,7 +162,9 @@ export function getKeyAtDomPos(
   if (asSente) file = dims.files - 1 - file;
   let rank = Math.floor((dims.ranks * (pos[1] - bounds.top)) / bounds.height);
   if (!asSente) rank = dims.ranks - 1 - rank;
-  return file >= 0 && file < dims.files && rank >= 0 && rank < dims.ranks ? pos2key([file, rank]) : undefined;
+  return file >= 0 && file < dims.files && rank >= 0 && rank < dims.ranks
+    ? pos2key([file, rank])
+    : undefined;
 }
 
 export function getHandPieceAtDomPos(

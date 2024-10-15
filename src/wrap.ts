@@ -1,5 +1,13 @@
 import type { State } from './state.js';
-import type { Dimensions, SquareNode, Color, PieceNode, RoleString, HandElements, BoardElements } from './types.js';
+import type {
+  Dimensions,
+  SquareNode,
+  Color,
+  PieceNode,
+  RoleString,
+  HandElements,
+  BoardElements,
+} from './types.js';
 import { colors } from './constants.js';
 import { createEl, opposite, pieceNameOf, pos2key, setDisplay } from './util.js';
 import { createSVGElement, setAttributes } from './shapes.js';
