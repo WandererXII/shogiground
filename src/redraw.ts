@@ -4,12 +4,12 @@ import { renderHand } from './hands.js';
 import { renderShapes } from './shapes.js';
 
 export function redrawShapesNow(state: State): void {
-  if (state.dom.elements.board?.svg)
+  if (state.dom.elements.board?.shapes)
     renderShapes(
       state,
-      state.dom.elements.board.svg,
-      state.dom.elements.board.customSvg!,
-      state.dom.elements.board.freePieces!
+      state.dom.elements.board.shapes.svg,
+      state.dom.elements.board.shapes.customSvg,
+      state.dom.elements.board.shapes.freePieces
     );
 }
 

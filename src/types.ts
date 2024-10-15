@@ -25,6 +25,8 @@ export type NumberPair = [number, number];
 
 export type NumberQuad = [number, number, number, number];
 
+export type DOMRectMap<T extends string> = Map<T, DOMRect>;
+
 export type MoveDests = Map<Key, Key[]>;
 export type DropDests = Map<PieceName, Key[]>;
 
@@ -51,9 +53,7 @@ export interface BoardElements {
   dragged?: PieceNode;
   promotion?: HTMLElement;
   squareOver?: HTMLElement;
-  svg?: SVGElement;
-  customSvg?: SVGElement;
-  freePieces?: HTMLElement;
+  shapes?: ShapesElements;
   hands?: HandElements; // for inlined hands
 }
 
@@ -72,8 +72,8 @@ export interface Bounds {
     bounds: Memo<DOMRect | undefined>;
   };
   hands: {
-    bounds: Memo<Map<'top' | 'bottom', DOMRect>>;
-    pieceBounds: Memo<Map<PieceName, DOMRect>>;
+    bounds: Memo<DOMRectMap<'top' | 'bottom'>>;
+    pieceBounds: Memo<DOMRectMap<PieceName>>;
   };
 }
 
@@ -94,6 +94,12 @@ export interface MoveMetadata {
 }
 
 export type MouchEvent = Event & Partial<MouseEvent & TouchEvent>;
+
+export interface ShapesElements {
+  svg: SVGElement;
+  customSvg: SVGElement;
+  freePieces: HTMLElement;
+}
 
 export interface KeyedNode extends HTMLElement {
   sgKey: Key;

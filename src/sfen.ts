@@ -92,8 +92,8 @@ export function sfenToHands(
   fromForsyth?: (forsyth: string) => sg.RoleString | undefined
 ): sg.Hands {
   const sfenParser = fromForsyth || standardFromForsyth,
-    sente = new Map(),
-    gote = new Map();
+    sente: sg.Hand = new Map(),
+    gote: sg.Hand = new Map();
 
   let tmpNum = 0,
     num = 1;

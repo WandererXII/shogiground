@@ -174,7 +174,7 @@ export function defaults(): HeadlessState {
     },
     hands: {
       inlined: false,
-      handMap: new Map([
+      handMap: new Map<sg.Color, sg.Hand>([
         ['sente', new Map()],
         ['gote', new Map()],
       ]),

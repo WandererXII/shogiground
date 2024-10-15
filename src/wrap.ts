@@ -55,9 +55,9 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
     board.appendChild(squareOver);
   }
 
-  let svg, customSvg, freePieces;
+  let shapes;
   if (s.drawable.visible) {
-    svg = setAttributes(createSVGElement('svg'), {
+    const svg = setAttributes(createSVGElement('svg'), {
       class: 'sg-shapes',
       viewBox: `-${s.squareRatio[0] / 2} -${s.squareRatio[1] / 2} ${s.dimensions.files * s.squareRatio[0]} ${
         s.dimensions.ranks * s.squareRatio[1]
@@ -66,17 +66,23 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
     svg.appendChild(createSVGElement('defs'));
     svg.appendChild(createSVGElement('g'));
 
-    customSvg = setAttributes(createSVGElement('svg'), {
+    const customSvg = setAttributes(createSVGElement('svg'), {
       class: 'sg-custom-svgs',
       viewBox: `0 0 ${s.dimensions.files * s.squareRatio[0]} ${s.dimensions.ranks * s.squareRatio[1]}`,
     });
     customSvg.appendChild(createSVGElement('g'));
 
-    freePieces = createEl('sg-free-pieces');
+    const freePieces = createEl('sg-free-pieces');
 
     board.appendChild(svg);
     board.appendChild(customSvg);
     board.appendChild(freePieces);
+
+    shapes = {
+      svg,
+      freePieces,
+      customSvg,
+    };
   }
 
   if (s.coordinates.enabled) {
@@ -123,9 +129,7 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
     promotion,
     squareOver,
     dragged,
-    svg,
-    customSvg,
-    freePieces,
+    shapes,
     hands,
   };
 }

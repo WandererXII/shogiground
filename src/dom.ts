@@ -55,7 +55,7 @@ export function redrawAll(wrapElements: WrapElements, state: State): void {
   // shapes might depend both on board and hands - redraw only after both are done
   state.dom.redrawShapes();
 
-  state.events.insert &&
+  if (state.events.insert)
     state.events.insert(wrapElements.board && state.dom.elements.board, {
       top: wrapElements.hands?.top && state.dom.elements.hands?.top,
       bottom: wrapElements.hands?.bottom && state.dom.elements.hands?.bottom,

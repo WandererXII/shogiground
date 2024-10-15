@@ -161,13 +161,13 @@ export function render(s: State, boardEls: sg.BoardElements): void {
     }
   }
   // remove any element that remains in the moved sets
-  for (const nodes of movedPieces.values()) removeNodes(s, nodes);
+  for (const nodes of movedPieces.values()) {
+    for (const node of nodes) {
+      piecesEl.removeChild(node);
+    }
+  }
 
   if (promotionEl) renderPromotion(s, promotionEl);
-}
-
-function removeNodes(s: State, nodes: HTMLElement[]): void {
-  for (const node of nodes) s.dom.elements.board!.pieces.removeChild(node);
 }
 
 function appendValue<K, V>(map: Map<K, V[]>, key: K, value: V): void {

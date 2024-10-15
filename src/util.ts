@@ -98,10 +98,8 @@ export function pieceNameOf(piece: sg.Piece): sg.PieceName {
 }
 
 export function parsePieceName(pieceName: sg.PieceName): sg.Piece {
-  const splitted = pieceName.split(' '),
-    color = splitted[0] as sg.Color,
-    role = splitted[1] as sg.RoleString;
-  return { color, role };
+  const splitted = pieceName.split(' ', 2);
+  return { color: splitted[0] as sg.Color, role: splitted[1] };
 }
 
 export function computeSquareCenter(

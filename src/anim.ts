@@ -41,7 +41,6 @@ interface AnimPiece {
   pos: sg.Pos;
   piece: sg.Piece;
 }
-type AnimPieces = Map<sg.Key, AnimPiece>;
 
 function makePiece(key: sg.Key, piece: sg.Piece): AnimPiece {
   return {
@@ -64,7 +63,7 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
     promotions: AnimPromotions = new Map(),
     missings: AnimPiece[] = [],
     news: AnimPiece[] = [],
-    prePieces: AnimPieces = new Map();
+    prePieces: Map<sg.Key, AnimPiece> = new Map();
 
   for (const [k, p] of prevPieces) {
     prePieces.set(k, makePiece(k, p));

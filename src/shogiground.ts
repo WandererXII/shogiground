@@ -1,4 +1,4 @@
-import type { PieceNode, WrapElements } from './types.js';
+import type { DOMRectMap, PieceName, PieceNode, WrapElements } from './types.js';
 import { Api, start } from './api.js';
 import { Config, configure } from './config.js';
 import { defaults, State } from './state.js';
@@ -24,14 +24,14 @@ export function Shogiground(config?: Config, wrapElements?: WrapElements): Api {
       },
       hands: {
         bounds: util.memo(() => {
-          const handsRects = new Map(),
+          const handsRects: DOMRectMap<'top' | 'bottom'> = new Map(),
             handEls = state.dom.elements.hands;
           if (handEls?.top) handsRects.set('top', handEls.top.getBoundingClientRect());
           if (handEls?.bottom) handsRects.set('bottom', handEls.bottom.getBoundingClientRect());
           return handsRects;
         }),
         pieceBounds: util.memo(() => {
-          const handPiecesRects = new Map(),
+          const handPiecesRects: DOMRectMap<PieceName> = new Map(),
             handEls = state.dom.elements.hands;
 
           if (handEls?.top) {

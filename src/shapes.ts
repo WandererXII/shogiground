@@ -228,7 +228,7 @@ function renderSVGShape(state: State, { shape, current, hash }: Shape, arrowDest
         dest,
         state.squareRatio,
         !!current,
-        (arrowDests.get((isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest)!) || 0) > 1
+        (arrowDests.get(isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest) || 0) > 1
       );
     } else if (samePieceOrKey(shape.dest, shape.orig)) {
       let ratio: sg.NumberPair = state.squareRatio;

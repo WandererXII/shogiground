@@ -112,7 +112,7 @@ function pieceCloseTo(s: State, pos: sg.NumberPair, bounds: DOMRect): boolean {
 export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?: boolean): void {
   const previouslySelectedPiece = s.selectedPiece,
     draggedEl = s.dom.elements.board?.dragged,
-    position = util.eventPosition(e)!,
+    position = util.eventPosition(e),
     touch = e.type === 'touchstart';
 
   if (!previouslySelectedPiece && !spare && s.drawable.enabled && s.drawable.eraseOnClick) drawClear(s);
@@ -124,7 +124,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
     hadPredrop = !!s.predroppable.current,
     stillSelected = s.selectedPiece && util.samePiece(s.selectedPiece, piece);
 
-  if (draggedEl && s.selectedPiece && stillSelected && board.isDraggable(s, piece)) {
+  if (draggedEl && position && s.selectedPiece && stillSelected && board.isDraggable(s, piece)) {
     s.draggable.current = {
       piece: s.selectedPiece,
       pos: position,

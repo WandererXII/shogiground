@@ -48,10 +48,10 @@ export interface Drawable {
 
 export interface DrawCurrent {
   orig: sg.Key | sg.Piece;
-  dest?: sg.Key | sg.Piece; // undefined if outside board
+  dest?: sg.Key | sg.Piece; // undefined if outside board/hands
   arrow?: SVGElement;
   piece?: sg.Piece;
-  pos: sg.NumberPair; // relative current position
+  pos: sg.NumberPair;
   brush: string; // brush name for shape
 }
 
@@ -62,7 +62,10 @@ export function start(state: State, e: sg.MouchEvent): void {
   if (e.touches && e.touches.length > 1) return;
   e.stopPropagation();
   e.preventDefault();
-  e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
+
+  if (e.ctrlKey) unselect(state);
+  else cancelMoveOrDrop(state);
+
   const pos = eventPosition(e),
     bounds = state.dom.bounds.board.bounds(),
     orig = pos && bounds && getKeyAtDomPos(pos, sentePov(state.orientation), state.dimensions, bounds),
@@ -83,7 +86,10 @@ export function startFromHand(state: State, piece: sg.Piece, e: sg.MouchEvent): 
   if (e.touches && e.touches.length > 1) return;
   e.stopPropagation();
   e.preventDefault();
-  e.ctrlKey ? unselect(state) : cancelMoveOrDrop(state);
+
+  if (e.ctrlKey) unselect(state);
+  else cancelMoveOrDrop(state);
+
   const pos = eventPosition(e);
   if (!pos) return;
   state.drawable.current = {
@@ -95,7 +101,7 @@ export function startFromHand(state: State, piece: sg.Piece, e: sg.MouchEvent): 
   processDraw(state);
 }
 
-export function processDraw(state: State): void {
+function processDraw(state: State): void {
   requestAnimationFrame(() => {
     const cur = state.drawable.current,
       bounds = state.dom.bounds.board.bounds();
@@ -162,7 +168,8 @@ function eventBrush(e: sg.MouchEvent, allowFirstModifier: boolean): string {
 function addShape(drawable: Drawable, cur: DrawCurrent): void {
   if (!cur.dest) return;
 
-  const similarShape = (s: DrawShape) => samePieceOrKey(cur.orig, s.orig) && samePieceOrKey(cur.dest!, s.dest);
+  const similarShape = (s: DrawShape) =>
+    cur.dest && samePieceOrKey(cur.orig, s.orig) && samePieceOrKey(cur.dest, s.dest);
 
   // separate shape for pieces
   const piece = cur.piece;
