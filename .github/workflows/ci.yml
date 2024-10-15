@@ -1,16 +1,25 @@
 name: Continuous Integration
+
 on: [push, pull_request]
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '18'
           cache: 'npm'
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - uses: github/codeql-action/analyze@v3
       - run: |
-          npm install
+          npm install --foreground-scripts
           npm run check-format
           npm run lint
-          npm run dist
