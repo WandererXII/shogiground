@@ -2,7 +2,7 @@
 
 [![Continuous Integration](https://github.com/WandererXII/shogiground/workflows/Continuous%20Integration/badge.svg)](https://github.com/WandererXII/shogiground/actions?query=workflow%3A%22Continuous+Integration%22)
 [![npm](https://img.shields.io/npm/v/shogiground)](https://www.npmjs.com/package/shogiground)
-[![jsdelivr](https://img.shields.io/npm/v/shogiground.svg?label=jsdelivr)](https://cdn.jsdelivr.net/npm/shogiground@latest/dist/shogigorund.min.js)
+[![jsdelivr](https://img.shields.io/npm/v/shogiground.svg?label=jsdelivr)](https://cdn.jsdelivr.net/npm/shogiground@latest/dist/shogiground.min.js)
 
 ![Shogiground](/screenshot/board1.png)
 
