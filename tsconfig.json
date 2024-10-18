@@ -15,7 +15,9 @@
     "declarationDir": "./esm",
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "isolatedDeclarations": true,
+    "isolatedModules": true
   },
   "include": ["./src"],
   "exclude": ["node_modules", "./src/index.ts"]

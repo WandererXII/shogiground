@@ -1,13 +1,8 @@
-export const enum Notation {
-  NUMERIC,
-  JAPANESE,
-  ENGINE,
-  HEX,
-}
+import type { Notation } from './types.js';
 
 export function coords(notation: Notation): string[] {
   switch (notation) {
-    case Notation.JAPANESE:
+    case 'japanese':
       return [
         '十六',
         '十五',
@@ -26,9 +21,9 @@ export function coords(notation: Notation): string[] {
         '二',
         '一',
       ];
-    case Notation.ENGINE:
+    case 'engine':
       return ['p', 'o', 'n', 'm', 'l', 'k', 'j', 'i', 'h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
-    case Notation.HEX:
+    case 'hex':
       return ['10', 'f', 'e', 'd', 'c', 'b', 'a', '9', '8', '7', '6', '5', '4', '3', '2', '1'];
     default:
       return [

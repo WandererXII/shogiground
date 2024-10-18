@@ -2,7 +2,6 @@ import type { AnimCurrent } from './anim.js';
 import type { DragCurrent } from './drag.js';
 import type { Drawable } from './draw.js';
 import type * as sg from './types.js';
-import { Notation } from './notation.js';
 
 export interface HeadlessState {
   pieces: sg.Pieces;
@@ -22,8 +21,8 @@ export interface HeadlessState {
   scaleDownPieces: boolean;
   coordinates: {
     enabled: boolean; // include coords attributes
-    files: Notation;
-    ranks: Notation;
+    files: sg.Notation;
+    ranks: sg.Notation;
   };
   highlight: {
     lastDests: boolean; // add last-dest class to squares
@@ -159,8 +158,8 @@ export function defaults(): HeadlessState {
     scaleDownPieces: true,
     coordinates: {
       enabled: true,
-      files: Notation.NUMERIC,
-      ranks: Notation.NUMERIC,
+      files: 'numeric',
+      ranks: 'numeric',
     },
     highlight: {
       lastDests: true,

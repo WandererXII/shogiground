@@ -1,9 +1,10 @@
-import type { colors, files, ranks } from './constants.js';
+import type { colors, files, notations, ranks } from './constants.js';
 
 export type Color = (typeof colors)[number];
 export type File = (typeof files)[number];
 export type Rank = (typeof ranks)[number];
 export type Key = `${File}${Rank}`;
+export type Notation = (typeof notations)[number];
 export type BoardSfen = string;
 export type HandsSfen = string;
 // coordinate system starts at top right

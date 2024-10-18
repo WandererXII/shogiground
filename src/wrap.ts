@@ -11,7 +11,7 @@ import type {
 import { colors } from './constants.js';
 import { createEl, opposite, pieceNameOf, pos2key, setDisplay } from './util.js';
 import { createSVGElement, setAttributes } from './shapes.js';
-import { coords } from './notation.js';
+import { coords } from './coords.js';
 
 export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   // .sg-wrap (element passed to Shogiground)
