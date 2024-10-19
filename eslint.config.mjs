@@ -37,6 +37,6 @@ export default tseslint.config(
     files: ['src/**/*.ts'],
   },
   {
-    ignores: ['src/index.ts', 'eslint.config.mjs', 'rollup.config.mjs', 'esm', 'dist'],
+    ignores: ['src/index.ts', 'eslint.config.mjs', 'esbuild.mjs', 'esm', 'dist'],
   }
 );
