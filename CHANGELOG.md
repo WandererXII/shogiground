@@ -1,3 +1,8 @@
+## v0.10.0
+
+- `Notation` is now a string - `'numeric' | 'japanese' | 'engine' | 'hex'`, not a const enum.
+- `notation.ts` no longer exists, `coords` function is now in `coords.ts` and `Notation` type is in `types.ts`.
+
 ## v0.9.0
 
 - Files are now built to `esm` directory.
