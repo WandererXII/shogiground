@@ -51,7 +51,7 @@
   },
   "scripts": {
     "prepare": "$npm_execpath run clean && $npm_execpath run compile && $npm_execpath run dist",
-    "clean": "del esm && del dist && tsconfig.tsbuildinfo",
+    "clean": "del esm && del dist && del tsconfig.tsbuildinfo",
     "compile": "tsc",
     "dist": "node esbuild.mjs",
     "lint": "eslint",
