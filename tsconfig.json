@@ -17,7 +17,8 @@
     "declarationMap": true,
     "sourceMap": true,
     "isolatedDeclarations": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "incremental": true
   },
   "include": ["./src"],
   "exclude": ["node_modules", "./src/index.ts"]
