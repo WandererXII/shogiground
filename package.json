@@ -54,8 +54,8 @@
     "clean": "del esm && del dist && del tsconfig.tsbuildinfo",
     "compile": "tsc",
     "dist": "node esbuild.mjs",
-    "lint": "eslint",
-    "format": "prettier --write .",
+    "lint": "eslint --cache",
+    "format": "prettier --cache --write .",
     "check-format": "prettier --check ."
   },
   "files": [
