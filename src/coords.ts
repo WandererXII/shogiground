@@ -2,6 +2,25 @@ import type { Notation } from './types.js';
 
 export function coords(notation: Notation): string[] {
   switch (notation) {
+    case 'dizhi':
+      return [
+        '',
+        '',
+        '',
+        '',
+        '亥',
+        '戌',
+        '酉',
+        '申',
+        '未',
+        '午',
+        '巳',
+        '辰',
+        '卯',
+        '寅',
+        '丑',
+        '子',
+      ];
     case 'japanese':
       return [
         '十六',
