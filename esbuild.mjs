@@ -8,6 +8,7 @@ for (const isProd of [false, true]) {
     sourcemap: !isProd ? 'inline' : undefined,
     format: 'iife',
     target: 'es2017',
+    charset: 'utf8',
     globalName: 'Shogiground',
     outfile: 'dist/shogiground' + (isProd ? '.min.js' : '.js'),
     footer: {
