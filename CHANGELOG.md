@@ -1,3 +1,8 @@
+## v0.10.1
+
+- Added `dizhi` notation system (max 12 ranks/files).
+- Charset of dist files is now utf-8 - relevant for kanji coords.
+
 ## v0.10.0
 
 - `Notation` is now a string - `'numeric' | 'japanese' | 'engine' | 'hex'`, not a const enum.
