@@ -1,6 +1,6 @@
 {
   "name": "shogiground",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "lishogi.org shogi ui",
   "author": "Thibault Duplessis (https://github.com/ornicar); WandererXII - modified for shogi",
   "license": "GPL-3.0-or-later",
