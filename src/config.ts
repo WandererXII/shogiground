@@ -14,6 +14,7 @@ export interface Config {
   activeColor?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
   checks?: sg.Key[] | sg.Color | boolean; // squares currently in check ["5a"], color in check (see highlight.checkRoles) or boolean for current turn color
   lastDests?: sg.Key[]; // squares part of the last move or drop ["3c", "4c"]
+  lastPiece?: sg.Piece; // piece part of the last drop
   selected?: sg.Key; // square currently selected "1a"
   selectedPiece?: sg.Piece; // piece in hand currently selected
   hovered?: sg.Key; // square currently being hovered
@@ -28,16 +29,12 @@ export interface Config {
     ranks?: sg.Notation;
   };
   highlight?: {
-    lastDests?: boolean; // add last-dest class to squares
+    lastDests?: boolean; // add last-dest class to squares and pieces
     check?: boolean; // add check class to squares
     checkRoles?: sg.RoleString[]; // roles to be highlighted when check is boolean is passed from config
     hovered?: boolean; // add hover class to hovered squares
   };
-  animation?: {
-    enabled?: boolean;
-    hands?: boolean;
-    duration?: number;
-  };
+  animation?: { enabled?: boolean; hands?: boolean; duration?: number };
   hands?: {
     inlined?: boolean; // attaches sg-hands directly to sg-wrap, ignores HTMLElements passed to Shogiground
     roles?: sg.RoleString[]; // roles to render in sg-hand

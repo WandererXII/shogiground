@@ -11,6 +11,7 @@ export interface HeadlessState {
   activeColor?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
   checks?: sg.Key[]; // squares currently in check ["5a"]
   lastDests?: sg.Key[]; // squares part of the last move or drop ["2b"; "8h"]
+  lastPiece?: sg.Piece; // piece part of the last drop
   selected?: sg.Key; // square currently selected "1a"
   selectedPiece?: sg.Piece; // piece in hand currently selected
   hovered?: sg.Key; // square currently being hovered
@@ -25,17 +26,12 @@ export interface HeadlessState {
     ranks: sg.Notation;
   };
   highlight: {
-    lastDests: boolean; // add last-dest class to squares
+    lastDests: boolean; // add last-dest class to squares and pieces
     check: boolean; // add check class to squares
     checkRoles: sg.RoleString[]; // roles to be highlighted when check is boolean is passed from config
     hovered: boolean; // add hover class to hovered squares
   };
-  animation: {
-    enabled: boolean;
-    hands: boolean;
-    duration: number;
-    current?: AnimCurrent;
-  };
+  animation: { enabled: boolean; hands: boolean; duration: number; current?: AnimCurrent };
   hands: {
     inlined: boolean; // attaches sg-hands directly to sg-wrap, ignores HTMLElements passed to Shogiground
     handMap: sg.Hands;
@@ -62,11 +58,7 @@ export interface HeadlessState {
     enabled: boolean; // allow premoves for color that can not move
     showDests: boolean; // whether to add the pre-dest class on squares
     dests?: sg.Key[]; // premove destinations for the current selection
-    current?: {
-      orig: sg.Key;
-      dest: sg.Key;
-      prom: boolean;
-    };
+    current?: { orig: sg.Key; dest: sg.Key; prom: boolean };
     generate?: (key: sg.Key, pieces: sg.Pieces) => sg.Key[];
     events: {
       set?: (orig: sg.Key, dest: sg.Key, prom: boolean) => void; // called after the premove has been set
@@ -77,11 +69,7 @@ export interface HeadlessState {
     enabled: boolean; // allow predrops for color that can not move
     showDests: boolean; // whether to add the pre-dest class on squares
     dests?: sg.Key[]; // premove destinations for the drop selection
-    current?: {
-      piece: sg.Piece;
-      key: sg.Key;
-      prom: boolean;
-    };
+    current?: { piece: sg.Piece; key: sg.Key; prom: boolean };
     generate?: (piece: sg.Piece, pieces: sg.Pieces) => sg.Key[];
     events: {
       set?: (piece: sg.Piece, key: sg.Key, prom: boolean) => void; // called after the predrop has been set
@@ -156,22 +144,9 @@ export function defaults(): HeadlessState {
     disableContextMenu: true,
     blockTouchScroll: false,
     scaleDownPieces: true,
-    coordinates: {
-      enabled: true,
-      files: 'numeric',
-      ranks: 'numeric',
-    },
-    highlight: {
-      lastDests: true,
-      check: true,
-      checkRoles: ['king'],
-      hovered: false,
-    },
-    animation: {
-      enabled: true,
-      hands: true,
-      duration: 250,
-    },
+    coordinates: { enabled: true, files: 'numeric', ranks: 'numeric' },
+    highlight: { lastDests: true, check: true, checkRoles: ['king'], hovered: false },
+    animation: { enabled: true, hands: true, duration: 250 },
     hands: {
       inlined: false,
       handMap: new Map<sg.Color, sg.Hand>([
@@ -180,27 +155,10 @@ export function defaults(): HeadlessState {
       ]),
       roles: ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn'],
     },
-    movable: {
-      free: true,
-      showDests: true,
-      events: {},
-    },
-    droppable: {
-      free: true,
-      showDests: true,
-      spare: false,
-      events: {},
-    },
-    premovable: {
-      enabled: true,
-      showDests: true,
-      events: {},
-    },
-    predroppable: {
-      enabled: true,
-      showDests: true,
-      events: {},
-    },
+    movable: { free: true, showDests: true, events: {} },
+    droppable: { free: true, showDests: true, spare: false, events: {} },
+    premovable: { enabled: true, showDests: true, events: {} },
+    predroppable: { enabled: true, showDests: true, events: {} },
     draggable: {
       enabled: true,
       distance: 3,
@@ -210,12 +168,7 @@ export function defaults(): HeadlessState {
       deleteOnDropOff: false,
       addToHandOnDropOff: false,
     },
-    selectable: {
-      enabled: true,
-      forceSpares: false,
-      deleteOnTouch: false,
-      addSparesToHand: false,
-    },
+    selectable: { enabled: true, forceSpares: false, deleteOnTouch: false, addSparesToHand: false },
     promotion: {
       movePromotionDialog: () => false,
       forceMovePromotion: () => false,

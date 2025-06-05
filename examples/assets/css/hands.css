@@ -94,6 +94,10 @@ sg-hand sg-hp-wrap.current-pre {
   background-color: rgba(20, 30, 85, 0.5);
 }
 
+sg-hand sg-hp-wrap.last-dest {
+  background-color: rgba(155, 199, 0, 0.41);
+}
+
 sg-hand sg-hp-wrap.drawing:before {
   content: '';
   position: absolute;
