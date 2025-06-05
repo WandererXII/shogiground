@@ -162,10 +162,12 @@ export function configure(state: HeadlessState, config: Config): void {
 
   // apply config values that could be undefined yet meaningful
   if ('checks' in config) setChecks(state, config.checks || false);
-  if ('lastDests' in config && !config.lastDests) state.lastDests = undefined;
+  if ('lastPiece' in config && !config.lastPiece) state.lastPiece = undefined;
+
   // in case of drop last move, there's a single square.
   // if the previous last move had two squares,
   // the merge algorithm will incorrectly keep the second square.
+  if ('lastDests' in config && !config.lastDests) state.lastDests = undefined;
   else if (config.lastDests) state.lastDests = config.lastDests;
 
   // fix move/premove dests
