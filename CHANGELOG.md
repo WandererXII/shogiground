@@ -1,3 +1,8 @@
+## v0.10.2
+
+- Fixed confusing and wrong behavior of `state.droppable.spare`.
+- Pieces in hand now can also have 'last-dest' highlight using `lastPiece` in state.
+
 ## v0.10.1
 
 - Added `dizhi` notation system (max 12 ranks/files).
