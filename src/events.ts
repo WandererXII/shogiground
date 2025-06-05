@@ -48,12 +48,13 @@ export function bindBoard(s: State, boardEls: sg.BoardElements): void {
     passive: false,
   });
   if (s.disableContextMenu || s.drawable.enabled)
-    piecesEl.addEventListener('contextmenu', e => e.preventDefault());
+    piecesEl.addEventListener('contextmenu', (e) => e.preventDefault());
 
   if (promotionEl) {
     const pieceSelection = (e: sg.MouchEvent) => promote(s, e);
     promotionEl.addEventListener('click', pieceSelection as EventListener);
-    if (s.disableContextMenu) promotionEl.addEventListener('contextmenu', e => e.preventDefault());
+    if (s.disableContextMenu)
+      promotionEl.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 }
 
@@ -75,7 +76,7 @@ export function bindHand(s: State, handEl: HTMLElement): void {
   });
 
   if (s.disableContextMenu || s.drawable.enabled)
-    handEl.addEventListener('contextmenu', e => e.preventDefault());
+    handEl.addEventListener('contextmenu', (e) => e.preventDefault());
 }
 
 // returns the unbind function
@@ -98,26 +99,26 @@ export function bindDocument(s: State): sg.Unbind {
       unbinds.push(unbindable(document, ev, onend as EventListener));
 
     unbinds.push(
-      unbindable(document, 'scroll', () => clearBounds(s), { capture: true, passive: true })
+      unbindable(document, 'scroll', () => clearBounds(s), { capture: true, passive: true }),
     );
     unbinds.push(unbindable(window, 'resize', () => clearBounds(s), { passive: true }));
   }
 
-  return () => unbinds.forEach(f => f());
+  return () => unbinds.forEach((f) => f());
 }
 
 function unbindable(
   el: EventTarget,
   eventName: string,
   callback: EventListener,
-  options?: AddEventListenerOptions
+  options?: AddEventListenerOptions,
 ): sg.Unbind {
   el.addEventListener(eventName, callback, options);
   return () => el.removeEventListener(eventName, callback, options);
 }
 
 function startDragOrDraw(s: State): MouchBind {
-  return e => {
+  return (e) => {
     if (s.draggable.current) drag.cancel(s);
     else if (s.drawable.current) draw.cancel(s);
     else if (e.shiftKey || isRightButton(e) || s.drawable.forced) {
@@ -127,7 +128,7 @@ function startDragOrDraw(s: State): MouchBind {
 }
 
 function dragOrDraw(s: State, withDrag: StateMouchBind, withDraw: StateMouchBind): MouchBind {
-  return e => {
+  return (e) => {
     if (s.drawable.current) {
       if (s.drawable.enabled) withDraw(s, e);
     } else if (!s.viewOnly) withDrag(s, e);
@@ -135,7 +136,7 @@ function dragOrDraw(s: State, withDrag: StateMouchBind, withDraw: StateMouchBind
 }
 
 function startDragFromHand(s: State): MouchBind {
-  return e => {
+  return (e) => {
     if (s.promotion.current) return;
 
     const pos = eventPosition(e),
@@ -170,10 +171,10 @@ function promote(s: State, e: sg.MouchEvent): void {
     if (cur.dragged || (s.turnColor !== s.activeColor && s.activeColor !== 'both')) {
       if (s.selected) userMove(s, s.selected, cur.key, prom);
       else if (s.selectedPiece) userDrop(s, s.selectedPiece, cur.key, prom);
-    } else anim(s => selectSquare(s, cur.key, prom), s);
+    } else anim((s) => selectSquare(s, cur.key, prom), s);
 
     callUserFunction(s.promotion.events.after, piece);
-  } else anim(s => cancelPromotion(s), s);
+  } else anim((s) => cancelPromotion(s), s);
   s.promotion.current = undefined;
 
   s.dom.redraw();

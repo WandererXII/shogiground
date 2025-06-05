@@ -22,7 +22,7 @@ export function inferDimensions(boardSfen: sg.BoardSfen): sg.Dimensions {
 export function sfenToBoard(
   sfen: sg.BoardSfen,
   dims: sg.Dimensions,
-  fromForsyth?: (forsyth: string) => sg.RoleString | undefined
+  fromForsyth?: (forsyth: string) => sg.RoleString | undefined,
 ): sg.Pieces {
   const sfenParser = fromForsyth || standardFromForsyth,
     pieces: sg.Pieces = new Map();
@@ -67,30 +67,30 @@ export function sfenToBoard(
 export function boardToSfen(
   pieces: sg.Pieces,
   dims: sg.Dimensions,
-  toForsyth?: (role: sg.RoleString) => string | undefined
+  toForsyth?: (role: sg.RoleString) => string | undefined,
 ): sg.BoardSfen {
   const sfenRenderer = toForsyth || standardToForsyth,
     reversedFiles = files.slice(0, dims.files).reverse();
   return ranks
     .slice(0, dims.ranks)
-    .map(y =>
+    .map((y) =>
       reversedFiles
-        .map(x => {
+        .map((x) => {
           const piece = pieces.get((x + y) as sg.Key),
             forsyth = piece && sfenRenderer(piece.role);
           if (forsyth) {
             return piece.color === 'sente' ? forsyth.toUpperCase() : forsyth.toLowerCase();
           } else return '1';
         })
-        .join('')
+        .join(''),
     )
     .join('/')
-    .replace(/1{2,}/g, s => s.length.toString());
+    .replace(/1{2,}/g, (s) => s.length.toString());
 }
 
 export function sfenToHands(
   sfen: sg.HandsSfen,
-  fromForsyth?: (forsyth: string) => sg.RoleString | undefined
+  fromForsyth?: (forsyth: string) => sg.RoleString | undefined,
 ): sg.Hands {
   const sfenParser = fromForsyth || standardFromForsyth,
     sente: sg.Hand = new Map(),
@@ -125,7 +125,7 @@ export function sfenToHands(
 export function handsToSfen(
   hands: sg.Hands,
   roles: sg.RoleString[],
-  toForsyth?: (role: sg.RoleString) => string | undefined
+  toForsyth?: (role: sg.RoleString) => string | undefined,
 ): sg.HandsSfen {
   const sfenRenderer = toForsyth || standardToForsyth;
 

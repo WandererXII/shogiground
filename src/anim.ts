@@ -101,7 +101,7 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
                       handPieceOffset.top,
                       util.sentePov(current.orientation),
                       current.dimensions,
-                      bounds
+                      bounds,
                     )
                   : undefined;
             if (outPos)
@@ -117,7 +117,7 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
   for (const newP of news) {
     const preP = closer(
       newP,
-      missings.filter(p => {
+      missings.filter((p) => {
         if (util.samePiece(newP.piece, p.piece)) return true;
         // checking whether promoted pieces are the same
         const pRole = current.promotion.promotesTo(p.piece.role),
@@ -128,7 +128,7 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
           (!!pPiece && util.samePiece(newP.piece, pPiece)) ||
           (!!nPiece && util.samePiece(nPiece, p.piece))
         );
-      })
+      }),
     );
     if (preP) {
       const vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];

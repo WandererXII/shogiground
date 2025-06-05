@@ -238,7 +238,7 @@ function computeSquareClasses(s: State): SquareClasses {
     addSquare(
       squares,
       s.predroppable.current.key,
-      'current-pre' + (s.predroppable.current.prom ? ' prom' : '')
+      'current-pre' + (s.predroppable.current.prom ? ' prom' : ''),
     );
 
   for (const sqh of s.drawable.squares) {
@@ -288,5 +288,5 @@ function renderPromotion(s: State, promotionEl: HTMLElement): void {
 }
 
 function promotionHash(active: boolean, key: sg.Key | undefined, pieces: sg.Piece[]): string {
-  return [active, key, pieces.map(p => pieceNameOf(p)).join(' ')].join(' ');
+  return [active, key, pieces.map((p) => pieceNameOf(p)).join(' ')].join(' ');
 }

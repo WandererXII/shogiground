@@ -119,7 +119,7 @@ function processDraw(state: State): void {
         cur.pos[1],
         sentePov(state.orientation),
         state.dimensions,
-        bounds
+        bounds,
       );
       if (!cur.dest && cur.arrow && outPos) {
         const dest = pos2user(outPos, state.orientation, state.dimensions, state.squareRatio);
@@ -188,14 +188,14 @@ function addShape(drawable: Drawable, cur: DrawCurrent): void {
 
   const similar = drawable.shapes.find(similarShape),
     removePiece = drawable.shapes.find(
-      s => similarShape(s) && piece && s.piece && samePiece(piece, s.piece)
+      (s) => similarShape(s) && piece && s.piece && samePiece(piece, s.piece),
     ),
     diffPiece = drawable.shapes.find(
-      s => similarShape(s) && piece && s.piece && !samePiece(piece, s.piece)
+      (s) => similarShape(s) && piece && s.piece && !samePiece(piece, s.piece),
     );
 
   // remove every similar shape
-  if (similar) drawable.shapes = drawable.shapes.filter(s => !similarShape(s));
+  if (similar) drawable.shapes = drawable.shapes.filter((s) => !similarShape(s));
 
   if (!isPiece(cur.orig) && piece && !removePiece) {
     drawable.shapes.push({ orig: cur.orig, dest: cur.orig, piece: piece, brush: cur.brush });

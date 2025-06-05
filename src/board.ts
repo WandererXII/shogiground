@@ -74,7 +74,7 @@ export function baseMove(
   state: HeadlessState,
   orig: sg.Key,
   dest: sg.Key,
-  prom: boolean
+  prom: boolean,
 ): sg.Piece | boolean {
   const origPiece = state.pieces.get(orig),
     destPiece = state.pieces.get(dest);
@@ -96,7 +96,7 @@ export function baseDrop(
   state: HeadlessState,
   piece: sg.Piece,
   key: sg.Key,
-  prom: boolean
+  prom: boolean,
 ): boolean {
   const pieceCount = state.hands.handMap.get(piece.color)?.get(piece.role) || 0;
   if (!pieceCount && !state.droppable.spare) return false;
@@ -123,7 +123,7 @@ function baseUserMove(
   state: HeadlessState,
   orig: sg.Key,
   dest: sg.Key,
-  prom: boolean
+  prom: boolean,
 ): sg.Piece | boolean {
   const result = baseMove(state, orig, dest, prom);
   if (result) {
@@ -150,16 +150,14 @@ export function userDrop(
   state: HeadlessState,
   piece: sg.Piece,
   key: sg.Key,
-  prom?: boolean
+  prom?: boolean,
 ): boolean {
   const realProm = prom || state.promotion.forceDropPromotion(piece, key);
   if (canDrop(state, piece, key)) {
     const result = baseUserDrop(state, piece, key, realProm);
     if (result) {
       unselect(state);
-      callUserFunction(state.droppable.events.after, piece, key, realProm, {
-        premade: false,
-      });
+      callUserFunction(state.droppable.events.after, piece, key, realProm, { premade: false });
       return true;
     }
   } else if (canPredrop(state, piece, key)) {
@@ -175,16 +173,14 @@ export function userMove(
   state: HeadlessState,
   orig: sg.Key,
   dest: sg.Key,
-  prom?: boolean
+  prom?: boolean,
 ): boolean {
   const realProm = prom || state.promotion.forceMovePromotion(orig, dest);
   if (canMove(state, orig, dest)) {
     const result = baseUserMove(state, orig, dest, realProm);
     if (result) {
       unselect(state);
-      const metadata: sg.MoveMetadata = {
-        premade: false,
-      };
+      const metadata: sg.MoveMetadata = { premade: false };
       if (result !== true) metadata.captured = result;
       callUserFunction(state.movable.events.after, orig, dest, realProm, metadata);
       return true;
@@ -202,12 +198,7 @@ export function basePromotionDialog(state: HeadlessState, piece: sg.Piece, key: 
   const promotedPiece = promotePiece(state, piece);
   if (state.viewOnly || state.promotion.current || !promotedPiece) return false;
 
-  state.promotion.current = {
-    piece,
-    promotedPiece,
-    key,
-    dragged: !!state.draggable.current,
-  };
+  state.promotion.current = { piece, promotedPiece, key, dragged: !!state.draggable.current };
   state.hovered = key;
 
   return true;
@@ -253,7 +244,7 @@ export function selectSquare(
   state: HeadlessState,
   key: sg.Key,
   prom?: boolean,
-  force?: boolean
+  force?: boolean,
 ): void {
   callUserFunction(state.events.select, key);
 
@@ -287,7 +278,7 @@ export function selectPiece(
   piece: sg.Piece,
   spare?: boolean,
   force?: boolean,
-  api?: boolean
+  api?: boolean,
 ): void {
   callUserFunction(state.events.pieceSelect, piece);
 
@@ -468,9 +459,7 @@ export function playPredrop(state: HeadlessState): boolean {
   let success = false;
   if (canDrop(state, piece, key)) {
     if (baseUserDrop(state, piece, key, prom)) {
-      callUserFunction(state.droppable.events.after, piece, key, prom, {
-        premade: true,
-      });
+      callUserFunction(state.droppable.events.after, piece, key, prom, { premade: true });
       success = true;
     }
   }

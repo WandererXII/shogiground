@@ -116,7 +116,7 @@ export function start(state: State): Api {
       ];
       const newDims = config.sfen?.board && inferDimensions(config.sfen.board);
       const toRedraw =
-        forceRedrawProps.some(p => {
+        forceRedrawProps.some((p) => {
           const cRes = getByPath(p, config);
           return cRes && cRes !== getByPath(p, state);
         }) ||
@@ -133,8 +133,8 @@ export function start(state: State): Api {
       } else {
         applyAnimation(state, config);
         (config.sfen?.board && !skipAnimation ? anim : render)(
-          state => configure(state, config),
-          state
+          (state) => configure(state, config),
+          state,
         );
       }
     },
@@ -153,33 +153,33 @@ export function start(state: State): Api {
 
     move(orig, dest, prom): void {
       anim(
-        state =>
+        (state) =>
           board.baseMove(state, orig, dest, prom || state.promotion.forceMovePromotion(orig, dest)),
-        state
+        state,
       );
     },
 
     drop(piece, key, prom, spare): void {
-      anim(state => {
+      anim((state) => {
         state.droppable.spare = !!spare;
         board.baseDrop(state, piece, key, prom || state.promotion.forceDropPromotion(piece, key));
       }, state);
     },
 
     setPieces(pieces): void {
-      anim(state => board.setPieces(state, pieces), state);
+      anim((state) => board.setPieces(state, pieces), state);
     },
 
     addToHand(piece: sg.Piece, count: number): void {
-      render(state => addToHand(state, piece, count), state);
+      render((state) => addToHand(state, piece, count), state);
     },
 
     removeFromHand(piece: sg.Piece, count: number): void {
-      render(state => removeFromHand(state, piece, count), state);
+      render((state) => removeFromHand(state, piece, count), state);
     },
 
     selectSquare(key, prom, force): void {
-      if (key) anim(state => board.selectSquare(state, key, prom, force), state);
+      if (key) anim((state) => board.selectSquare(state, key, prom, force), state);
       else if (state.selected) {
         board.unselect(state);
         state.dom.redraw();
@@ -187,7 +187,7 @@ export function start(state: State): Api {
     },
 
     selectPiece(piece, spare, force): void {
-      if (piece) render(state => board.selectPiece(state, piece, spare, force, true), state);
+      if (piece) render((state) => board.selectPiece(state, piece, spare, force, true), state);
       else if (state.selectedPiece) {
         board.unselect(state);
         state.dom.redraw();
@@ -221,28 +221,28 @@ export function start(state: State): Api {
     },
 
     cancelMoveOrDrop(): void {
-      render(state => {
+      render((state) => {
         board.cancelMoveOrDrop(state);
         dragCancel(state);
       }, state);
     },
 
     stop(): void {
-      render(state => {
+      render((state) => {
         board.stop(state);
       }, state);
     },
 
     setAutoShapes(shapes: DrawShape[]): void {
-      render(state => (state.drawable.autoShapes = shapes), state);
+      render((state) => (state.drawable.autoShapes = shapes), state);
     },
 
     setShapes(shapes: DrawShape[]): void {
-      render(state => (state.drawable.shapes = shapes), state);
+      render((state) => (state.drawable.shapes = shapes), state);
     },
 
     setSquareHighlights(squares: SquareHighlight[]): void {
-      render(state => (state.drawable.squares = squares), state);
+      render((state) => (state.drawable.squares = squares), state);
     },
 
     dragNewPiece(piece, event, spare): void {

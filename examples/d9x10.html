@@ -77,18 +77,18 @@
           drop: () => {
             console.log('drop');
           },
-          pieceUnselect: p => {
+          pieceUnselect: (p) => {
             console.log('pieceUnselect', p);
           },
-          select: s => {
+          select: (s) => {
             console.log('select', s);
           },
-          unselect: s => {
+          unselect: (s) => {
             console.log('unselect', s);
           },
         },
         promotion: {
-          promotesTo: role => {
+          promotesTo: (role) => {
             if (role === 'bishop') return 'horse';
             if (role === 'pawn') return 'tokin';
             if (role === 'knight') return 'promotedknight';
@@ -142,7 +142,7 @@
             ['7g', undefined],
             ['8g', undefined],
             ['6i', undefined],
-          ])
+          ]),
         );
       }
       function reconf() {

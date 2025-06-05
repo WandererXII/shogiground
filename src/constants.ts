@@ -40,7 +40,7 @@ export const ranks = [
 ] as const;
 
 export const allKeys: readonly Key[] = Array.prototype.concat(
-  ...ranks.map(r => files.map(f => f + r))
+  ...ranks.map((r) => files.map((f) => f + r)),
 );
 
 export const notations = ['numeric', 'japanese', 'engine', 'hex', 'dizhi'] as const;

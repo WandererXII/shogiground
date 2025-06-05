@@ -9,7 +9,7 @@ export function redrawShapesNow(state: State): void {
       state,
       state.dom.elements.board.shapes.svg,
       state.dom.elements.board.shapes.customSvg,
-      state.dom.elements.board.shapes.freePieces
+      state.dom.elements.board.shapes.freePieces,
     );
 }
 

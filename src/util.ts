@@ -45,7 +45,7 @@ const posToTranslateBase = (
   dims: sg.Dimensions,
   asSente: boolean,
   xFactor: number,
-  yFactor: number
+  yFactor: number,
 ): sg.NumberPair => [
   (asSente ? dims.files - 1 - pos[0] : pos[0]) * xFactor,
   (asSente ? pos[1] : dims.ranks - 1 - pos[1]) * yFactor,
@@ -53,7 +53,7 @@ const posToTranslateBase = (
 
 export const posToTranslateAbs = (
   dims: sg.Dimensions,
-  bounds: DOMRect
+  bounds: DOMRect,
 ): ((pos: sg.Pos, asSente: boolean) => sg.NumberPair) => {
   const xFactor = bounds.width / dims.files,
     yFactor = bounds.height / dims.ranks;
@@ -73,7 +73,7 @@ export const translateRel = (
   el: HTMLElement,
   percents: sg.NumberPair,
   scaleFactor: number,
-  scale?: number
+  scale?: number,
 ): void => {
   el.style.transform = `translate(${percents[0] * scaleFactor}%,${percents[1] * scaleFactor}%) scale(${
     scale || scaleFactor
@@ -120,7 +120,7 @@ export function computeSquareCenter(
   key: sg.Key,
   asSente: boolean,
   dims: sg.Dimensions,
-  bounds: DOMRect
+  bounds: DOMRect,
 ): sg.NumberPair {
   const pos = key2pos(key);
   if (asSente) {
@@ -156,7 +156,7 @@ export function getKeyAtDomPos(
   pos: sg.NumberPair,
   asSente: boolean,
   dims: sg.Dimensions,
-  bounds: DOMRect
+  bounds: DOMRect,
 ): sg.Key | undefined {
   let file = Math.floor((dims.files * (pos[0] - bounds.left)) / bounds.width);
   if (asSente) file = dims.files - 1 - file;
@@ -170,7 +170,7 @@ export function getKeyAtDomPos(
 export function getHandPieceAtDomPos(
   pos: sg.NumberPair,
   roles: sg.RoleString[],
-  bounds: Map<sg.PieceName, DOMRect>
+  bounds: Map<sg.PieceName, DOMRect>,
 ): sg.Piece | undefined {
   for (const color of colors) {
     for (const role of roles) {
@@ -187,7 +187,7 @@ export function posOfOutsideEl(
   top: number,
   asSente: boolean,
   dims: sg.Dimensions,
-  boardBounds: DOMRect
+  boardBounds: DOMRect,
 ): sg.Pos | undefined {
   const sqW = boardBounds.width / dims.files,
     sqH = boardBounds.height / dims.ranks;

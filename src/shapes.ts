@@ -32,7 +32,7 @@ export function renderShapes(
   state: State,
   svg: SVGElement,
   customSvg: SVGElement,
-  freePieces: HTMLElement
+  freePieces: HTMLElement,
 ): void {
   const d = state.drawable,
     curD = d.current,
@@ -56,7 +56,7 @@ export function renderShapes(
   for (const s of d.shapes.concat(cur ? [cur] : []).concat(d.autoShapes)) {
     if (s.piece && !isPiece(s.orig)) pieceMap.set(s.orig, s);
   }
-  const pieceShapes = [...pieceMap.values()].map(s => {
+  const pieceShapes = [...pieceMap.values()].map((s) => {
     return {
       shape: s,
       hash: shapeHash(s, arrowDests, false, hashBounds),
@@ -76,7 +76,7 @@ export function renderShapes(
       current: true,
     });
 
-  const fullHash = shapes.map(sc => sc.hash).join(';') + (outsideArrow ? outsideArrowHash : '');
+  const fullHash = shapes.map((sc) => sc.hash).join(';') + (outsideArrow ? outsideArrowHash : '');
   if (fullHash === state.drawable.prevSvgHash) return;
   state.drawable.prevSvgHash = fullHash;
 
@@ -105,17 +105,17 @@ export function renderShapes(
 
   syncDefs(shapes, outsideArrow ? curD : undefined, defsEl);
   syncShapes(
-    shapes.filter(s => !s.shape.customSvg && (!s.shape.piece || s.current)),
+    shapes.filter((s) => !s.shape.customSvg && (!s.shape.piece || s.current)),
     shapesEl,
-    shape => renderSVGShape(state, shape, arrowDests),
-    outsideArrow
+    (shape) => renderSVGShape(state, shape, arrowDests),
+    outsideArrow,
   );
   syncShapes(
-    shapes.filter(s => s.shape.customSvg),
+    shapes.filter((s) => s.shape.customSvg),
     customSvgsEl,
-    shape => renderSVGShape(state, shape, arrowDests)
+    (shape) => renderSVGShape(state, shape, arrowDests),
   );
-  syncShapes(pieceShapes, freePieces, shape => renderPiece(state, shape));
+  syncShapes(pieceShapes, freePieces, (shape) => renderPiece(state, shape));
 
   if (!outsideArrow && curD) curD.arrow = undefined;
 
@@ -138,7 +138,7 @@ export function renderShapes(
 function syncDefs(
   shapes: Shape[],
   outsideShape: DrawCurrent | undefined,
-  defsEl: SVGElement
+  defsEl: SVGElement,
 ): void {
   const brushes = new Set<string>();
   for (const s of shapes) {
@@ -162,7 +162,7 @@ export function syncShapes(
   shapes: Shape[],
   root: HTMLElement | SVGElement,
   renderShape: (shape: Shape) => HTMLElement | SVGElement | undefined,
-  outsideArrow?: boolean
+  outsideArrow?: boolean,
 ): void {
   const hashesInDom = new Map(), // by hash
     toRemove: SVGElement[] = [];
@@ -193,7 +193,7 @@ function shapeHash(
   { orig, dest, brush, piece, customSvg, description }: DrawShape,
   arrowDests: ArrowDests,
   current: boolean,
-  boundHash: () => string
+  boundHash: () => string,
 ): Hash {
   return [
     current,
@@ -206,12 +206,12 @@ function shapeHash(
     customSvg && customSvgHash(customSvg),
     description,
   ]
-    .filter(x => x)
+    .filter((x) => x)
     .join(',');
 }
 
 function pieceHash(piece: DrawShapePiece): Hash {
-  return [piece.color, piece.role, piece.scale].filter(x => x).join(',');
+  return [piece.color, piece.role, piece.scale].filter((x) => x).join(',');
 }
 
 function customSvgHash(s: string): Hash {
@@ -226,7 +226,7 @@ function customSvgHash(s: string): Hash {
 function renderSVGShape(
   state: State,
   { shape, current, hash }: Shape,
-  arrowDests: ArrowDests
+  arrowDests: ArrowDests,
 ): SVGElement | undefined {
   const orig = pieceOrKeyToPos(shape.orig, state);
   if (!orig) return;
@@ -242,7 +242,7 @@ function renderSVGShape(
         dest,
         state.squareRatio,
         !!current,
-        (arrowDests.get(isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest) || 0) > 1
+        (arrowDests.get(isPiece(shape.dest) ? pieceNameOf(shape.dest) : shape.dest) || 0) > 1,
       );
     } else if (samePieceOrKey(shape.dest, shape.orig)) {
       let ratio: sg.NumberPair = state.squareRatio;
@@ -274,7 +274,7 @@ function renderCustomSvg(
   brush: string,
   customSvg: string,
   pos: sg.Pos,
-  ratio: sg.NumberPair
+  ratio: sg.NumberPair,
 ): SVGElement {
   const [x, y] = pos;
 
@@ -313,7 +313,7 @@ function renderArrow(
   dest: sg.Pos,
   ratio: sg.NumberPair,
   current: boolean,
-  shorten: boolean
+  shorten: boolean,
 ): SVGElement {
   const m = arrowMargin(shorten && !current, ratio),
     a = orig,
@@ -347,7 +347,7 @@ export function renderPiece(state: State, { shape }: Shape): sg.PieceNode | unde
     pieceEl,
     posToTranslateRel(state.dimensions)(key2pos(orig), sentePov(state.orientation)),
     state.scaleDownPieces ? 0.5 : 1,
-    scale
+    scale,
   );
 
   return pieceEl;
@@ -356,7 +356,7 @@ export function renderPiece(state: State, { shape }: Shape): sg.PieceNode | unde
 function renderDescription(
   state: State,
   shape: DrawShape,
-  arrowDests: ArrowDests
+  arrowDests: ArrowDests,
 ): SVGElement | undefined {
   const orig = pieceOrKeyToPos(shape.orig, state);
   if (!orig || !shape.description) return;
@@ -403,7 +403,7 @@ function renderMarker(brush: string): SVGElement {
   marker.appendChild(
     setAttributes(createSVGElement('path'), {
       d: 'M0,0 V4 L3,2 Z',
-    })
+    }),
   );
   marker.setAttribute('sgKey', brush);
   return marker;
@@ -420,7 +420,7 @@ export function pos2user(
   pos: sg.Pos,
   color: sg.Color,
   dims: sg.Dimensions,
-  ratio: sg.NumberPair
+  ratio: sg.NumberPair,
 ): sg.NumberPair {
   return color === 'sente'
     ? [(dims.files - 1 - pos[0]) * ratio[0], pos[1] * ratio[1]]
@@ -436,7 +436,7 @@ export function samePieceOrKey(kp1: sg.Key | sg.Piece, kp2: sg.Key | sg.Piece): 
 }
 
 export function usesBounds(shapes: DrawShape[]): boolean {
-  return shapes.some(s => isPiece(s.orig) || isPiece(s.dest));
+  return shapes.some((s) => isPiece(s.orig) || isPiece(s.dest));
 }
 
 function shapeClass(brush: string, current: boolean, outside: boolean): string {
@@ -472,7 +472,7 @@ function pieceOrKeyToPos(kp: sg.Key | sg.Piece, state: State): sg.Pos | undefine
           pieceBounds.top + pieceBounds.height / 2,
           sentePov(state.orientation),
           state.dimensions,
-          bounds
+          bounds,
         );
     return (
       pos &&
@@ -480,7 +480,7 @@ function pieceOrKeyToPos(kp: sg.Key | sg.Piece, state: State): sg.Pos | undefine
         [pos[0] + offset[0], pos[1] + offset[1]],
         state.orientation,
         state.dimensions,
-        state.squareRatio
+        state.squareRatio,
       )
     );
   } else return pos2user(key2pos(kp), state.orientation, state.dimensions, state.squareRatio);

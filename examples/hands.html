@@ -66,7 +66,7 @@
           forced: false,
         },
         promotion: {
-          promotesTo: role => {
+          promotesTo: (role) => {
             if (role === 'bishop') return 'horse';
             if (role === 'pawn') return 'tokin';
             if (role === 'knight') return 'promotedKnight';
@@ -76,16 +76,16 @@
           },
         },
         events: {
-          select: s => {
+          select: (s) => {
             console.log('SELECT', s, sg.state.selected);
           },
           move: (a, b) => {
             console.log('MOVE', a, b);
           },
-          pieceUnselect: p => {
+          pieceUnselect: (p) => {
             console.log('pieceUnselect', p);
           },
-          unselect: s => {
+          unselect: (s) => {
             console.log('unselect', s);
           },
         },
@@ -95,7 +95,7 @@
         ' drag:',
         config.draggable.enabled,
         ' select: ',
-        config.selectable.enabled
+        config.selectable.enabled,
       );
       sg.set(config);
       sg.attach({

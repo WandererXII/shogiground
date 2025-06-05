@@ -61,13 +61,13 @@ export function start(s: State, e: sg.MouchEvent): void {
   if (s.selectable.deleteOnTouch) board.deletePiece(s, orig);
   else if (s.selected) {
     if (!board.promotionDialogMove(s, s.selected, orig)) {
-      if (board.canMove(s, s.selected, orig)) anim(state => board.selectSquare(state, orig), s);
+      if (board.canMove(s, s.selected, orig)) anim((state) => board.selectSquare(state, orig), s);
       else board.selectSquare(s, orig);
     }
   } else if (s.selectedPiece) {
     if (!board.promotionDialogDrop(s, s.selectedPiece, orig)) {
       if (board.canDrop(s, s.selectedPiece, orig))
-        anim(state => board.selectSquare(state, orig), s);
+        anim((state) => board.selectSquare(state, orig), s);
       else board.selectSquare(s, orig);
     }
   } else {
@@ -190,7 +190,7 @@ function processDrag(s: State): void {
             cur.pos[0] - bounds.left - bounds.width / (s.dimensions.files * 2),
             cur.pos[1] - bounds.top - bounds.height / (s.dimensions.ranks * 2),
           ],
-          s.scaleDownPieces ? 0.5 : 1
+          s.scaleDownPieces ? 0.5 : 1,
         );
 
         if (!draggedEl.sgDragging) {
@@ -201,7 +201,7 @@ function processDrag(s: State): void {
           cur.pos,
           util.sentePov(s.orientation),
           s.dimensions,
-          bounds
+          bounds,
         );
 
         if (cur.fromBoard)
@@ -221,9 +221,9 @@ function processDrag(s: State): void {
                 s.dom.elements.board.squareOver,
                 util.posToTranslateAbs(s.dimensions, bounds)(
                   util.key2pos(hover),
-                  util.sentePov(s.orientation)
+                  util.sentePov(s.orientation),
                 ),
-                1
+                1,
               );
               util.setDisplay(s.dom.elements.board.squareOver, true);
             } else {
@@ -253,7 +253,7 @@ export function move(s: State, e: sg.MouchEvent): void {
           util.eventPosition(e)!,
           util.sentePov(s.orientation),
           s.dimensions,
-          bounds
+          bounds,
         );
     if (hover !== s.hovered) updateHoveredSquares(s, hover);
   }

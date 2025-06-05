@@ -38,5 +38,5 @@ export default tseslint.config(
   },
   {
     ignores: ['src/index.ts', 'eslint.config.mjs', 'esbuild.mjs', 'esm', 'dist'],
-  }
+  },
 );

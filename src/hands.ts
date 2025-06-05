@@ -30,17 +30,17 @@ export function renderHand(s: HeadlessState, handEl: HTMLElement): void {
 
     wrapEl.classList.toggle(
       'selected',
-      (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected
+      (s.activeColor === 'both' || s.activeColor === s.turnColor) && isSelected,
     );
     wrapEl.classList.toggle(
       'preselected',
-      s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected
+      s.activeColor !== 'both' && s.activeColor !== s.turnColor && isSelected,
     );
     wrapEl.classList.toggle('last-dest', !!s.lastPiece && samePiece(piece, s.lastPiece));
     wrapEl.classList.toggle('drawing', !!s.drawable.piece && samePiece(s.drawable.piece, piece));
     wrapEl.classList.toggle(
       'current-pre',
-      !!s.predroppable.current && samePiece(s.predroppable.current.piece, piece)
+      !!s.predroppable.current && samePiece(s.predroppable.current.piece, piece),
     );
     wrapEl.dataset.nb = num.toString();
     wrapEl = wrapEl.nextElementSibling as HTMLElement | undefined;
