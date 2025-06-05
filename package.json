@@ -42,8 +42,9 @@
   "devDependencies": {
     "@eslint/js": "^9",
     "del-cli": "^6",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.25.0",
     "eslint": "^9",
+    "nodemon": "^3.1.10",
     "globals": "^15",
     "prettier": "^3",
     "typescript": "^5",
@@ -53,7 +54,9 @@
     "prepare": "$npm_execpath run clean && $npm_execpath run compile && $npm_execpath run dist",
     "clean": "del esm && del dist && del tsconfig.tsbuildinfo",
     "compile": "tsc",
+    "compile:watch": "tsc --watch",
     "dist": "node esbuild.mjs",
+    "dist:watch": "nodemon --watch src --ext ts --exec \"$npm_execpath run dist\"",
     "lint": "eslint --cache",
     "format": "prettier --cache --write .",
     "check-format": "prettier --check ."
