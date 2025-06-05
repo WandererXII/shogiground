@@ -346,6 +346,7 @@ export function unselect(state: HeadlessState): void {
     state.predroppable.dests =
     state.promotion.current =
       undefined;
+  state.droppable.spare = false;
 }
 
 function isMovable(state: HeadlessState, orig: sg.Key): boolean {

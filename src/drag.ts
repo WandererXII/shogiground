@@ -296,6 +296,8 @@ export function end(s: State, e: sg.MouchEvent): void {
         addToHand(s, { color: util.opposite(s.orientation), role: cur.piece.role });
       else if (handBoundsBottom && util.isInsideRect(handBoundsBottom, cur.pos))
         addToHand(s, { color: s.orientation, role: cur.piece.role });
+
+      board.unselect(s);
     }
     util.callUserFunction(s.events.change);
   }
