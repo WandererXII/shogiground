@@ -11,6 +11,7 @@ export interface DragCurrent {
   pos: sg.NumberPair; // latest event position
   origPos: sg.NumberPair; // first event position
   started: boolean; // whether the drag has started; as per the distance setting
+  spare: boolean; // whether this piece is a spare one
   touch: boolean; // was the dragging initiated from touch event
   originTarget: EventTarget | null;
   fromBoard?: {
@@ -85,6 +86,7 @@ export function start(s: State, e: sg.MouchEvent): void {
       pos: position,
       origPos: position,
       started: s.draggable.autoDistance && !touch,
+      spare: false,
       touch,
       originTarget: e.target,
       fromBoard: {
@@ -140,6 +142,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
       origPos: position,
       touch,
       started: s.draggable.autoDistance && !touch,
+      spare: !!spare,
       originTarget: e.target,
       fromOutside: {
         originBounds: !spare
@@ -286,7 +289,7 @@ export function end(s: State, e: sg.MouchEvent): void {
       board.userMove(s, cur.fromBoard.orig, dest);
   } else if (s.draggable.deleteOnDropOff && !dest) {
     if (cur.fromBoard) s.pieces.delete(cur.fromBoard.orig);
-    else if (cur.fromOutside && !s.droppable.spare) removeFromHand(s, cur.piece);
+    else if (cur.fromOutside && !cur.spare) removeFromHand(s, cur.piece);
 
     if (s.draggable.addToHandOnDropOff) {
       const handBounds = s.dom.bounds.hands.bounds(),
