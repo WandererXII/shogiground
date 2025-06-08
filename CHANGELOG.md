@@ -1,3 +1,8 @@
+## v0.10.3
+
+- Highlight pieces in 'last-dest' only if `s.highlight.lastDests` is enabled.
+- Fix removing pieces from hand when dropping spare pieces.
+
 ## v0.10.2
 
 - Fixed confusing and wrong behavior of `state.droppable.spare`.
