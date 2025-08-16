@@ -1,9 +1,9 @@
-import type { State } from './state.js';
-import type { WrapElements, WrapElementsBoolean } from './types.js';
-import { wrapBoard, wrapHand } from './wrap.js';
 import * as events from './events.js';
 import { renderHand } from './hands.js';
 import { render } from './render.js';
+import type { State } from './state.js';
+import type { WrapElements, WrapElementsBoolean } from './types.js';
+import { wrapBoard, wrapHand } from './wrap.js';
 
 function attachBoard(state: State, boardWrap: HTMLElement): void {
   const elements = wrapBoard(boardWrap, state);

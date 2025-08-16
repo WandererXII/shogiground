@@ -1,7 +1,7 @@
-import type { State } from './state.js';
-import { render } from './render.js';
 import { renderHand } from './hands.js';
+import { render } from './render.js';
 import { renderShapes } from './shapes.js';
+import type { State } from './state.js';
 
 export function redrawShapesNow(state: State): void {
   if (state.dom.elements.board?.shapes)

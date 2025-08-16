@@ -1,16 +1,16 @@
+import { cancelMoveOrDrop, unselect } from './board.js';
+import { isPiece, pos2user, samePieceOrKey, setAttributes } from './shapes.js';
 import type { State } from './state.js';
 import type * as sg from './types.js';
-import { unselect, cancelMoveOrDrop } from './board.js';
 import {
   eventPosition,
+  getHandPieceAtDomPos,
+  getKeyAtDomPos,
   isRightButton,
   posOfOutsideEl,
   samePiece,
-  getHandPieceAtDomPos,
-  getKeyAtDomPos,
   sentePov,
 } from './util.js';
-import { isPiece, pos2user, samePieceOrKey, setAttributes } from './shapes.js';
 
 export interface DrawShape {
   orig: sg.Key | sg.Piece;
@@ -66,11 +66,11 @@ export function start(state: State, e: sg.MouchEvent): void {
   if (e.ctrlKey) unselect(state);
   else cancelMoveOrDrop(state);
 
-  const pos = eventPosition(e),
-    bounds = state.dom.bounds.board.bounds(),
-    orig =
-      pos && bounds && getKeyAtDomPos(pos, sentePov(state.orientation), state.dimensions, bounds),
-    piece = state.drawable.piece;
+  const pos = eventPosition(e);
+  const bounds = state.dom.bounds.board.bounds();
+  const orig =
+    pos && bounds && getKeyAtDomPos(pos, sentePov(state.orientation), state.dimensions, bounds);
+  const piece = state.drawable.piece;
   if (!orig) return;
   state.drawable.current = {
     orig,
@@ -104,8 +104,8 @@ export function startFromHand(state: State, piece: sg.Piece, e: sg.MouchEvent): 
 
 function processDraw(state: State): void {
   requestAnimationFrame(() => {
-    const cur = state.drawable.current,
-      bounds = state.dom.bounds.board.bounds();
+    const cur = state.drawable.current;
+    const bounds = state.dom.bounds.board.bounds();
     if (cur && bounds) {
       const dest =
         getKeyAtDomPos(cur.pos, sentePov(state.orientation), state.dimensions, bounds) ||
@@ -135,7 +135,8 @@ function processDraw(state: State): void {
 }
 
 export function move(state: State, e: sg.MouchEvent): void {
-  if (state.drawable.current) state.drawable.current.pos = eventPosition(e)!;
+  const pos = eventPosition(e);
+  if (pos && state.drawable.current) state.drawable.current.pos = pos;
 }
 
 export function end(state: State, _: sg.MouchEvent): void {
@@ -171,8 +172,8 @@ export function setDrawPiece(state: State, piece: sg.Piece): void {
 }
 
 function eventBrush(e: sg.MouchEvent, allowFirstModifier: boolean): string {
-  const modA = allowFirstModifier && (e.shiftKey || e.ctrlKey),
-    modB = e.altKey || e.metaKey || e.getModifierState?.('AltGraph');
+  const modA = allowFirstModifier && (e.shiftKey || e.ctrlKey);
+  const modB = e.altKey || e.metaKey || e.getModifierState?.('AltGraph');
   return brushes[(modA ? 1 : 0) + (modB ? 2 : 0)];
 }
 
@@ -186,22 +187,31 @@ function addShape(drawable: Drawable, cur: DrawCurrent): void {
   const piece = cur.piece;
   cur.piece = undefined;
 
-  const similar = drawable.shapes.find(similarShape),
-    removePiece = drawable.shapes.find(
-      (s) => similarShape(s) && piece && s.piece && samePiece(piece, s.piece),
-    ),
-    diffPiece = drawable.shapes.find(
-      (s) => similarShape(s) && piece && s.piece && !samePiece(piece, s.piece),
-    );
+  const similar = drawable.shapes.find(similarShape);
+  const removePiece = drawable.shapes.find(
+    (s) => similarShape(s) && piece && s.piece && samePiece(piece, s.piece),
+  );
+  const diffPiece = drawable.shapes.find(
+    (s) => similarShape(s) && piece && s.piece && !samePiece(piece, s.piece),
+  );
 
   // remove every similar shape
   if (similar) drawable.shapes = drawable.shapes.filter((s) => !similarShape(s));
 
   if (!isPiece(cur.orig) && piece && !removePiece) {
-    drawable.shapes.push({ orig: cur.orig, dest: cur.orig, piece: piece, brush: cur.brush });
+    drawable.shapes.push({
+      orig: cur.orig,
+      dest: cur.orig,
+      piece: piece,
+      brush: cur.brush,
+    });
     // force circle around drawn pieces
     if (!samePieceOrKey(cur.orig, cur.dest))
-      drawable.shapes.push({ orig: cur.orig, dest: cur.orig, brush: cur.brush });
+      drawable.shapes.push({
+        orig: cur.orig,
+        dest: cur.orig,
+        brush: cur.brush,
+      });
   }
 
   if (!similar || diffPiece || similar.brush !== cur.brush) drawable.shapes.push(cur as DrawShape);

@@ -1,17 +1,18 @@
+import { colors } from './constants.js';
+import { coords } from './coords.js';
+import { createSVGElement, setAttributes } from './shapes.js';
 import type { State } from './state.js';
 import type {
-  Dimensions,
-  SquareNode,
+  BoardElements,
   Color,
+  Dimensions,
+  HandElements,
   PieceNode,
   RoleString,
-  HandElements,
-  BoardElements,
+  ShapesElements,
+  SquareNode,
 } from './types.js';
-import { colors } from './constants.js';
 import { createEl, opposite, pieceNameOf, pos2key, setDisplay } from './util.js';
-import { createSVGElement, setAttributes } from './shapes.js';
-import { coords } from './coords.js';
 
 export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   // .sg-wrap (element passed to Shogiground)
@@ -40,7 +41,9 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   const pieces = createEl('sg-pieces');
   board.appendChild(pieces);
 
-  let dragged, promotion, squareOver;
+  let dragged: PieceNode | undefined;
+  let promotion: HTMLElement | undefined;
+  let squareOver: HTMLElement | undefined;
   if (!s.viewOnly) {
     dragged = createEl('piece') as PieceNode;
     setDisplay(dragged, false);
@@ -55,7 +58,7 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
     board.appendChild(squareOver);
   }
 
-  let shapes;
+  let shapes: ShapesElements | undefined;
   if (s.drawable.visible) {
     const svg = setAttributes(createSVGElement('svg'), {
       class: 'sg-shapes',
@@ -86,11 +89,11 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   }
 
   if (s.coordinates.enabled) {
-    const orientClass = s.orientation === 'gote' ? ' gote' : '',
-      ranks = coords(s.coordinates.ranks),
-      files = coords(s.coordinates.files);
-    board.appendChild(renderCoords(ranks, 'ranks' + orientClass, s.dimensions.ranks));
-    board.appendChild(renderCoords(files, 'files' + orientClass, s.dimensions.files));
+    const orientClass = s.orientation === 'gote' ? ' gote' : '';
+    const ranks = coords(s.coordinates.ranks);
+    const files = coords(s.coordinates.files);
+    board.appendChild(renderCoords(ranks, `ranks${orientClass}`, s.dimensions.ranks));
+    board.appendChild(renderCoords(files, `files${orientClass}`, s.dimensions.files));
   }
 
   boardWrap.innerHTML = '';
@@ -105,15 +108,15 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   // ensure the sg-wrap class and dimensions class is set beforehand to avoid recomputing styles
   boardWrap.classList.add('sg-wrap', dimCls);
 
-  for (const c of colors) boardWrap.classList.toggle('orientation-' + c, s.orientation === c);
+  for (const c of colors) boardWrap.classList.toggle(`orientation-${c}`, s.orientation === c);
   boardWrap.classList.toggle('manipulable', !s.viewOnly);
 
   boardWrap.appendChild(board);
 
   let hands: HandElements | undefined;
   if (s.hands.inlined) {
-    const handWrapTop = createEl('sg-hand-wrap', 'inlined'),
-      handWrapBottom = createEl('sg-hand-wrap', 'inlined');
+    const handWrapTop = createEl('sg-hand-wrap', 'inlined');
+    const handWrapBottom = createEl('sg-hand-wrap', 'inlined');
     boardWrap.insertBefore(handWrapBottom, board.nextElementSibling);
     boardWrap.insertBefore(handWrapTop, board);
     hands = {
@@ -149,7 +152,7 @@ export function wrapHand(handWrap: HTMLElement, pos: 'top' | 'bottom', s: State)
   handWrap.classList.add('sg-hand-wrap', `hand-${pos}`, roleCntCls);
   handWrap.appendChild(hand);
 
-  for (const c of colors) handWrap.classList.toggle('orientation-' + c, s.orientation === c);
+  for (const c of colors) handWrap.classList.toggle(`orientation-${c}`, s.orientation === c);
   handWrap.classList.toggle('manipulable', !s.viewOnly);
 
   return hand;
@@ -184,9 +187,9 @@ function renderSquares(dims: Dimensions, orientation: Color): HTMLElement {
 function renderHand(color: Color, roles: RoleString[]): HTMLElement {
   const hand = createEl('sg-hand');
   for (const role of roles) {
-    const piece = { role: role, color: color },
-      wrapEl = createEl('sg-hp-wrap'),
-      pieceEl = createEl('piece', pieceNameOf(piece)) as PieceNode;
+    const piece = { role: role, color: color };
+    const wrapEl = createEl('sg-hp-wrap');
+    const pieceEl = createEl('piece', pieceNameOf(piece)) as PieceNode;
     pieceEl.sgColor = color;
     pieceEl.sgRole = role;
     wrapEl.appendChild(pieceEl);

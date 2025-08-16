@@ -1,14 +1,14 @@
-import type { DOMRectMap, PieceName, PieceNode, WrapElements } from './types.js';
 import type { Api } from './api.js';
-import type { Config } from './config.js';
-import type { State } from './state.js';
 import { start } from './api.js';
+import type { Config } from './config.js';
 import { configure } from './config.js';
-import { defaults } from './state.js';
-import * as util from './util.js';
 import { redrawAll } from './dom.js';
 import { bindDocument } from './events.js';
 import { redrawNow, redrawShapesNow } from './redraw.js';
+import type { State } from './state.js';
+import { defaults } from './state.js';
+import type { DOMRectMap, PieceName, PieceNode, WrapElements } from './types.js';
+import * as util from './util.js';
 
 export function Shogiground(config?: Config, wrapElements?: WrapElements): Api {
   const state = defaults() as State;
@@ -27,21 +27,21 @@ export function Shogiground(config?: Config, wrapElements?: WrapElements): Api {
       },
       hands: {
         bounds: util.memo(() => {
-          const handsRects: DOMRectMap<'top' | 'bottom'> = new Map(),
-            handEls = state.dom.elements.hands;
+          const handsRects: DOMRectMap<'top' | 'bottom'> = new Map();
+          const handEls = state.dom.elements.hands;
           if (handEls?.top) handsRects.set('top', handEls.top.getBoundingClientRect());
           if (handEls?.bottom) handsRects.set('bottom', handEls.bottom.getBoundingClientRect());
           return handsRects;
         }),
         pieceBounds: util.memo(() => {
-          const handPiecesRects: DOMRectMap<PieceName> = new Map(),
-            handEls = state.dom.elements.hands;
+          const handPiecesRects: DOMRectMap<PieceName> = new Map();
+          const handEls = state.dom.elements.hands;
 
           if (handEls?.top) {
             let wrapEl = handEls.top.firstElementChild as HTMLElement | undefined;
             while (wrapEl) {
-              const pieceEl = wrapEl.firstElementChild as PieceNode,
-                piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
+              const pieceEl = wrapEl.firstElementChild as PieceNode;
+              const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
               handPiecesRects.set(util.pieceNameOf(piece), pieceEl.getBoundingClientRect());
               wrapEl = wrapEl.nextElementSibling as HTMLElement | undefined;
             }
@@ -49,8 +49,8 @@ export function Shogiground(config?: Config, wrapElements?: WrapElements): Api {
           if (handEls?.bottom) {
             let wrapEl = handEls.bottom.firstElementChild as HTMLElement | undefined;
             while (wrapEl) {
-              const pieceEl = wrapEl.firstElementChild as PieceNode,
-                piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
+              const pieceEl = wrapEl.firstElementChild as PieceNode;
+              const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
               handPiecesRects.set(util.pieceNameOf(piece), pieceEl.getBoundingClientRect());
               wrapEl = wrapEl.nextElementSibling as HTMLElement | undefined;
             }

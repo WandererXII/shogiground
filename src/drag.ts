@@ -1,10 +1,10 @@
+import { anim } from './anim.js';
+import * as board from './board.js';
+import { clear as drawClear } from './draw.js';
+import { addToHand, removeFromHand } from './hands.js';
 import type { State } from './state.js';
 import type * as sg from './types.js';
-import * as board from './board.js';
-import { addToHand, removeFromHand } from './hands.js';
 import * as util from './util.js';
-import { clear as drawClear } from './draw.js';
-import { anim } from './anim.js';
 
 export interface DragCurrent {
   piece: sg.Piece; // piece being dragged
@@ -27,17 +27,17 @@ export interface DragCurrent {
 }
 
 export function start(s: State, e: sg.MouchEvent): void {
-  const bounds = s.dom.bounds.board.bounds(),
-    position = util.eventPosition(e),
-    orig =
-      bounds &&
-      position &&
-      util.getKeyAtDomPos(position, util.sentePov(s.orientation), s.dimensions, bounds);
+  const bounds = s.dom.bounds.board.bounds();
+  const position = util.eventPosition(e);
+  const orig =
+    bounds &&
+    position &&
+    util.getKeyAtDomPos(position, util.sentePov(s.orientation), s.dimensions, bounds);
 
   if (!orig) return;
 
-  const piece = s.pieces.get(orig),
-    previouslySelected = s.selected;
+  const piece = s.pieces.get(orig);
+  const previouslySelected = s.selected;
   if (
     !previouslySelected &&
     s.drawable.enabled &&
@@ -75,8 +75,8 @@ export function start(s: State, e: sg.MouchEvent): void {
     board.selectSquare(s, orig);
   }
 
-  const stillSelected = s.selected === orig,
-    draggedEl = s.dom.elements.board?.dragged;
+  const stillSelected = s.selected === orig;
+  const draggedEl = s.dom.elements.board?.dragged;
 
   if (piece && draggedEl && stillSelected && board.isDraggable(s, piece)) {
     const touch = e.type === 'touchstart';
@@ -110,8 +110,8 @@ export function start(s: State, e: sg.MouchEvent): void {
 }
 
 function pieceCloseTo(s: State, pos: sg.NumberPair, bounds: DOMRect): boolean {
-  const asSente = util.sentePov(s.orientation),
-    radiusSq = Math.pow(bounds.width / s.dimensions.files, 2);
+  const asSente = util.sentePov(s.orientation);
+  const radiusSq = (bounds.width / s.dimensions.files) ** 2;
   for (const key of s.pieces.keys()) {
     const center = util.computeSquareCenter(key, asSente, s.dimensions, bounds);
     if (util.distanceSq(center, pos) <= radiusSq) return true;
@@ -120,10 +120,10 @@ function pieceCloseTo(s: State, pos: sg.NumberPair, bounds: DOMRect): boolean {
 }
 
 export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?: boolean): void {
-  const previouslySelectedPiece = s.selectedPiece,
-    draggedEl = s.dom.elements.board?.dragged,
-    position = util.eventPosition(e),
-    touch = e.type === 'touchstart';
+  const previouslySelectedPiece = s.selectedPiece;
+  const draggedEl = s.dom.elements.board?.dragged;
+  const position = util.eventPosition(e);
+  const touch = e.type === 'touchstart';
 
   if (!previouslySelectedPiece && !spare && s.drawable.enabled && s.drawable.eraseOnClick)
     drawClear(s);
@@ -131,9 +131,9 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
   if (!spare && s.selectable.deleteOnTouch) removeFromHand(s, piece);
   else board.selectPiece(s, piece, spare);
 
-  const hadPremove = !!s.premovable.current,
-    hadPredrop = !!s.predroppable.current,
-    stillSelected = s.selectedPiece && util.samePiece(s.selectedPiece, piece);
+  const hadPremove = !!s.premovable.current;
+  const hadPredrop = !!s.predroppable.current;
+  const stillSelected = s.selectedPiece && util.samePiece(s.selectedPiece, piece);
 
   if (draggedEl && position && s.selectedPiece && stillSelected && board.isDraggable(s, piece)) {
     s.draggable.current = {
@@ -168,9 +168,9 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
 
 function processDrag(s: State): void {
   requestAnimationFrame(() => {
-    const cur = s.draggable.current,
-      draggedEl = s.dom.elements.board?.dragged,
-      bounds = s.dom.bounds.board.bounds();
+    const cur = s.draggable.current;
+    const draggedEl = s.dom.elements.board?.dragged;
+    const bounds = s.dom.bounds.board.bounds();
     if (!cur || !draggedEl || !bounds) return;
     // cancel animations while dragging
     if (cur.fromBoard?.orig && s.animation.current?.plan.anims.has(cur.fromBoard.orig))
@@ -179,10 +179,7 @@ function processDrag(s: State): void {
     const origPiece = cur.fromBoard ? s.pieces.get(cur.fromBoard.orig) : cur.piece;
     if (!origPiece || !util.samePiece(origPiece, cur.piece)) cancel(s);
     else {
-      if (
-        !cur.started &&
-        util.distanceSq(cur.pos, cur.origPos) >= Math.pow(s.draggable.distance, 2)
-      ) {
+      if (!cur.started && util.distanceSq(cur.pos, cur.origPos) >= s.draggable.distance ** 2) {
         cur.started = true;
         s.dom.redraw();
       }
@@ -243,21 +240,17 @@ function processDrag(s: State): void {
 export function move(s: State, e: sg.MouchEvent): void {
   // support one finger touch only
   if (s.draggable.current && (!e.touches || e.touches.length < 2)) {
-    s.draggable.current.pos = util.eventPosition(e)!;
+    const pos = util.eventPosition(e);
+    if (pos) s.draggable.current.pos = pos;
   } else if (
     (s.selected || s.selectedPiece || s.highlight.hovered) &&
     !s.draggable.current &&
     (!e.touches || e.touches.length < 2)
   ) {
-    const bounds = s.dom.bounds.board.bounds(),
-      hover =
-        bounds &&
-        util.getKeyAtDomPos(
-          util.eventPosition(e)!,
-          util.sentePov(s.orientation),
-          s.dimensions,
-          bounds,
-        );
+    const pos = util.eventPosition(e);
+    const bounds = s.dom.bounds.board.bounds();
+    const hover =
+      pos && bounds && util.getKeyAtDomPos(pos, util.sentePov(s.orientation), s.dimensions, bounds);
     if (hover !== s.hovered) updateHoveredSquares(s, hover);
   }
 }
@@ -277,10 +270,10 @@ export function end(s: State, e: sg.MouchEvent): void {
   board.unsetPremove(s);
   board.unsetPredrop(s);
   // touchend has no position; so use the last touchmove position instead
-  const eventPos = util.eventPosition(e) || cur.pos,
-    bounds = s.dom.bounds.board.bounds(),
-    dest =
-      bounds && util.getKeyAtDomPos(eventPos, util.sentePov(s.orientation), s.dimensions, bounds);
+  const eventPos = util.eventPosition(e) || cur.pos;
+  const bounds = s.dom.bounds.board.bounds();
+  const dest =
+    bounds && util.getKeyAtDomPos(eventPos, util.sentePov(s.orientation), s.dimensions, bounds);
 
   if (dest && cur.started && cur.fromBoard?.orig !== dest) {
     if (cur.fromOutside && !board.promotionDialogDrop(s, cur.piece, dest))
@@ -292,11 +285,14 @@ export function end(s: State, e: sg.MouchEvent): void {
     else if (cur.fromOutside && !cur.spare) removeFromHand(s, cur.piece);
 
     if (s.draggable.addToHandOnDropOff) {
-      const handBounds = s.dom.bounds.hands.bounds(),
-        handBoundsTop = handBounds.get('top'),
-        handBoundsBottom = handBounds.get('bottom');
+      const handBounds = s.dom.bounds.hands.bounds();
+      const handBoundsTop = handBounds.get('top');
+      const handBoundsBottom = handBounds.get('bottom');
       if (handBoundsTop && util.isInsideRect(handBoundsTop, cur.pos))
-        addToHand(s, { color: util.opposite(s.orientation), role: cur.piece.role });
+        addToHand(s, {
+          color: util.opposite(s.orientation),
+          role: cur.piece.role,
+        });
       else if (handBoundsBottom && util.isInsideRect(handBoundsBottom, cur.pos))
         addToHand(s, { color: s.orientation, role: cur.piece.role });
 
@@ -373,12 +369,12 @@ function updateHoveredSquares(s: State, key: sg.Key | undefined): void {
   if (s.highlight.hovered || (key && validDestToHover(s, key))) s.hovered = key;
   else s.hovered = undefined;
 
-  const asSente = util.sentePov(s.orientation),
-    curIndex = s.hovered && util.domSquareIndexOfKey(s.hovered, asSente, s.dimensions),
-    curHoverEl = curIndex !== undefined && sqaureEls[curIndex];
+  const asSente = util.sentePov(s.orientation);
+  const curIndex = s.hovered && util.domSquareIndexOfKey(s.hovered, asSente, s.dimensions);
+  const curHoverEl = curIndex !== undefined && sqaureEls[curIndex];
   if (curHoverEl) curHoverEl.classList.add('hover');
 
-  const prevIndex = prevHover && util.domSquareIndexOfKey(prevHover, asSente, s.dimensions),
-    prevHoverEl = prevIndex !== undefined && sqaureEls[prevIndex];
+  const prevIndex = prevHover && util.domSquareIndexOfKey(prevHover, asSente, s.dimensions);
+  const prevHoverEl = prevIndex !== undefined && sqaureEls[prevIndex];
   if (prevHoverEl) prevHoverEl.classList.remove('hover');
 }

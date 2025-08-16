@@ -1,12 +1,12 @@
-import type * as sg from './types.js';
 import { files, ranks } from './constants.js';
+import type * as sg from './types.js';
 import { pos2key } from './util.js';
 
 export function inferDimensions(boardSfen: sg.BoardSfen): sg.Dimensions {
-  const ranks = boardSfen.split('/'),
-    firstFile = ranks[0].split('');
-  let filesCnt = 0,
-    cnt = 0;
+  const ranks = boardSfen.split('/');
+  const firstFile = ranks[0].split('');
+  let filesCnt = 0;
+  let cnt = 0;
   for (const c of firstFile) {
     const nb = c.charCodeAt(0);
     if (nb < 58 && nb > 47) cnt = cnt * 10 + nb - 48;
@@ -24,10 +24,10 @@ export function sfenToBoard(
   dims: sg.Dimensions,
   fromForsyth?: (forsyth: string) => sg.RoleString | undefined,
 ): sg.Pieces {
-  const sfenParser = fromForsyth || standardFromForsyth,
-    pieces: sg.Pieces = new Map();
-  let x = dims.files - 1,
-    y = 0;
+  const sfenParser = fromForsyth || standardFromForsyth;
+  const pieces: sg.Pieces = new Map();
+  let x = dims.files - 1;
+  let y = 0;
   for (let i = 0; i < sfen.length; i++) {
     switch (sfen[i]) {
       case ' ':
@@ -39,16 +39,16 @@ export function sfenToBoard(
         x = dims.files - 1;
         break;
       default: {
-        const nb1 = sfen[i].charCodeAt(0),
-          nb2 = sfen[i + 1] && sfen[i + 1].charCodeAt(0);
+        const nb1 = sfen[i].charCodeAt(0);
+        const nb2 = sfen[i + 1] && sfen[i + 1].charCodeAt(0);
         if (nb1 < 58 && nb1 > 47) {
           if (nb2 && nb2 < 58 && nb2 > 47) {
             x -= (nb1 - 48) * 10 + (nb2 - 48);
             i++;
           } else x -= nb1 - 48;
         } else {
-          const roleStr = sfen[i] === '+' && sfen.length > i + 1 ? '+' + sfen[++i] : sfen[i],
-            role = sfenParser(roleStr);
+          const roleStr = sfen[i] === '+' && sfen.length > i + 1 ? `+${sfen[++i]}` : sfen[i];
+          const role = sfenParser(roleStr);
           if (x >= 0 && role) {
             const color = roleStr === roleStr.toLowerCase() ? 'gote' : 'sente';
             pieces.set(pos2key([x, y]), {
@@ -69,15 +69,15 @@ export function boardToSfen(
   dims: sg.Dimensions,
   toForsyth?: (role: sg.RoleString) => string | undefined,
 ): sg.BoardSfen {
-  const sfenRenderer = toForsyth || standardToForsyth,
-    reversedFiles = files.slice(0, dims.files).reverse();
+  const sfenRenderer = toForsyth || standardToForsyth;
+  const reversedFiles = files.slice(0, dims.files).reverse();
   return ranks
     .slice(0, dims.ranks)
     .map((y) =>
       reversedFiles
         .map((x) => {
-          const piece = pieces.get((x + y) as sg.Key),
-            forsyth = piece && sfenRenderer(piece.role);
+          const piece = pieces.get((x + y) as sg.Key);
+          const forsyth = piece && sfenRenderer(piece.role);
           if (forsyth) {
             return piece.color === 'sente' ? forsyth.toUpperCase() : forsyth.toLowerCase();
           } else return '1';
@@ -92,20 +92,20 @@ export function sfenToHands(
   sfen: sg.HandsSfen,
   fromForsyth?: (forsyth: string) => sg.RoleString | undefined,
 ): sg.Hands {
-  const sfenParser = fromForsyth || standardFromForsyth,
-    sente: sg.Hand = new Map(),
-    gote: sg.Hand = new Map();
+  const sfenParser = fromForsyth || standardFromForsyth;
+  const sente: sg.Hand = new Map();
+  const gote: sg.Hand = new Map();
 
-  let tmpNum = 0,
-    num = 1;
+  let tmpNum = 0;
+  let num = 1;
   for (let i = 0; i < sfen.length; i++) {
     const nb = sfen[i].charCodeAt(0);
     if (nb < 58 && nb > 47) {
       tmpNum = tmpNum * 10 + nb - 48;
       num = tmpNum;
     } else {
-      const roleStr = sfen[i] === '+' && sfen.length > i + 1 ? '+' + sfen[++i] : sfen[i],
-        role = sfenParser(roleStr);
+      const roleStr = sfen[i] === '+' && sfen.length > i + 1 ? `+${sfen[++i]}` : sfen[i];
+      const role = sfenParser(roleStr);
       if (role) {
         const color = roleStr === roleStr.toLowerCase() ? 'gote' : 'sente';
         if (color === 'sente') sente.set(role, (sente.get(role) || 0) + num);
@@ -129,13 +129,13 @@ export function handsToSfen(
 ): sg.HandsSfen {
   const sfenRenderer = toForsyth || standardToForsyth;
 
-  let senteHandStr = '',
-    goteHandStr = '';
+  let senteHandStr = '';
+  let goteHandStr = '';
   for (const role of roles) {
     const forsyth = sfenRenderer(role);
     if (forsyth) {
-      const senteCnt = hands.get('sente')?.get(role),
-        goteCnt = hands.get('gote')?.get(role);
+      const senteCnt = hands.get('sente')?.get(role);
+      const goteCnt = hands.get('gote')?.get(role);
       if (senteCnt) senteHandStr += senteCnt > 1 ? senteCnt.toString() + forsyth : forsyth;
       if (goteCnt) goteHandStr += goteCnt > 1 ? goteCnt.toString() + forsyth : forsyth;
     }

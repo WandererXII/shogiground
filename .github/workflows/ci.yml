@@ -21,5 +21,6 @@ jobs:
       - uses: github/codeql-action/analyze@v3
       - run: |
           npm install --foreground-scripts
-          npm run check-format
+          npm run format
           npm run lint
+          npm run type-check

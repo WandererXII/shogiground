@@ -1,40 +1,40 @@
-import type { State } from './state.js';
-import type { AnimCurrent, AnimVectors, AnimVector, AnimFadings, AnimPromotions } from './anim.js';
+import type { AnimCurrent, AnimFadings, AnimPromotions, AnimVector, AnimVectors } from './anim.js';
 import type { DragCurrent } from './drag.js';
+import type { State } from './state.js';
 import type * as sg from './types.js';
 import {
-  key2pos,
   createEl,
-  setDisplay,
-  posToTranslateRel,
-  translateRel,
-  pieceNameOf,
-  sentePov,
   isPieceNode,
   isSquareNode,
+  key2pos,
+  pieceNameOf,
+  posToTranslateRel,
+  sentePov,
+  setDisplay,
+  translateRel,
 } from './util.js';
 
 type SquareClasses = Map<sg.Key, string>;
 
 export function render(s: State, boardEls: sg.BoardElements): void {
-  const asSente: boolean = sentePov(s.orientation),
-    scaleDown = s.scaleDownPieces ? 0.5 : 1,
-    posToTranslate = posToTranslateRel(s.dimensions),
-    squaresEl: HTMLElement = boardEls.squares,
-    piecesEl: HTMLElement = boardEls.pieces,
-    draggedEl: sg.PieceNode | undefined = boardEls.dragged,
-    squareOverEl: HTMLElement | undefined = boardEls.squareOver,
-    promotionEl: HTMLElement | undefined = boardEls.promotion,
-    pieces: sg.Pieces = s.pieces,
-    curAnim: AnimCurrent | undefined = s.animation.current,
-    anims: AnimVectors = curAnim ? curAnim.plan.anims : new Map(),
-    fadings: AnimFadings = curAnim ? curAnim.plan.fadings : new Map(),
-    promotions: AnimPromotions = curAnim ? curAnim.plan.promotions : new Map(),
-    curDrag: DragCurrent | undefined = s.draggable.current,
-    curPromKey: sg.Key | undefined = s.promotion.current?.dragged ? s.selected : undefined,
-    squares: SquareClasses = computeSquareClasses(s),
-    samePieces = new Set<sg.Key>(),
-    movedPieces = new Map<sg.PieceName, sg.PieceNode[]>();
+  const asSente: boolean = sentePov(s.orientation);
+  const scaleDown = s.scaleDownPieces ? 0.5 : 1;
+  const posToTranslate = posToTranslateRel(s.dimensions);
+  const squaresEl: HTMLElement = boardEls.squares;
+  const piecesEl: HTMLElement = boardEls.pieces;
+  const draggedEl: sg.PieceNode | undefined = boardEls.dragged;
+  const squareOverEl: HTMLElement | undefined = boardEls.squareOver;
+  const promotionEl: HTMLElement | undefined = boardEls.promotion;
+  const pieces: sg.Pieces = s.pieces;
+  const curAnim: AnimCurrent | undefined = s.animation.current;
+  const anims: AnimVectors = curAnim ? curAnim.plan.anims : new Map();
+  const fadings: AnimFadings = curAnim ? curAnim.plan.fadings : new Map();
+  const promotions: AnimPromotions = curAnim ? curAnim.plan.promotions : new Map();
+  const curDrag: DragCurrent | undefined = s.draggable.current;
+  const curPromKey: sg.Key | undefined = s.promotion.current?.dragged ? s.selected : undefined;
+  const squares: SquareClasses = computeSquareClasses(s);
+  const samePieces = new Set<sg.Key>();
+  const movedPieces = new Map<sg.PieceName, sg.PieceNode[]>();
 
   // if piece not being dragged anymore, hide it
   if (!curDrag && draggedEl?.sgDragging) {
@@ -43,15 +43,15 @@ export function render(s: State, boardEls: sg.BoardElements): void {
     if (squareOverEl) setDisplay(squareOverEl, false);
   }
 
-  let k: sg.Key,
-    el: HTMLElement | undefined,
-    pieceAtKey: sg.Piece | undefined,
-    elPieceName: sg.PieceName,
-    anim: AnimVector | undefined,
-    fading: sg.Piece | undefined,
-    prom: sg.Piece | undefined,
-    pMvdset: sg.PieceNode[] | undefined,
-    pMvd: sg.PieceNode | undefined;
+  let k: sg.Key;
+  let el: HTMLElement | undefined;
+  let pieceAtKey: sg.Piece | undefined;
+  let elPieceName: sg.PieceName;
+  let anim: AnimVector | undefined;
+  let fading: sg.Piece | undefined;
+  let prom: sg.Piece | undefined;
+  let pMvdset: sg.PieceNode[] | undefined;
+  let pMvd: sg.PieceNode | undefined;
 
   // walk over all board dom elements, apply animations and flag moved pieces
   el = piecesEl.firstElementChild as HTMLElement | undefined;
@@ -160,8 +160,8 @@ export function render(s: State, boardEls: sg.BoardElements): void {
       }
       // no piece in moved obj: insert the new piece
       else {
-        const pieceNode = createEl('piece', pieceNameOf(p)) as sg.PieceNode,
-          pos = key2pos(k);
+        const pieceNode = createEl('piece', pieceNameOf(p)) as sg.PieceNode;
+        const pos = key2pos(k);
 
         pieceNode.sgColor = p.color;
         pieceNode.sgRole = p.role;
@@ -208,12 +208,12 @@ function computeSquareClasses(s: State): SquareClasses {
       const dests = s.movable.dests?.get(s.selected);
       if (dests)
         for (const k of dests) {
-          addSquare(squares, k, 'dest' + (s.pieces.has(k) ? ' oc' : ''));
+          addSquare(squares, k, `dest${s.pieces.has(k) ? ' oc' : ''}`);
         }
       const pDests = s.premovable.dests;
       if (pDests)
         for (const k of pDests) {
-          addSquare(squares, k, 'pre-dest' + (s.pieces.has(k) ? ' oc' : ''));
+          addSquare(squares, k, `pre-dest${s.pieces.has(k) ? ' oc' : ''}`);
         }
     }
   } else if (s.selectedPiece) {
@@ -226,19 +226,19 @@ function computeSquareClasses(s: State): SquareClasses {
       const pDests = s.predroppable.dests;
       if (pDests)
         for (const k of pDests) {
-          addSquare(squares, k, 'pre-dest' + (s.pieces.has(k) ? ' oc' : ''));
+          addSquare(squares, k, `pre-dest${s.pieces.has(k) ? ' oc' : ''}`);
         }
     }
   }
   const premove = s.premovable.current;
   if (premove) {
     addSquare(squares, premove.orig, 'current-pre');
-    addSquare(squares, premove.dest, 'current-pre' + (premove.prom ? ' prom' : ''));
+    addSquare(squares, premove.dest, `current-pre${premove.prom ? ' prom' : ''}`);
   } else if (s.predroppable.current)
     addSquare(
       squares,
       s.predroppable.current.key,
-      'current-pre' + (s.predroppable.current.prom ? ' prom' : ''),
+      `current-pre${s.predroppable.current.prom ? ' prom' : ''}`,
     );
 
   for (const sqh of s.drawable.squares) {
@@ -255,19 +255,19 @@ function addSquare(squares: SquareClasses, key: sg.Key, klass: string): void {
 }
 
 function renderPromotion(s: State, promotionEl: HTMLElement): void {
-  const cur = s.promotion.current,
-    key = cur?.key,
-    pieces = cur ? [cur.promotedPiece, cur.piece] : [],
-    hash = promotionHash(!!cur, key, pieces);
+  const cur = s.promotion.current;
+  const key = cur?.key;
+  const pieces = cur ? [cur.promotedPiece, cur.piece] : [];
+  const hash = promotionHash(!!cur, key, pieces);
   if (s.promotion.prevPromotionHash === hash) return;
   s.promotion.prevPromotionHash = hash;
 
   if (key) {
-    const asSente = sentePov(s.orientation),
-      initPos = key2pos(key),
-      color = cur.piece.color,
-      promotionSquare = createEl('sg-promotion-square'),
-      promotionChoices = createEl('sg-promotion-choices');
+    const asSente = sentePov(s.orientation);
+    const initPos = key2pos(key);
+    const color = cur.piece.color;
+    const promotionSquare = createEl('sg-promotion-square');
+    const promotionChoices = createEl('sg-promotion-choices');
     if (s.orientation !== color) promotionChoices.classList.add('reversed');
     translateRel(promotionSquare, posToTranslateRel(s.dimensions)(initPos, asSente), 1);
 

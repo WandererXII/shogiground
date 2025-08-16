@@ -20,8 +20,6 @@
     "typescript"
   ],
   "type": "module",
-  "module": "esm/shogiground.js",
-  "types": "esm/shogiground.d.ts",
   "exports": {
     ".": {
       "types": "./esm/shogiground.d.ts",
@@ -32,34 +30,25 @@
       "import": "./esm/*.js"
     }
   },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "esm/*"
-      ]
-    }
-  },
   "devDependencies": {
-    "@eslint/js": "^9",
+    "@biomejs/biome": "^2",
     "del-cli": "^6",
-    "esbuild": "^0.25.0",
-    "eslint": "^9",
-    "nodemon": "^3.1.10",
-    "globals": "^15",
-    "prettier": "^3",
-    "typescript": "^5",
-    "typescript-eslint": "^8"
+    "esbuild": "^0.25",
+    "nodemon": "^3",
+    "typescript": "^5"
   },
   "scripts": {
     "prepare": "$npm_execpath run clean && $npm_execpath run compile && $npm_execpath run dist",
     "clean": "del esm && del dist && del tsconfig.tsbuildinfo",
     "compile": "tsc",
     "compile:watch": "tsc --watch",
+    "type-check": "tsc --noEmit",
     "dist": "node esbuild.mjs",
     "dist:watch": "nodemon --watch src --ext ts --exec \"$npm_execpath run dist\"",
-    "lint": "eslint --cache",
-    "format": "prettier --cache --write .",
-    "check-format": "prettier --check ."
+    "lint": "biome check --error-on-warnings",
+    "lint:write": "biome check --write",
+    "format": "biome format --error-on-warnings",
+    "format:write": "biome format --write"
   },
   "files": [
     "dist",

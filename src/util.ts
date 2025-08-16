@@ -1,5 +1,5 @@
-import type * as sg from './types.js';
 import { allKeys, colors } from './constants.js';
+import type * as sg from './types.js';
 
 export const pos2key = (pos: sg.Pos): sg.Key => allKeys[pos[0] + 16 * pos[1]];
 
@@ -32,8 +32,8 @@ export const opposite = (c: sg.Color): sg.Color => (c === 'sente' ? 'gote' : 'se
 export const sentePov = (o: sg.Color): boolean => o === 'sente';
 
 export const distanceSq = (pos1: sg.Pos, pos2: sg.Pos): number => {
-  const dx = pos1[0] - pos2[0],
-    dy = pos1[1] - pos2[1];
+  const dx = pos1[0] - pos2[0];
+  const dy = pos1[1] - pos2[1];
   return dx * dx + dy * dy;
 };
 
@@ -55,8 +55,8 @@ export const posToTranslateAbs = (
   dims: sg.Dimensions,
   bounds: DOMRect,
 ): ((pos: sg.Pos, asSente: boolean) => sg.NumberPair) => {
-  const xFactor = bounds.width / dims.files,
-    yFactor = bounds.height / dims.ranks;
+  const xFactor = bounds.width / dims.files;
+  const yFactor = bounds.height / dims.ranks;
   return (pos, asSente) => posToTranslateBase(pos, dims, asSente, xFactor, yFactor);
 };
 
@@ -84,8 +84,12 @@ export const setDisplay = (el: HTMLElement, v: boolean): void => {
   el.style.display = v ? '' : 'none';
 };
 
+const isMouseEvent = (e: sg.MouchEvent): e is Event & MouseEvent => {
+  return !!e.clientX || e.clientX === 0;
+};
+
 export const eventPosition = (e: sg.MouchEvent): sg.NumberPair | undefined => {
-  if (e.clientX || e.clientX === 0) return [e.clientX, e.clientY!];
+  if (isMouseEvent(e)) return [e.clientX, e.clientY];
   if (e.targetTouches?.[0]) return [e.targetTouches[0].clientX, e.targetTouches[0].clientY];
   return; // touchend has no position!
 };
@@ -174,8 +178,8 @@ export function getHandPieceAtDomPos(
 ): sg.Piece | undefined {
   for (const color of colors) {
     for (const role of roles) {
-      const piece = { color, role },
-        pieceRect = bounds.get(pieceNameOf(piece));
+      const piece = { color, role };
+      const pieceRect = bounds.get(pieceNameOf(piece));
       if (pieceRect && isInsideRect(pieceRect, pos)) return piece;
     }
   }
@@ -189,8 +193,8 @@ export function posOfOutsideEl(
   dims: sg.Dimensions,
   boardBounds: DOMRect,
 ): sg.Pos | undefined {
-  const sqW = boardBounds.width / dims.files,
-    sqH = boardBounds.height / dims.ranks;
+  const sqW = boardBounds.width / dims.files;
+  const sqH = boardBounds.height / dims.ranks;
   if (!sqW || !sqH) return;
   let xOff = (left - boardBounds.left) / sqW;
   if (asSente) xOff = dims.files - 1 - xOff;

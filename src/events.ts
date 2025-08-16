@@ -1,7 +1,10 @@
-import type { State } from './state.js';
-import type * as sg from './types.js';
+import { anim } from './anim.js';
+import { cancelPromotion, selectSquare, userDrop, userMove } from './board.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
+import { usesBounds } from './shapes.js';
+import type { State } from './state.js';
+import type * as sg from './types.js';
 import {
   callUserFunction,
   eventPosition,
@@ -11,9 +14,6 @@ import {
   isRightButton,
   samePiece,
 } from './util.js';
-import { anim } from './anim.js';
-import { userDrop, userMove, cancelPromotion, selectSquare } from './board.js';
-import { usesBounds } from './shapes.js';
 
 type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
@@ -36,8 +36,8 @@ export function bindBoard(s: State, boardEls: sg.BoardElements): void {
 
   if (s.viewOnly) return;
 
-  const piecesEl = boardEls.pieces,
-    promotionEl = boardEls.promotion;
+  const piecesEl = boardEls.pieces;
+  const promotionEl = boardEls.promotion;
 
   // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
   const onStart = startDragOrDraw(s);
@@ -90,8 +90,8 @@ export function bindDocument(s: State): sg.Unbind {
   }
 
   if (!s.viewOnly) {
-    const onmove = dragOrDraw(s, drag.move, draw.move),
-      onend = dragOrDraw(s, drag.end, draw.end);
+    const onmove = dragOrDraw(s, drag.move, draw.move);
+    const onend = dragOrDraw(s, drag.end, draw.end);
 
     for (const ev of ['touchmove', 'mousemove'])
       unbinds.push(unbindable(document, ev, onmove as EventListener));
@@ -104,7 +104,10 @@ export function bindDocument(s: State): sg.Unbind {
     unbinds.push(unbindable(window, 'resize', () => clearBounds(s), { passive: true }));
   }
 
-  return () => unbinds.forEach((f) => f());
+  return () =>
+    unbinds.forEach((f) => {
+      f();
+    });
 }
 
 function unbindable(
@@ -139,8 +142,8 @@ function startDragFromHand(s: State): MouchBind {
   return (e) => {
     if (s.promotion.current) return;
 
-    const pos = eventPosition(e),
-      piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.bounds.hands.pieceBounds());
+    const pos = eventPosition(e);
+    const piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.bounds.hands.pieceBounds());
 
     if (piece) {
       if (s.draggable.current) drag.cancel(s);
@@ -163,11 +166,11 @@ function startDragFromHand(s: State): MouchBind {
 function promote(s: State, e: sg.MouchEvent): void {
   e.stopPropagation();
 
-  const target = e.target as HTMLElement | null,
-    cur = s.promotion.current;
+  const target = e.target as HTMLElement | null;
+  const cur = s.promotion.current;
   if (target && isPieceNode(target) && cur) {
-    const piece = { color: target.sgColor, role: target.sgRole },
-      prom = !samePiece(cur.piece, piece);
+    const piece = { color: target.sgColor, role: target.sgRole };
+    const prom = !samePiece(cur.piece, piece);
     if (cur.dragged || (s.turnColor !== s.activeColor && s.activeColor !== 'both')) {
       if (s.selected) userMove(s, s.selected, cur.key, prom);
       else if (s.selectedPiece) userDrop(s, s.selectedPiece, cur.key, prom);

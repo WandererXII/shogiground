@@ -1,14 +1,14 @@
-import type { Config } from './config.js';
-import type { State } from './state.js';
-import type { DrawShape, SquareHighlight } from './draw.js';
-import type * as sg from './types.js';
-import * as board from './board.js';
-import { addToHand, removeFromHand } from './hands.js';
-import { inferDimensions, boardToSfen, handsToSfen } from './sfen.js';
-import { applyAnimation, configure } from './config.js';
 import { anim, render } from './anim.js';
-import { cancel as dragCancel, dragNewPiece } from './drag.js';
+import * as board from './board.js';
+import type { Config } from './config.js';
+import { applyAnimation, configure } from './config.js';
 import { detachElements, redrawAll } from './dom.js';
+import { cancel as dragCancel, dragNewPiece } from './drag.js';
+import type { DrawShape, SquareHighlight } from './draw.js';
+import { addToHand, removeFromHand } from './hands.js';
+import { boardToSfen, handsToSfen, inferDimensions } from './sfen.js';
+import type { State } from './state.js';
+import type * as sg from './types.js';
 
 export interface Api {
   // attach elements to current sg instance
@@ -234,15 +234,21 @@ export function start(state: State): Api {
     },
 
     setAutoShapes(shapes: DrawShape[]): void {
-      render((state) => (state.drawable.autoShapes = shapes), state);
+      render((state) => {
+        state.drawable.autoShapes = shapes;
+      }, state);
     },
 
     setShapes(shapes: DrawShape[]): void {
-      render((state) => (state.drawable.shapes = shapes), state);
+      render((state) => {
+        state.drawable.shapes = shapes;
+      }, state);
     },
 
     setSquareHighlights(squares: SquareHighlight[]): void {
-      render((state) => (state.drawable.squares = squares), state);
+      render((state) => {
+        state.drawable.squares = squares;
+      }, state);
     },
 
     dragNewPiece(piece, event, spare): void {

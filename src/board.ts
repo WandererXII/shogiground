@@ -1,7 +1,7 @@
+import { addToHand, removeFromHand } from './hands.js';
 import type { HeadlessState } from './state.js';
 import type * as sg from './types.js';
 import { callUserFunction, opposite, pieceNameOf, samePiece } from './util.js';
-import { addToHand, removeFromHand } from './hands.js';
 
 export function toggleOrientation(state: HeadlessState): void {
   state.orientation = opposite(state.orientation);
@@ -76,11 +76,11 @@ export function baseMove(
   dest: sg.Key,
   prom: boolean,
 ): sg.Piece | boolean {
-  const origPiece = state.pieces.get(orig),
-    destPiece = state.pieces.get(dest);
+  const origPiece = state.pieces.get(orig);
+  const destPiece = state.pieces.get(dest);
   if (orig === dest || !origPiece) return false;
-  const captured = destPiece && destPiece.color !== origPiece.color ? destPiece : undefined,
-    promPiece = prom && promotePiece(state, origPiece);
+  const captured = destPiece && destPiece.color !== origPiece.color ? destPiece : undefined;
+  const promPiece = prom && promotePiece(state, origPiece);
   if (dest === state.selected || orig === state.selected) unselect(state);
   state.pieces.set(dest, promPiece || origPiece);
   state.pieces.delete(orig);
@@ -433,9 +433,9 @@ export function isDraggable(state: HeadlessState, piece: sg.Piece): boolean {
 export function playPremove(state: HeadlessState): boolean {
   const move = state.premovable.current;
   if (!move) return false;
-  const orig = move.orig,
-    dest = move.dest,
-    prom = move.prom;
+  const orig = move.orig;
+  const dest = move.dest;
+  const prom = move.prom;
   let success = false;
   if (canMove(state, orig, dest)) {
     const result = baseUserMove(state, orig, dest, prom);
@@ -453,9 +453,9 @@ export function playPremove(state: HeadlessState): boolean {
 export function playPredrop(state: HeadlessState): boolean {
   const drop = state.predroppable.current;
   if (!drop) return false;
-  const piece = drop.piece,
-    key = drop.key,
-    prom = drop.prom;
+  const piece = drop.piece;
+  const key = drop.key;
+  const prom = drop.prom;
   let success = false;
   if (canDrop(state, piece, key)) {
     if (baseUserDrop(state, piece, key, prom)) {

@@ -1,6 +1,6 @@
+import { allKeys, colors } from './constants.js';
 import type { State } from './state.js';
 import type * as sg from './types.js';
-import { allKeys, colors } from './constants.js';
 import * as util from './util.js';
 
 export type Mutation<A> = (state: State) => A;
@@ -43,7 +43,9 @@ interface AnimPiece {
   piece: sg.Piece;
 }
 
-function makePiece(key: sg.Key, piece: sg.Piece): AnimPiece {
+type NewAnimPiece = Required<AnimPiece>;
+
+function makePiece(key: sg.Key, piece: sg.Piece): NewAnimPiece {
   return {
     key: key,
     pos: util.key2pos(key),
@@ -58,20 +60,20 @@ function closer(piece: AnimPiece, pieces: AnimPiece[]): AnimPiece | undefined {
 }
 
 function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State): AnimPlan {
-  const anims: AnimVectors = new Map(),
-    animedOrigs: sg.Key[] = [],
-    fadings: AnimFadings = new Map(),
-    promotions: AnimPromotions = new Map(),
-    missings: AnimPiece[] = [],
-    news: AnimPiece[] = [],
-    prePieces = new Map<sg.Key, AnimPiece>();
+  const anims: AnimVectors = new Map();
+  const animedOrigs: sg.Key[] = [];
+  const fadings: AnimFadings = new Map();
+  const promotions: AnimPromotions = new Map();
+  const missings: AnimPiece[] = [];
+  const news: NewAnimPiece[] = [];
+  const prePieces = new Map<sg.Key, AnimPiece>();
 
   for (const [k, p] of prevPieces) {
     prePieces.set(k, makePiece(k, p));
   }
   for (const key of allKeys) {
-    const curP = current.pieces.get(key),
-      preP = prePieces.get(key);
+    const curP = current.pieces.get(key);
+    const preP = prePieces.get(key);
     if (curP) {
       if (preP) {
         if (!util.samePiece(curP, preP.piece)) {
@@ -83,27 +85,27 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
   }
   if (current.animation.hands) {
     for (const color of colors) {
-      const curH = current.hands.handMap.get(color),
-        preH = prevHands.get(color);
+      const curH = current.hands.handMap.get(color);
+      const preH = prevHands.get(color);
       if (preH && curH) {
         for (const [role, n] of preH) {
-          const piece: sg.Piece = { role, color },
-            curN = curH.get(role) || 0;
+          const piece: sg.Piece = { role, color };
+          const curN = curH.get(role) || 0;
           if (curN < n) {
             const handPieceOffset = current.dom.bounds.hands
-                .pieceBounds()
-                .get(util.pieceNameOf(piece)),
-              bounds = current.dom.bounds.board.bounds(),
-              outPos =
-                handPieceOffset && bounds
-                  ? util.posOfOutsideEl(
-                      handPieceOffset.left,
-                      handPieceOffset.top,
-                      util.sentePov(current.orientation),
-                      current.dimensions,
-                      bounds,
-                    )
-                  : undefined;
+              .pieceBounds()
+              .get(util.pieceNameOf(piece));
+            const bounds = current.dom.bounds.board.bounds();
+            const outPos =
+              handPieceOffset && bounds
+                ? util.posOfOutsideEl(
+                    handPieceOffset.left,
+                    handPieceOffset.top,
+                    util.sentePov(current.orientation),
+                    current.dimensions,
+                    bounds,
+                  )
+                : undefined;
             if (outPos)
               missings.push({
                 pos: outPos,
@@ -120,10 +122,10 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
       missings.filter((p) => {
         if (util.samePiece(newP.piece, p.piece)) return true;
         // checking whether promoted pieces are the same
-        const pRole = current.promotion.promotesTo(p.piece.role),
-          pPiece = pRole && { color: p.piece.color, role: pRole };
-        const nRole = current.promotion.promotesTo(newP.piece.role),
-          nPiece = nRole && { color: newP.piece.color, role: nRole };
+        const pRole = current.promotion.promotesTo(p.piece.role);
+        const pPiece = pRole && { color: p.piece.color, role: pRole };
+        const nRole = current.promotion.promotesTo(newP.piece.role);
+        const nPiece = nRole && { color: newP.piece.color, role: nRole };
         return (
           (!!pPiece && util.samePiece(newP.piece, pPiece)) ||
           (!!nPiece && util.samePiece(nPiece, p.piece))
@@ -132,7 +134,7 @@ function computePlan(prevPieces: sg.Pieces, prevHands: sg.Hands, current: State)
     );
     if (preP) {
       const vector = [preP.pos[0] - newP.pos[0], preP.pos[1] - newP.pos[1]];
-      anims.set(newP.key!, vector.concat(vector) as AnimVector);
+      anims.set(newP.key, vector.concat(vector) as AnimVector);
       if (preP.key) animedOrigs.push(preP.key);
       if (!util.samePiece(newP.piece, preP.piece) && newP.key) promotions.set(newP.key, preP.piece);
     }
@@ -172,14 +174,14 @@ function step(state: State, now: DOMHighResTimeStamp): void {
 
 function animate<A>(mutation: Mutation<A>, state: State): A {
   // clone state before mutating it
-  const prevPieces: sg.Pieces = new Map(state.pieces),
-    prevHands: sg.Hands = new Map([
-      ['sente', new Map(state.hands.handMap.get('sente'))],
-      ['gote', new Map(state.hands.handMap.get('gote'))],
-    ]);
+  const prevPieces: sg.Pieces = new Map(state.pieces);
+  const prevHands: sg.Hands = new Map([
+    ['sente', new Map(state.hands.handMap.get('sente'))],
+    ['gote', new Map(state.hands.handMap.get('gote'))],
+  ]);
 
-  const result = mutation(state),
-    plan = computePlan(prevPieces, prevHands, state);
+  const result = mutation(state);
+  const plan = computePlan(prevPieces, prevHands, state);
   if (plan.anims.size || plan.fadings.size) {
     const alreadyRunning = state.animation.current?.start !== undefined;
     state.animation.current = {
