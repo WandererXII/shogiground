@@ -1,0 +1,5 @@
+onlyBuiltDependencies:
+  - esbuild
+
+savePrefix: ''
+minimumReleaseAge: 1440
