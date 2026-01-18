@@ -1,8 +1,9 @@
 # Shogiground
 
-[![Continuous Integration](https://github.com/WandererXII/shogiground/workflows/Continuous%20Integration/badge.svg)](https://github.com/WandererXII/shogiground/actions?query=workflow%3A%22Continuous+Integration%22)
-[![npm](https://img.shields.io/npm/v/shogiground)](https://www.npmjs.com/package/shogiground)
-[![jsdelivr](https://img.shields.io/npm/v/shogiground.svg?label=jsdelivr)](https://cdn.jsdelivr.net/npm/shogiground@latest/dist/shogiground.min.js)
+[![lishogi.org](https://img.shields.io/badge/☗_lishogi.org-Play_shogi-black)](https://lishogi.org)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/WandererXII/shogiground/ci.yml?label=CI)
+[![npm](https://img.shields.io/npm/v/shogiground?logo=npm)](https://www.npmjs.com/package/shogiground)
+[![jsdelivr](https://img.shields.io/npm/v/shogiground.svg?label=jsdelivr&logo=jsdelivr)](https://cdn.jsdelivr.net/npm/shogiground@latest/dist/shogiground.min.js)
 
 ![Shogiground](/screenshot/board1.png)
 
@@ -102,17 +103,17 @@ To actually see and use the board you need some CSS. You can use the CSS in `exa
 Install build dependencies:
 
 ```sh
-npm install
+pnpm install
 ```
 
 To build the node module:
 
 ```sh
-npm run compile -- --watch
+pnpm run compile:watch
 ```
 
 To build the standalone:
 
 ```sh
-npm run dist -- --watch
+pnpm run dist:watch
 ```
