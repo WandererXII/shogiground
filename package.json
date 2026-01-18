@@ -31,6 +31,7 @@
     }
   },
   "engines": {
+    "node": ">=22",
     "pnpm": ">=10.16.0"
   },
   "devDependencies": {
@@ -38,7 +39,8 @@
     "del-cli": "^6.0.0",
     "esbuild": "^0.27.1",
     "nodemon": "^3.1.11",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@typescript/native-preview": "^7.0.0-dev.20260117.1"
   },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
@@ -46,13 +48,11 @@
     "clean": "del esm && del dist && del tsconfig.tsbuildinfo",
     "compile": "tsc",
     "compile:watch": "tsc --watch",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsgo --noEmit && tsc --noEmit",
     "dist": "node esbuild.mjs",
     "dist:watch": "nodemon --watch src --ext ts --exec \"$npm_execpath run dist\"",
-    "lint": "biome check --error-on-warnings",
-    "lint:write": "biome check --write",
-    "format": "biome format --error-on-warnings",
-    "format:write": "biome format --write"
+    "check": "biome check --error-on-warnings",
+    "check:write": "biome check --write"
   },
   "files": [
     "dist",
