@@ -40,7 +40,7 @@
     "del-cli": "^6.0.0",
     "esbuild": "^0.28.0",
     "nodemon": "^3.1.14",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   },
   "scripts": {
     "prepublishOnly": "$npm_execpath run clean && $npm_execpath run compile && $npm_execpath run dist",
