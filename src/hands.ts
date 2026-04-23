@@ -2,6 +2,10 @@ import type { HeadlessState } from './state.js';
 import type * as sg from './types.js';
 import { samePiece } from './util.js';
 
+export function numberInHand(s: HeadlessState, piece: sg.Piece): number {
+  return s.hands.handMap.get(piece.color)?.get(piece.role) || 0;
+}
+
 export function addToHand(s: HeadlessState, piece: sg.Piece, cnt = 1): void {
   const hand = s.hands.handMap.get(piece.color);
   const role =
@@ -25,7 +29,7 @@ export function renderHand(s: HeadlessState, handEl: HTMLElement): void {
   while (wrapEl) {
     const pieceEl = wrapEl.firstElementChild as sg.PieceNode;
     const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
-    const num = s.hands.handMap.get(piece.color)?.get(piece.role) || 0;
+    const num = numberInHand(s, piece);
     const isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece) && !s.droppable.spare;
 
     wrapEl.classList.toggle(

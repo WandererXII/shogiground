@@ -156,7 +156,6 @@ function startDragFromHand(s: State): MouchBind {
       } else if (e.shiftKey || isRightButton(e) || s.drawable.forced) {
         if (s.drawable.enabled) draw.startFromHand(s, piece, e);
       } else if (!s.viewOnly && !drag.unwantedEvent(e)) {
-        if (e.cancelable !== false) e.preventDefault();
         drag.dragNewPiece(s, piece, e);
       }
     }

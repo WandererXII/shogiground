@@ -1,7 +1,8 @@
 import { anim } from './anim.js';
 import * as board from './board.js';
+import { colors } from './constants.js';
 import { clear as drawClear } from './draw.js';
-import { addToHand, removeFromHand } from './hands.js';
+import { addToHand, numberInHand, removeFromHand } from './hands.js';
 import type { State } from './state.js';
 import type * as sg from './types.js';
 import * as util from './util.js';
@@ -136,6 +137,20 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
   const hadPremove = !!s.premovable.current;
   const hadPredrop = !!s.predroppable.current;
   const stillSelected = s.selectedPiece && util.samePiece(s.selectedPiece, piece);
+
+  // Prevent touch scroll and create no corresponding mouse event, if there
+  // is an intent to interact with the hands.
+  if (
+    e.cancelable !== false &&
+    (!e.touches ||
+      s.blockTouchScroll ||
+      s.selectedPiece ||
+      previouslySelectedPiece ||
+      stillSelected ||
+      numberInHand(s, piece) > 0 ||
+      (position && handPieceCloseTo(s, position)))
+  )
+    e.preventDefault();
 
   if (draggedEl && position && s.selectedPiece && stillSelected && board.isDraggable(s, piece)) {
     s.draggable.current = {
@@ -324,6 +339,20 @@ export function end(s: State, e: sg.MouchEvent): void {
   s.draggable.current = undefined;
   if (!s.highlight.hovered && !s.promotion.current) s.hovered = undefined;
   s.dom.redraw();
+}
+
+function handPieceCloseTo(s: State, pos: sg.NumberPair): boolean {
+  for (const color of colors) {
+    for (const role of s.hands.roles) {
+      const piece = { color, role };
+      const rect = s.dom.bounds.hands.pieceBounds().get(util.pieceNameOf(piece));
+
+      if (rect && util.isNearRect(rect, pos, rect.width / 2) && numberInHand(s, piece) > 0)
+        return true;
+    }
+  }
+
+  return false;
 }
 
 function unselect(s: State, cur: DragCurrent, dest?: sg.Key): void {

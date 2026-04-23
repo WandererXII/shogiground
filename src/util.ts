@@ -156,6 +156,18 @@ export function isInsideRect(rect: DOMRect, pos: sg.NumberPair): boolean {
   );
 }
 
+export function isNearRect(rect: DOMRect, pos: sg.NumberPair, r: number): boolean {
+  const [x, y] = pos;
+
+  const closestX = Math.max(rect.left, Math.min(x, rect.right));
+  const closestY = Math.max(rect.top, Math.min(y, rect.bottom));
+
+  const dx = x - closestX;
+  const dy = y - closestY;
+
+  return dx * dx + dy * dy <= r * r;
+}
+
 export function getKeyAtDomPos(
   pos: sg.NumberPair,
   asSente: boolean,

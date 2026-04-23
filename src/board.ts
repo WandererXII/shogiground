@@ -1,4 +1,4 @@
-import { addToHand, removeFromHand } from './hands.js';
+import { addToHand, numberInHand, removeFromHand } from './hands.js';
 import type { HeadlessState } from './state.js';
 import type * as sg from './types.js';
 import { callUserFunction, opposite, pieceNameOf, samePiece } from './util.js';
@@ -98,7 +98,7 @@ export function baseDrop(
   key: sg.Key,
   prom: boolean,
 ): boolean {
-  const pieceCount = state.hands.handMap.get(piece.color)?.get(piece.role) || 0;
+  const pieceCount = numberInHand(state, piece);
   if (!pieceCount && !state.droppable.spare) return false;
   const promPiece = prom && promotePiece(state, piece);
   if (
@@ -351,7 +351,7 @@ function isMovable(state: HeadlessState, orig: sg.Key): boolean {
 
 function isDroppable(state: HeadlessState, piece: sg.Piece, spare: boolean): boolean {
   return (
-    (spare || !!state.hands.handMap.get(piece.color)?.get(piece.role)) &&
+    (spare || numberInHand(state, piece) > 0) &&
     (state.activeColor === 'both' ||
       (state.activeColor === piece.color && state.turnColor === piece.color))
   );
@@ -395,7 +395,7 @@ function isPremovable(state: HeadlessState, orig: sg.Key): boolean {
 
 function isPredroppable(state: HeadlessState, piece: sg.Piece): boolean {
   return (
-    !!state.hands.handMap.get(piece.color)?.get(piece.role) &&
+    numberInHand(state, piece) > 0 &&
     state.predroppable.enabled &&
     state.activeColor === piece.color &&
     state.turnColor !== piece.color
