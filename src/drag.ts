@@ -128,8 +128,10 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
   if (!previouslySelectedPiece && !spare && s.drawable.enabled && s.drawable.eraseOnClick)
     drawClear(s);
 
-  if (!spare && s.selectable.deleteOnTouch) removeFromHand(s, piece);
-  else board.selectPiece(s, piece, spare);
+  if (!spare && s.selectable.deleteOnTouch) {
+    removeFromHand(s, piece);
+    util.callUserFunction(s.events.change);
+  } else board.selectPiece(s, piece, spare);
 
   const hadPremove = !!s.premovable.current;
   const hadPredrop = !!s.predroppable.current;
