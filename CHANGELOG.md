@@ -1,3 +1,8 @@
+## v0.10.4
+
+- Fire `onChange` event when removing a piece from hand via `deleteOnTouch`.
+- Do not always block touch scroll for events starting on hands.
+
 ## v0.10.3
 
 - Highlight pieces in 'last-dest' only if `s.highlight.lastDests` is enabled.
