@@ -97,23 +97,21 @@ export function baseDrop(
   piece: sg.Piece,
   key: sg.Key,
   prom: boolean,
+  spare: boolean = state.droppable.spare,
 ): boolean {
   const pieceCount = numberInHand(state, piece);
-  if (!pieceCount && !state.droppable.spare) return false;
+  if (!pieceCount && !spare) return false;
   const promPiece = prom && promotePiece(state, piece);
   if (
     key === state.selected ||
-    (!state.droppable.spare &&
-      pieceCount === 1 &&
-      state.selectedPiece &&
-      samePiece(state.selectedPiece, piece))
+    (!spare && pieceCount === 1 && state.selectedPiece && samePiece(state.selectedPiece, piece))
   )
     unselect(state);
   state.pieces.set(key, promPiece || piece);
   state.lastDests = [key];
   state.lastPiece = piece;
   state.checks = undefined;
-  if (!state.droppable.spare) removeFromHand(state, piece);
+  if (!spare) removeFromHand(state, piece);
   callUserFunction(state.events.drop, piece, key, prom);
   callUserFunction(state.events.change);
   return true;

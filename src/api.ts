@@ -161,10 +161,17 @@ export function start(state: State): Api {
     },
 
     drop(piece, key, prom, spare): void {
-      anim((state) => {
-        state.droppable.spare = !!spare;
-        board.baseDrop(state, piece, key, prom || state.promotion.forceDropPromotion(piece, key));
-      }, state);
+      anim(
+        (state) =>
+          board.baseDrop(
+            state,
+            piece,
+            key,
+            prom || state.promotion.forceDropPromotion(piece, key),
+            !!spare,
+          ),
+        state,
+      );
     },
 
     setPieces(pieces): void {
