@@ -110,7 +110,8 @@ export function start(state: State): Api {
         'orientation',
         'viewOnly',
         'coordinates.enabled',
-        'coordinates.notation',
+        'coordinates.files',
+        'coordinates.ranks',
         'drawable.visible',
         'hands.inlined',
       ];
