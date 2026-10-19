@@ -421,12 +421,13 @@ export function canPredrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key):
   );
 }
 
-export function isDraggable(state: HeadlessState, piece: sg.Piece): boolean {
+export function isDraggable(state: HeadlessState, piece: sg.Piece, fromHand = false): boolean {
   return (
     state.draggable.enabled &&
     (state.activeColor === 'both' ||
       (state.activeColor === piece.color &&
-        (state.turnColor === piece.color || state.premovable.enabled)))
+        (state.turnColor === piece.color ||
+          (fromHand ? state.predroppable.enabled : state.premovable.enabled))))
   );
 }
 

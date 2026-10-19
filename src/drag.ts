@@ -152,7 +152,13 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
   )
     e.preventDefault();
 
-  if (draggedEl && position && s.selectedPiece && stillSelected && board.isDraggable(s, piece)) {
+  if (
+    draggedEl &&
+    position &&
+    s.selectedPiece &&
+    stillSelected &&
+    board.isDraggable(s, piece, true)
+  ) {
     s.draggable.current = {
       piece: s.selectedPiece,
       pos: position,
