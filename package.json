@@ -32,22 +32,21 @@
   },
   "engines": {
     "node": ">=22",
-    "pnpm": ">=10.16.0"
+    "pnpm": ">=10.26.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.12",
-    "@typescript/native-preview": "7.0.0-dev.20260421.2",
-    "del-cli": "^6.0.0",
-    "esbuild": "^0.28.0",
+    "@biomejs/biome": "^2.5.15",
+    "del-cli": "^8.0.1",
+    "esbuild": "^0.28.2",
     "nodemon": "^3.1.14",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "scripts": {
     "prepublishOnly": "$npm_execpath run clean && $npm_execpath run compile && $npm_execpath run dist",
     "clean": "del esm && del dist && del tsconfig.tsbuildinfo",
     "compile": "tsc",
     "compile:watch": "tsc --watch",
-    "type-check": "tsgo --noEmit && tsc --noEmit",
+    "type-check": "tsc --noEmit",
     "dist": "node esbuild.mjs",
     "dist:watch": "nodemon --watch src --ext ts --exec \"$npm_execpath run dist\"",
     "check": "biome check --error-on-warnings",
