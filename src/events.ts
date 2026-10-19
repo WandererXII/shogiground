@@ -32,7 +32,7 @@ function onResize(s: State): () => void {
 }
 
 export function bindBoard(s: State, boardEls: sg.BoardElements): void {
-  if ('ResizeObserver' in window) new ResizeObserver(onResize(s)).observe(boardEls.board);
+  observeResize(s, boardEls.board);
 
   if (s.viewOnly) return;
 
@@ -59,7 +59,7 @@ export function bindBoard(s: State, boardEls: sg.BoardElements): void {
 }
 
 export function bindHand(s: State, handEl: HTMLElement): void {
-  if ('ResizeObserver' in window) new ResizeObserver(onResize(s)).observe(handEl);
+  observeResize(s, handEl);
 
   if (s.viewOnly) return;
 
@@ -79,9 +79,17 @@ export function bindHand(s: State, handEl: HTMLElement): void {
     handEl.addEventListener('contextmenu', (e) => e.preventDefault());
 }
 
+function observeResize(s: State, el: HTMLElement): void {
+  if ('ResizeObserver' in window) {
+    if (!s.dom.resizeObserver) s.dom.resizeObserver = new ResizeObserver(onResize(s));
+    s.dom.resizeObserver.observe(el);
+  }
+}
+
 // returns the unbind function
 export function bindDocument(s: State): sg.Unbind {
   const unbinds: sg.Unbind[] = [];
+  unbinds.push(() => s.dom.resizeObserver?.disconnect());
 
   // Old versions of Edge and Safari do not support ResizeObserver. Send
   // shogiground.resize if a user action has changed the bounds of the board.

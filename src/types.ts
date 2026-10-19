@@ -93,6 +93,7 @@ export interface Dom {
   redraw: () => void;
   redrawShapes: () => void;
   unbind: Unbind;
+  resizeObserver?: ResizeObserver;
   destroyed: boolean;
 }
 
