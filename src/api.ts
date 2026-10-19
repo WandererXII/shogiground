@@ -125,7 +125,11 @@ export function start(state: State): Api {
           newDims &&
           (newDims.files !== state.dimensions.files || newDims.ranks !== state.dimensions.ranks)
         ) ||
-        !!config.hands?.roles?.every((r, i) => r === state.hands.roles[i]);
+        !!(
+          config.hands?.roles &&
+          (config.hands.roles.length !== state.hands.roles.length ||
+            config.hands.roles.some((r, i) => r !== state.hands.roles[i]))
+        );
 
       if (toRedraw) {
         board.reset(state);
