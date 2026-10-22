@@ -210,6 +210,8 @@ function computeSquareClasses(s: State): SquareClasses {
         for (const k of dests) {
           addSquare(squares, k, `dest${s.pieces.has(k) ? ' oc' : ''}`);
         }
+    }
+    if (s.premovable.showDests) {
       const pDests = s.premovable.dests;
       if (pDests)
         for (const k of pDests) {
@@ -223,6 +225,8 @@ function computeSquareClasses(s: State): SquareClasses {
         for (const k of dests) {
           addSquare(squares, k, 'dest');
         }
+    }
+    if (s.predroppable.showDests) {
       const pDests = s.predroppable.dests;
       if (pDests)
         for (const k of pDests) {
