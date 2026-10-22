@@ -35,6 +35,7 @@
       import { Shogiground } from '../esm/shogiground.js';
       import { promotionDialogMove } from '../esm/board.js';
       import { start as startDrawing } from '../esm/draw.js';
+      import { start as startDragging } from '../esm/drag.js';
 
       const board = document.querySelector('#board');
       const top = document.querySelector('#top');
@@ -296,6 +297,88 @@
             assert(ground.state.dom.destroyed && ground.state.viewOnly === viewOnly &&
               ground.state.coordinates.enabled && ground.state.turnColor === 'sente',
               'updates after destroy do not change state');
+          }
+
+          create({
+            activeColor: 'sente',
+            turnColor: 'gote',
+            promotion: { promotesTo: () => 'tokin', movePromotionDialog: () => true },
+          });
+          const dragBounds = ground.state.dom.bounds.board.bounds();
+          const x = dragBounds.left + dragBounds.width / 2;
+          const origY = dragBounds.top + dragBounds.height * 6.5 / 9;
+          const destY = dragBounds.top + dragBounds.height * 5.5 / 9;
+          startDragging(ground.state, new MouseEvent('mousedown', { clientX: x, clientY: origY }));
+          assert(!!ground.state.draggable.current, 'drag starts during opponent turn');
+          ground.set({ sfen: { board: '9/9/9/9/9/9/4P4/9/9' }, turnColor: 'sente' });
+          assert(!!ground.state.draggable.current && ground.state.selected === '5g',
+            'position update preserves active drag and selection');
+          document.dispatchEvent(new MouseEvent('mouseup', { clientX: x, clientY: destY }));
+          assert(!!ground.state.promotion.current, 'continued drag opens normal move promotion');
+          ground.state.dom.redrawNow();
+          ground.state.dom.elements.board.promotion.querySelector('piece').click();
+          assert(ground.state.pieces.get('5f')?.role === 'tokin' && !ground.state.pieces.has('5g'),
+            'continued drag completes promoted normal move');
+          assert(!ground.state.premovable.current, 'continued drag does not queue a premove');
+
+          for (const dragged of [false, true]) {
+            create({
+              activeColor: 'sente', turnColor: 'gote',
+              premovable: { generate: () => ['5f'] },
+              promotion: { promotesTo: () => 'tokin', movePromotionDialog: () => true },
+            });
+            if (dragged) {
+              const bounds = ground.state.dom.bounds.board.bounds();
+              startDragging(ground.state, new MouseEvent('mousedown', {
+                clientX: bounds.left + bounds.width / 2,
+                clientY: bounds.top + bounds.height * 6.5 / 9,
+              }));
+              document.dispatchEvent(new MouseEvent('mouseup', {
+                clientX: bounds.left + bounds.width / 2,
+                clientY: bounds.top + bounds.height * 5.5 / 9,
+              }));
+            } else {
+              ground.selectSquare('5g');
+              assert(promotionDialogMove(ground.state, '5g', '5f'), 'premove promotion starts');
+            }
+            const pending = ground.state.promotion.current;
+            assert(!!pending && pending.dragged === dragged, 'premove dialog is pending');
+            ground.set({ sfen: { board: 'p8/9/9/9/9/9/4P4/9/9' }, turnColor: 'sente' });
+            assert(ground.state.promotion.current === pending && ground.state.selected === '5g',
+              'unchanged piece preserves pending promotion across turn update');
+            ground.state.dom.redrawNow();
+            ground.state.dom.elements.board.promotion.querySelector('piece').click();
+            assert(ground.state.pieces.get('5f')?.role === 'tokin' && !ground.state.pieces.has('5g'),
+              'premove promotion completes as normal move');
+            assert(!ground.state.premovable.current, 'accepted promotion does not queue a premove');
+          }
+
+          for (const skipAnimation of [false, true]) {
+            for (const replacement of ['9/9/9/9/9/9/4R4/9/9', '9/9/9/9/9/9/4p4/9/9', '9/9/9/9/9/9/9/9/9']) {
+              create({
+                promotion: {
+                  promotesTo: role => ({ pawn: 'tokin', rook: 'dragon' })[role],
+                  movePromotionDialog: () => true,
+                },
+                animation: { enabled: true },
+              });
+              ground.selectSquare('5g');
+              assert(promotionDialogMove(ground.state, '5g', '5f'), 'replacement promotion dialog starts');
+              ground.state.dom.redrawNow();
+              const promotion = ground.state.dom.elements.board.promotion;
+              const choice = promotion.querySelector('piece');
+              assert(choice.sgRole === 'tokin', 'dialog offers pawn promotion');
+              const pieces = ground.state.dom.elements.board.pieces;
+              ground.set({ sfen: { board: replacement } }, skipAnimation);
+              ground.state.dom.redrawNow();
+              assert(ground.state.dom.elements.board.pieces === pieces, 'same dimensions do not rebuild');
+              // A queued click on the old choice must not act on the replacement piece.
+              choice.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+              assert(ground.getBoardSfen() === replacement, 'stale promotion click leaves replacement intact');
+              assert(!ground.state.promotion.current && !ground.state.selected && !ground.state.selectedPiece,
+                'position replacement clears promotion and selection');
+              assert(promotion.style.display === 'none', 'position replacement hides promotion dialog');
+            }
           }
 
           create({ promotion: { promotesTo: () => 'tokin', movePromotionDialog: () => true } });

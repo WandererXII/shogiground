@@ -1,7 +1,8 @@
-import { setChecks, setPreDests } from './board.js';
+import { setChecks, setPreDests, unselect } from './board.js';
 import { inferDimensions, sfenToBoard, sfenToHands } from './sfen.js';
 import type { HeadlessState } from './state.js';
 import type * as sg from './types.js';
+import { samePiece } from './util.js';
 
 type DeepPartial<T, Atomic = never> = T extends
   | Atomic
@@ -69,6 +70,11 @@ export function configure(state: HeadlessState, config: Config): void {
   if (config.sfen?.board) {
     state.dimensions = inferDimensions(config.sfen.board);
     state.pieces = sfenToBoard(config.sfen.board, state.dimensions, state.forsyth.fromForsyth);
+    if (state.promotion.current) {
+      // Keep pending premove promotion when the selected piece survives the update.
+      const piece = state.selected ? state.pieces.get(state.selected) : state.selectedPiece;
+      if (!piece || !samePiece(piece, state.promotion.current.piece)) unselect(state);
+    }
     state.drawable.shapes = config.drawable?.shapes || [];
   }
 
