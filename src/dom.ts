@@ -16,7 +16,7 @@ function attachBoard(state: State, boardWrap: HTMLElement): void {
   state.dom.elements.board = elements;
   state.dom.bounds.board.bounds.clear();
 
-  events.bindBoard(state, elements);
+  state.dom.elementUnbinds.set(elements.board, events.bindBoard(state, elements));
 
   state.drawable.prevSvgHash = '';
   state.promotion.prevPromotionHash = '';
@@ -33,13 +33,13 @@ function attachHands(state: State, handTopWrap?: HTMLElement, handBottomWrap?: H
   if (handTopWrap) {
     const handTop = wrapHand(handTopWrap, 'top', state);
     state.dom.elements.hands.top = handTop;
-    events.bindHand(state, handTop);
+    state.dom.elementUnbinds.set(handTop, events.bindHand(state, handTop));
     renderHand(state, handTop);
   }
   if (handBottomWrap) {
     const handBottom = wrapHand(handBottomWrap, 'bottom', state);
     state.dom.elements.hands.bottom = handBottom;
-    events.bindHand(state, handBottom);
+    state.dom.elementUnbinds.set(handBottom, events.bindHand(state, handBottom));
     renderHand(state, handBottom);
   }
 
@@ -50,6 +50,7 @@ function attachHands(state: State, handTopWrap?: HTMLElement, handBottomWrap?: H
 }
 
 export function redrawAll(wrapElements: WrapElements, state: State): void {
+  if (state.dom.destroyed) return;
   if (wrapElements.hands) {
     if (!state.dom.wrapElements.hands) state.dom.wrapElements.hands = {};
     if (wrapElements.hands.top) state.dom.wrapElements.hands.top = wrapElements.hands.top;
@@ -99,20 +100,17 @@ export function detachElements(
       state.dom.wrapElements.hands.bottom = undefined;
   }
   if (web.board) {
-    if (state.dom.elements.board)
-      state.dom.resizeObserver?.unobserve(state.dom.elements.board.board);
+    if (state.dom.elements.board) unbindElement(state, state.dom.elements.board.board);
     state.dom.elements.board = undefined;
     state.dom.bounds.board.bounds.clear();
   }
   if (state.dom.elements.hands) {
     if (detachTop) {
-      if (state.dom.elements.hands.top)
-        state.dom.resizeObserver?.unobserve(state.dom.elements.hands.top);
+      if (state.dom.elements.hands.top) unbindElement(state, state.dom.elements.hands.top);
       state.dom.elements.hands.top = undefined;
     }
     if (detachBottom) {
-      if (state.dom.elements.hands.bottom)
-        state.dom.resizeObserver?.unobserve(state.dom.elements.hands.bottom);
+      if (state.dom.elements.hands.bottom) unbindElement(state, state.dom.elements.hands.bottom);
       state.dom.elements.hands.bottom = undefined;
     }
     if (detachTop || detachBottom) {
@@ -120,4 +118,10 @@ export function detachElements(
       state.dom.bounds.hands.pieceBounds.clear();
     }
   }
+}
+
+function unbindElement(state: State, el: HTMLElement): void {
+  state.dom.elementUnbinds.get(el)?.();
+  state.dom.elementUnbinds.delete(el);
+  state.dom.resizeObserver?.unobserve(el);
 }

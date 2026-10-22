@@ -271,6 +271,10 @@ export function start(state: State): Api {
     destroy(): void {
       board.stop(state);
       state.drawable.current = undefined;
+      state.dom.elementUnbinds.forEach((unbind) => {
+        unbind();
+      });
+      state.dom.elementUnbinds.clear();
       state.dom.unbind();
       state.dom.destroyed = true;
     },

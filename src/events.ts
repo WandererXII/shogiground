@@ -31,55 +31,68 @@ function onResize(s: State): () => void {
   };
 }
 
-export function bindBoard(s: State, boardEls: sg.BoardElements): void {
+export function bindBoard(s: State, boardEls: sg.BoardElements): sg.Unbind {
   observeResize(s, boardEls.board);
+  const unbinds: sg.Unbind[] = [];
 
-  if (s.viewOnly) return;
+  if (!s.viewOnly) {
+    const piecesEl = boardEls.pieces;
+    const promotionEl = boardEls.promotion;
 
-  const piecesEl = boardEls.pieces;
-  const promotionEl = boardEls.promotion;
+    // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
+    const onStart = startDragOrDraw(s) as EventListener;
+    for (const ev of ['touchstart', 'mousedown'])
+      unbinds.push(unbindable(piecesEl, ev, onStart, { passive: false }));
+    unbinds.push(
+      unbindable(piecesEl, 'contextmenu', (e) => {
+        if (s.disableContextMenu || s.drawable.enabled) e.preventDefault();
+      }),
+    );
 
-  // Cannot be passive, because we prevent touch scrolling and dragging of selected elements.
-  const onStart = startDragOrDraw(s);
-  piecesEl.addEventListener('touchstart', onStart as EventListener, {
-    passive: false,
-  });
-  piecesEl.addEventListener('mousedown', onStart as EventListener, {
-    passive: false,
-  });
-  piecesEl.addEventListener('contextmenu', (e) => {
-    if (s.disableContextMenu || s.drawable.enabled) e.preventDefault();
-  });
-
-  if (promotionEl) {
-    const pieceSelection = (e: sg.MouchEvent) => promote(s, e);
-    promotionEl.addEventListener('click', pieceSelection as EventListener);
-    promotionEl.addEventListener('contextmenu', (e) => {
-      if (s.disableContextMenu) e.preventDefault();
-    });
+    if (promotionEl) {
+      const pieceSelection = (e: sg.MouchEvent) => promote(s, e);
+      unbinds.push(unbindable(promotionEl, 'click', pieceSelection as EventListener));
+      unbinds.push(
+        unbindable(promotionEl, 'contextmenu', (e) => {
+          if (s.disableContextMenu) e.preventDefault();
+        }),
+      );
+    }
   }
+
+  return () => {
+    unbinds.forEach((f) => {
+      f();
+    });
+  };
 }
 
-export function bindHand(s: State, handEl: HTMLElement): void {
+export function bindHand(s: State, handEl: HTMLElement): sg.Unbind {
   observeResize(s, handEl);
+  const unbinds: sg.Unbind[] = [];
 
-  if (s.viewOnly) return;
+  if (!s.viewOnly) {
+    const onStart = startDragFromHand(s) as EventListener;
+    for (const ev of ['mousedown', 'touchstart'])
+      unbinds.push(unbindable(handEl, ev, onStart, { passive: false }));
+    unbinds.push(
+      unbindable(handEl, 'click', () => {
+        if (s.promotion.current) {
+          cancelPromotion(s);
+          s.dom.redraw();
+        }
+      }),
+      unbindable(handEl, 'contextmenu', (e) => {
+        if (s.disableContextMenu || s.drawable.enabled) e.preventDefault();
+      }),
+    );
+  }
 
-  const onStart = startDragFromHand(s);
-  handEl.addEventListener('mousedown', onStart as EventListener, { passive: false });
-  handEl.addEventListener('touchstart', onStart as EventListener, {
-    passive: false,
-  });
-  handEl.addEventListener('click', () => {
-    if (s.promotion.current) {
-      cancelPromotion(s);
-      s.dom.redraw();
-    }
-  });
-
-  handEl.addEventListener('contextmenu', (e) => {
-    if (s.disableContextMenu || s.drawable.enabled) e.preventDefault();
-  });
+  return () => {
+    unbinds.forEach((f) => {
+      f();
+    });
+  };
 }
 
 function observeResize(s: State, el: HTMLElement): void {

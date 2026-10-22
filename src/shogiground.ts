@@ -63,6 +63,7 @@ export function Shogiground(config?: Config, wrapElements?: WrapElements): Api {
     redraw: debounceRedraw(redrawStateNow),
     redrawShapes: debounceRedraw(() => redrawShapesNow(state)),
     unbind: bindDocument(state),
+    elementUnbinds: new Map(),
     destroyed: false,
   };
 
