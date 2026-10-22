@@ -41,10 +41,19 @@ export function renderShapes(
   const arrowDests: ArrowDests = new Map();
   const pieceMap = new Map<sg.Key, DrawShape>();
 
-  const hashBounds = () => {
-    // todo also possible piece bounds
+  const hashBounds = (piece: sg.Piece) => {
     const bounds = state.dom.bounds.board.bounds();
-    return (bounds && bounds.width.toString() + bounds.height) || '';
+    const pieceBounds = state.dom.bounds.hands.pieceBounds().get(pieceNameOf(piece));
+    return bounds && pieceBounds
+      ? [
+          bounds.width,
+          bounds.height,
+          pieceBounds.left - bounds.left,
+          pieceBounds.top - bounds.top,
+          pieceBounds.width,
+          pieceBounds.height,
+        ].join(':')
+      : '';
   };
 
   for (const s of d.shapes.concat(d.autoShapes).concat(cur ? [cur] : [])) {
@@ -193,11 +202,12 @@ function shapeHash(
   { orig, dest, brush, piece, customSvg, description }: DrawShape,
   arrowDests: ArrowDests,
   current: boolean,
-  boundHash: () => string,
+  boundHash: (piece: sg.Piece) => string,
 ): Hash {
   return [
     current,
-    (isPiece(orig) || isPiece(dest)) && boundHash(),
+    isPiece(orig) && boundHash(orig),
+    isPiece(dest) && boundHash(dest),
     isPiece(orig) ? pieceHash(orig) : orig,
     isPiece(dest) ? pieceHash(dest) : dest,
     brush,
