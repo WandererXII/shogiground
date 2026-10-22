@@ -15,7 +15,7 @@ export interface HeadlessState {
   selected?: sg.Key; // square currently selected "1a"
   selectedPiece?: sg.Piece; // piece in hand currently selected
   hovered?: sg.Key; // square currently being hovered
-  viewOnly: boolean; // don't bind events: the user will never be able to move pieces around
+  viewOnly: boolean; // don't bind interaction events
   squareRatio: sg.NumberPair; // ratio of the board [width, height]
   disableContextMenu: boolean; // because who needs a context menu on a shogi board
   blockTouchScroll: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training

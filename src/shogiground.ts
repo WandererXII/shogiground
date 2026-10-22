@@ -19,7 +19,7 @@ export function Shogiground(config?: Config, wrapElements?: WrapElements): Api {
   };
 
   state.dom = {
-    wrapElements: wrapElements || {},
+    wrapElements: {},
     elements: {},
     bounds: {
       board: {

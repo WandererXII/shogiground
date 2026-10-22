@@ -6,7 +6,7 @@ import type { WrapElements, WrapElementsBoolean } from './types.js';
 import { wrapBoard, wrapHand } from './wrap.js';
 
 function attachBoard(state: State, boardWrap: HTMLElement): void {
-  detachElements({ board: true }, state);
+  detachElements({ board: true }, state, true);
   const elements = wrapBoard(boardWrap, state);
 
   // in case of inlined hands
@@ -25,20 +25,19 @@ function attachBoard(state: State, boardWrap: HTMLElement): void {
 }
 
 function attachHands(state: State, handTopWrap?: HTMLElement, handBottomWrap?: HTMLElement): void {
-  detachElements({ hands: { top: !!handTopWrap, bottom: !!handBottomWrap } }, state);
+  if (handTopWrap) state.dom.elements.hands?.top?.remove();
+  if (handBottomWrap) state.dom.elements.hands?.bottom?.remove();
+  detachElements({ hands: { top: !!handTopWrap, bottom: !!handBottomWrap } }, state, true);
   if (!state.dom.elements.hands) state.dom.elements.hands = {};
-  if (!state.dom.wrapElements.hands) state.dom.wrapElements.hands = {};
 
   if (handTopWrap) {
     const handTop = wrapHand(handTopWrap, 'top', state);
-    state.dom.wrapElements.hands.top = handTopWrap;
     state.dom.elements.hands.top = handTop;
     events.bindHand(state, handTop);
     renderHand(state, handTop);
   }
   if (handBottomWrap) {
     const handBottom = wrapHand(handBottomWrap, 'bottom', state);
-    state.dom.wrapElements.hands.bottom = handBottomWrap;
     state.dom.elements.hands.bottom = handBottom;
     events.bindHand(state, handBottom);
     renderHand(state, handBottom);
@@ -51,45 +50,69 @@ function attachHands(state: State, handTopWrap?: HTMLElement, handBottomWrap?: H
 }
 
 export function redrawAll(wrapElements: WrapElements, state: State): void {
+  if (wrapElements.hands) {
+    if (!state.dom.wrapElements.hands) state.dom.wrapElements.hands = {};
+    if (wrapElements.hands.top) state.dom.wrapElements.hands.top = wrapElements.hands.top;
+    if (wrapElements.hands.bottom) state.dom.wrapElements.hands.bottom = wrapElements.hands.bottom;
+  }
   if (wrapElements.board) attachBoard(state, wrapElements.board);
   if (wrapElements.hands && !state.hands.inlined)
     attachHands(state, wrapElements.hands.top, wrapElements.hands.bottom);
+  else if (state.hands.inlined && !state.dom.elements.board) {
+    state.dom.elements.hands?.top?.remove();
+    state.dom.elements.hands?.bottom?.remove();
+    detachElements({ hands: { top: true, bottom: true } }, state, true);
+  }
 
   // shapes might depend both on board and hands - redraw only after both are done
   state.dom.redrawShapes();
 
+  const hands =
+    state.hands.inlined && wrapElements.board
+      ? state.dom.elements.board?.hands
+      : wrapElements.hands;
   if (state.events.insert)
     state.events.insert(wrapElements.board && state.dom.elements.board, {
-      top: wrapElements.hands?.top && state.dom.elements.hands?.top,
-      bottom: wrapElements.hands?.bottom && state.dom.elements.hands?.bottom,
+      top: hands?.top && state.dom.elements.hands?.top,
+      bottom: hands?.bottom && state.dom.elements.hands?.bottom,
     });
 }
 
-export function detachElements(web: WrapElementsBoolean, state: State): void {
+export function detachElements(
+  web: WrapElementsBoolean,
+  state: State,
+  keepWrapElements = false,
+): void {
   const inlineHands = web.board ? state.dom.elements.board?.hands : undefined;
   const detachTop =
-    web.hands?.top || (!!inlineHands?.top && inlineHands.top === state.dom.wrapElements.hands?.top);
+    web.hands?.top ||
+    (!!inlineHands?.top && inlineHands.top.firstElementChild === state.dom.elements.hands?.top);
   const detachBottom =
     web.hands?.bottom ||
-    (!!inlineHands?.bottom && inlineHands.bottom === state.dom.wrapElements.hands?.bottom);
+    (!!inlineHands?.bottom &&
+      inlineHands.bottom.firstElementChild === state.dom.elements.hands?.bottom);
+  if (!keepWrapElements) {
+    if (web.board) state.dom.wrapElements.board = undefined;
+    if (web.hands?.top && state.dom.wrapElements.hands)
+      state.dom.wrapElements.hands.top = undefined;
+    if (web.hands?.bottom && state.dom.wrapElements.hands)
+      state.dom.wrapElements.hands.bottom = undefined;
+  }
   if (web.board) {
     if (state.dom.elements.board)
       state.dom.resizeObserver?.unobserve(state.dom.elements.board.board);
-    state.dom.wrapElements.board = undefined;
     state.dom.elements.board = undefined;
     state.dom.bounds.board.bounds.clear();
   }
-  if (state.dom.elements.hands && state.dom.wrapElements.hands) {
+  if (state.dom.elements.hands) {
     if (detachTop) {
       if (state.dom.elements.hands.top)
         state.dom.resizeObserver?.unobserve(state.dom.elements.hands.top);
-      state.dom.wrapElements.hands.top = undefined;
       state.dom.elements.hands.top = undefined;
     }
     if (detachBottom) {
       if (state.dom.elements.hands.bottom)
         state.dom.resizeObserver?.unobserve(state.dom.elements.hands.bottom);
-      state.dom.wrapElements.hands.bottom = undefined;
       state.dom.elements.hands.bottom = undefined;
     }
     if (detachTop || detachBottom) {

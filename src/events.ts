@@ -47,14 +47,16 @@ export function bindBoard(s: State, boardEls: sg.BoardElements): void {
   piecesEl.addEventListener('mousedown', onStart as EventListener, {
     passive: false,
   });
-  if (s.disableContextMenu || s.drawable.enabled)
-    piecesEl.addEventListener('contextmenu', (e) => e.preventDefault());
+  piecesEl.addEventListener('contextmenu', (e) => {
+    if (s.disableContextMenu || s.drawable.enabled) e.preventDefault();
+  });
 
   if (promotionEl) {
     const pieceSelection = (e: sg.MouchEvent) => promote(s, e);
     promotionEl.addEventListener('click', pieceSelection as EventListener);
-    if (s.disableContextMenu)
-      promotionEl.addEventListener('contextmenu', (e) => e.preventDefault());
+    promotionEl.addEventListener('contextmenu', (e) => {
+      if (s.disableContextMenu) e.preventDefault();
+    });
   }
 }
 
@@ -75,8 +77,9 @@ export function bindHand(s: State, handEl: HTMLElement): void {
     }
   });
 
-  if (s.disableContextMenu || s.drawable.enabled)
-    handEl.addEventListener('contextmenu', (e) => e.preventDefault());
+  handEl.addEventListener('contextmenu', (e) => {
+    if (s.disableContextMenu || s.drawable.enabled) e.preventDefault();
+  });
 }
 
 function observeResize(s: State, el: HTMLElement): void {

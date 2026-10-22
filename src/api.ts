@@ -5,6 +5,7 @@ import { applyAnimation, configure } from './config.js';
 import { detachElements, redrawAll } from './dom.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
 import type { DrawShape, SquareHighlight } from './draw.js';
+import { bindDocument } from './events.js';
 import { addToHand, removeFromHand } from './hands.js';
 import { boardToSfen, handsToSfen, inferDimensions } from './sfen.js';
 import type { State } from './state.js';
@@ -100,27 +101,22 @@ export function start(state: State): Api {
       detachElements(wrapElementsBoolean, state);
     },
 
-    set(config: Config, skipAnimation?: boolean): void {
-      function getByPath(path: string, obj: any) {
-        const properties = path.split('.');
-        return properties.reduce((prev, curr) => prev && prev[curr], obj);
-      }
-
-      const forceRedrawProps: (`${keyof Config}` | `${keyof Config}.${string}`)[] = [
-        'orientation',
-        'viewOnly',
-        'coordinates.enabled',
-        'coordinates.files',
-        'coordinates.ranks',
-        'drawable.visible',
-        'hands.inlined',
-      ];
+    set(update: Config, skipAnimation?: boolean): void {
+      if (state.dom.destroyed) return;
+      const config = { ...update, viewOnly: update.viewOnly ?? state.viewOnly };
+      const changed = <T>(value: T | undefined, current: T): boolean =>
+        value !== undefined && value !== current;
+      const viewOnlyChanged = changed(config.viewOnly, state.viewOnly);
       const newDims = config.sfen?.board && inferDimensions(config.sfen.board);
       const toRedraw =
-        forceRedrawProps.some((p) => {
-          const cRes = getByPath(p, config);
-          return cRes && cRes !== getByPath(p, state);
-        }) ||
+        viewOnlyChanged ||
+        changed(config.orientation, state.orientation) ||
+        changed(config.coordinates?.enabled, state.coordinates.enabled) ||
+        changed(config.coordinates?.files, state.coordinates.files) ||
+        changed(config.coordinates?.ranks, state.coordinates.ranks) ||
+        changed(config.drawable?.visible, state.drawable.visible) ||
+        changed(config.hands?.inlined, state.hands.inlined) ||
+        !!config.squareRatio?.some((value, i) => value !== state.squareRatio[i]) ||
         !!(
           newDims &&
           (newDims.files !== state.dimensions.files || newDims.ranks !== state.dimensions.ranks)
@@ -131,9 +127,14 @@ export function start(state: State): Api {
             config.hands.roles.some((r, i) => r !== state.hands.roles[i]))
         );
 
+      if (toRedraw || config.drawable?.enabled === false) state.drawable.current = undefined;
       if (toRedraw) {
         board.reset(state);
         configure(state, config);
+        if (viewOnlyChanged) {
+          state.dom.unbind();
+          state.dom.unbind = bindDocument(state);
+        }
         redrawAll(state.dom.wrapElements, state);
       } else {
         applyAnimation(state, config);
