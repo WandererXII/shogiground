@@ -1,133 +1,49 @@
 import { setChecks, setPreDests } from './board.js';
-import type { DrawShape, SquareHighlight } from './draw.js';
 import { inferDimensions, sfenToBoard, sfenToHands } from './sfen.js';
 import type { HeadlessState } from './state.js';
 import type * as sg from './types.js';
 
-export interface Config {
+type DeepPartial<T, Atomic = never> = T extends
+  | Atomic
+  | ((...args: never[]) => unknown)
+  | readonly unknown[]
+  | ReadonlyMap<unknown, unknown>
+  | ReadonlySet<unknown>
+  ? T
+  : T extends object
+    ? { [K in keyof T]?: DeepPartial<T[K], Atomic> }
+    : T;
+
+// Keep internal fields out of config, including those nested alongside options.
+type ConfigurableState = Omit<
+  HeadlessState,
+  | 'pieces'
+  | 'dimensions'
+  | 'checks'
+  | 'hovered'
+  | 'animation'
+  | 'hands'
+  | 'premovable'
+  | 'predroppable'
+  | 'draggable'
+  | 'promotion'
+  | 'drawable'
+> & {
+  animation: Omit<HeadlessState['animation'], 'current'>;
+  hands: Omit<HeadlessState['hands'], 'handMap'>;
+  premovable: Omit<HeadlessState['premovable'], 'current' | 'dests'>;
+  predroppable: Omit<HeadlessState['predroppable'], 'current' | 'dests'>;
+  draggable: Omit<HeadlessState['draggable'], 'current'>;
+  promotion: Omit<HeadlessState['promotion'], 'current' | 'prevPromotionHash'>;
+  drawable: Omit<HeadlessState['drawable'], 'current' | 'prevSvgHash' | 'piece'>;
+};
+
+export interface Config extends DeepPartial<ConfigurableState, sg.Piece> {
   sfen?: {
     board?: sg.BoardSfen; // pieces on the board in Forsyth notation
     hands?: sg.HandsSfen; // pieces in hand in Forsyth notation
   };
-  orientation?: sg.Color; // board orientation. sente | gote
-  turnColor?: sg.Color; // turn to play. sente | gote
-  activeColor?: sg.Color | 'both'; // color that can move or drop. sente | gote | both | undefined
   checks?: sg.Key[] | sg.Color | boolean; // squares currently in check ["5a"], color in check (see highlight.checkRoles) or boolean for current turn color
-  lastDests?: sg.Key[]; // squares part of the last move or drop ["3c", "4c"]
-  lastPiece?: sg.Piece; // piece part of the last drop
-  selected?: sg.Key; // square currently selected "1a"
-  selectedPiece?: sg.Piece; // piece in hand currently selected
-  hovered?: sg.Key; // square currently being hovered
-  viewOnly?: boolean; // don't bind interaction events
-  squareRatio?: sg.NumberPair; // ratio of a single square [width, height]
-  disableContextMenu?: boolean; // because who needs a context menu on a board, only without viewOnly
-  blockTouchScroll?: boolean; // block scrolling via touch dragging on the board, e.g. for coordinate training
-  scaleDownPieces?: boolean; // helpful for pngs - https://ctidd.com/2015/svg-background-scaling
-  coordinates?: {
-    enabled?: boolean; // include coords attributes
-    files?: sg.Notation;
-    ranks?: sg.Notation;
-  };
-  highlight?: {
-    lastDests?: boolean; // add last-dest class to squares and pieces
-    check?: boolean; // add check class to squares
-    checkRoles?: sg.RoleString[]; // roles to be highlighted when check is boolean is passed from config
-    hovered?: boolean; // add hover class to hovered squares
-  };
-  animation?: { enabled?: boolean; hands?: boolean; duration?: number };
-  hands?: {
-    inlined?: boolean; // attaches sg-hands directly to sg-wrap, ignores HTMLElements passed to Shogiground
-    roles?: sg.RoleString[]; // roles to render in sg-hand
-  };
-  movable?: {
-    free?: boolean; // all moves are valid - board editor
-    dests?: sg.MoveDests; // valid moves. {"2a" ["3a" "4a"] "1b" ["3a" "3c"]}
-    showDests?: boolean; // whether to add the dest class on squares
-    events?: {
-      after?: (orig: sg.Key, dest: sg.Key, prom: boolean, metadata: sg.MoveMetadata) => void; // called after the move has been played
-    };
-  };
-  droppable?: {
-    free?: boolean; // all drops are valid - board editor
-    dests?: sg.DropDests; // valid drops. {"sente pawn" ["3a" "4a"] "sente lance" ["3a" "3c"]}
-    showDests?: boolean; // whether to add the dest class on squares
-    spare?: boolean; // whether to remove dropped piece from hand after drop - board editor
-    events?: {
-      after?: (piece: sg.Piece, key: sg.Key, prom: boolean, metadata: sg.MoveMetadata) => void; // called after the drop has been played
-    };
-  };
-  premovable?: {
-    enabled?: boolean; // allow premoves for color that can not move
-    showDests?: boolean; // whether to add the pre-dest class on squares
-    dests?: sg.Key[]; // premove destinations for the current selection
-    generate?: (key: sg.Key, pieces: sg.Pieces) => sg.Key[]; // function to generate destinations that user can premove to
-    events?: {
-      set?: (orig: sg.Key, dest: sg.Key, prom: boolean) => void; // called after the premove has been set
-      unset?: () => void; // called after the premove has been unset
-    };
-  };
-  predroppable?: {
-    enabled?: boolean; // allow predrops for color that can not move
-    showDests?: boolean; // whether to add the pre-dest class on squares for drops
-    dests?: sg.Key[]; // premove destinations for the drop selection
-    generate?: (piece: sg.Piece, pieces: sg.Pieces) => sg.Key[]; // function to generate destinations that user can predrop on
-    events?: {
-      set?: (piece: sg.Piece, key: sg.Key, prom: boolean) => void; // called after the predrop has been set
-      unset?: () => void; // called after the predrop has been unset
-    };
-  };
-  draggable?: {
-    enabled?: boolean; // allow moves & premoves to use drag'n drop
-    distance?: number; // minimum distance to initiate a drag; in pixels
-    autoDistance?: boolean; // lets shogiground set distance to zero when user drags pieces
-    showGhost?: boolean; // show ghost of piece being dragged
-    showTouchSquareOverlay?: boolean; // show square overlay on the square that is currently being hovered, touch only
-    deleteOnDropOff?: boolean; // delete a piece when it is dropped off the board
-    addToHandOnDropOff?: boolean; // add a piece to hand when it is dropped on it, requires deleteOnDropOff
-  };
-  selectable?: {
-    enabled?: boolean; // disable to enforce dragging over click-click move
-    forceSpares?: boolean; // allow dropping spare pieces even with selectable disabled
-    deleteOnTouch?: boolean; // selecting a piece on the board or in hand will remove it - board editor
-    addSparesToHand?: boolean; // add selected spare piece to hand - board editor
-  };
-  events?: {
-    change?: () => void; // called after the situation changes on the board
-    move?: (orig: sg.Key, dest: sg.Key, prom: boolean, capturedPiece?: sg.Piece) => void;
-    drop?: (piece: sg.Piece, key: sg.Key, prom: boolean) => void;
-    select?: (key: sg.Key) => void; // called when a square is selected
-    unselect?: (key: sg.Key) => void; // called when a selected square is directly unselected - dropped back or clicked on the original square
-    pieceSelect?: (piece: sg.Piece) => void; // called when a piece in hand is selected
-    pieceUnselect?: (piece: sg.Piece) => void; // called when a selected piece is directly unselected - dropped back or clicked on the same piece
-    insert?: (boardElements?: sg.BoardElements, handElements?: sg.HandElements) => void; // when the board/hands DOM has been (re)inserted
-  };
-  drawable?: {
-    enabled?: boolean; // can draw
-    visible?: boolean; // can view
-    forced?: boolean; // can only draw
-    eraseOnClick?: boolean;
-    shapes?: DrawShape[];
-    autoShapes?: DrawShape[];
-    squares?: SquareHighlight[];
-    onChange?: (shapes: DrawShape[]) => void; // called after drawable shapes change
-  };
-  forsyth?: {
-    toForsyth?: (role: sg.RoleString) => string | undefined;
-    fromForsyth?: (str: string) => sg.RoleString | undefined;
-  };
-  promotion?: {
-    promotesTo?: (role: sg.RoleString) => sg.RoleString | undefined;
-    unpromotesTo?: (role: sg.RoleString) => sg.RoleString | undefined;
-    movePromotionDialog?: (orig: sg.Key, dest: sg.Key) => boolean; // activate promotion dialog
-    forceMovePromotion?: (orig: sg.Key, dest: sg.Key) => boolean; // auto promote after move
-    dropPromotionDialog?: (piece: sg.Piece, key: sg.Key) => boolean; // activate promotion dialog
-    forceDropPromotion?: (piece: sg.Piece, key: sg.Key) => boolean; // auto promote after drop
-    events?: {
-      initiated?: () => void; // called when promotion dialog is started
-      after?: (piece: sg.Piece) => void; // called after user selects a piece
-      cancel?: () => void; // called after user cancels the selection
-    };
-  };
 }
 
 export function applyAnimation(state: HeadlessState, config: Config): void {

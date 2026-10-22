@@ -92,11 +92,11 @@ To actually see and use the board you need some CSS. You can use the CSS in `exa
 
 ## Documentation
 
-- [Config types](https://github.com/WandererXII/shogiground/tree/master/src/config.ts)
-- [Default config values](https://github.com/WandererXII/shogiground/tree/master/src/state.ts)
-- [API type signatures](https://github.com/WandererXII/shogiground/tree/master/src/api.ts)
-- [Quick examples](https://github.com/WandererXII/shogiground/tree/master/examples/index.html)
-- [Base CSS](https://github.com/WandererXII/shogiground/tree/master/examples/assets/css/shogiground.css)
+- [Configuration](docs/configuration.md)
+- [Default config values](src/state.ts)
+- [API type signatures](src/api.ts)
+- [Quick examples](examples/index.html)
+- [Base CSS](examples/assets/css/shogiground.css)
 
 ## Development
 
