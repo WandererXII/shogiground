@@ -52,6 +52,7 @@ export function applyAnimation(state: HeadlessState, config: Config): void {
     deepMerge(state.animation, config.animation);
     // no need for such short animations
     if ((state.animation.duration || 0) < 70) state.animation.enabled = false;
+    if (!state.animation.enabled) state.animation.current = undefined;
   }
 }
 

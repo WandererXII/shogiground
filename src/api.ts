@@ -138,6 +138,7 @@ export function start(state: State): Api {
         redrawAll(state.dom.wrapElements, state);
       } else {
         applyAnimation(state, config);
+        if (skipAnimation) state.animation.current = undefined;
         (config.sfen?.board && !skipAnimation ? anim : render)(
           (state) => configure(state, config),
           state,
