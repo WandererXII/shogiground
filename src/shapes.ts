@@ -27,6 +27,7 @@ type ArrowDests = Map<sg.Key | sg.PieceName, number>; // how many arrows land on
 type Hash = string;
 
 const outsideArrowHash = 'outsideArrow';
+const defaultBrush = 'primary';
 
 export function renderShapes(
   state: State,
@@ -161,7 +162,7 @@ function syncDefs(
     el = el.nextElementSibling as SVGElement | undefined;
   }
   for (const key of brushes) {
-    const brush = key || 'primary';
+    const brush = key || defaultBrush;
     if (!keysInDom.has(brush)) defsEl.appendChild(renderMarker(brush));
   }
 }
@@ -336,7 +337,7 @@ function renderArrow(
   return setAttributes(createSVGElement('line'), {
     'stroke-width': lineWidth(current, ratio),
     'stroke-linecap': 'round',
-    'marker-end': `url(#arrowhead-${brush || 'primary'})`,
+    'marker-end': `url(#arrowhead-${brush || defaultBrush})`,
     x1: a[0],
     y1: a[1],
     x2: b[0] - xo,
@@ -450,7 +451,7 @@ export function usesBounds(shapes: DrawShape[]): boolean {
 }
 
 function shapeClass(brush: string, current: boolean, outside: boolean): string {
-  return brush + (current ? ' current' : '') + (outside ? ' outside' : '');
+  return (brush || defaultBrush) + (current ? ' current' : '') + (outside ? ' outside' : '');
 }
 
 function ratioAverage(ratio: sg.NumberPair): number {
