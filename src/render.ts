@@ -64,7 +64,7 @@ export function render(s: State, boardEls: sg.BoardElements): void {
       prom = promotions.get(k);
       elPieceName = pieceNameOf({ color: el.sgColor, role: el.sgRole });
 
-      // if piece dragged add or remove ghost class or if promotion dialog is active for the piece add prom class
+      // Ghost the origin during a drag or dragged promotion.
       if (
         ((curDrag?.started && curDrag.fromBoard?.orig === k) || (curPromKey && curPromKey === k)) &&
         !el.sgGhost
@@ -78,7 +78,9 @@ export function render(s: State, boardEls: sg.BoardElements): void {
       ) {
         el.sgGhost = false;
         el.classList.remove('ghost');
+        setDisplay(el, true);
       }
+      if (el.sgGhost) setDisplay(el, s.draggable.showGhost || curPromKey === k);
       // remove fading class if it still remains
       if (!fading && el.sgFading) {
         el.sgFading = false;
