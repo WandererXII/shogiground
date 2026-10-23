@@ -116,11 +116,13 @@ export function bindDocument(s: State): sg.Unbind {
   if (!s.viewOnly) {
     const onmove = dragOrDraw(s, drag.move, draw.move);
     const onend = dragOrDraw(s, drag.end, draw.end);
+    const oncancel = dragOrDraw(s, drag.cancel, draw.cancel);
 
     for (const ev of ['touchmove', 'mousemove'])
       unbinds.push(unbindable(document, ev, onmove as EventListener));
     for (const ev of ['touchend', 'mouseup'])
       unbinds.push(unbindable(document, ev, onend as EventListener));
+    unbinds.push(unbindable(document, 'touchcancel', oncancel as EventListener));
 
     unbinds.push(
       unbindable(document, 'scroll', () => clearBounds(s), { capture: true, passive: true }),
