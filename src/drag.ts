@@ -307,13 +307,23 @@ export function end(s: State, e: sg.MouchEvent): void {
   const bounds = s.dom.bounds.board.bounds();
   const dest =
     bounds && util.getKeyAtDomPos(eventPos, util.sentePov(s.orientation), s.dimensions, bounds);
+  const originHandBounds =
+    cur.fromOutside && !cur.spare
+      ? s.dom.bounds.hands.bounds().get(cur.piece.color === s.orientation ? 'bottom' : 'top') ||
+        cur.fromOutside.originBounds
+      : undefined;
 
   if (dest && cur.started && cur.fromBoard?.orig !== dest) {
     if (cur.fromOutside && !board.promotionDialogDrop(s, cur.piece, dest))
       board.userDrop(s, cur.piece, dest);
     else if (cur.fromBoard && !board.promotionDialogMove(s, cur.fromBoard.orig, dest))
       board.userMove(s, cur.fromBoard.orig, dest);
-  } else if (s.draggable.deleteOnDropOff && !dest) {
+  } else if (
+    s.draggable.deleteOnDropOff &&
+    cur.started &&
+    !dest &&
+    (!originHandBounds || !util.isInsideRect(originHandBounds, eventPos))
+  ) {
     if (cur.fromBoard) s.pieces.delete(cur.fromBoard.orig);
     else if (cur.fromOutside && !cur.spare) removeFromHand(s, cur.piece);
 
