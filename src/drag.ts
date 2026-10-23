@@ -189,6 +189,12 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
   s.dom.redraw();
 }
 
+function isDragPieceValid(s: State, cur: DragCurrent): boolean {
+  if (!cur.fromBoard) return true;
+  const origPiece = s.pieces.get(cur.fromBoard.orig);
+  return !!origPiece && util.samePiece(origPiece, cur.piece);
+}
+
 function processDrag(s: State): void {
   requestAnimationFrame(() => {
     const cur = s.draggable.current;
@@ -199,8 +205,7 @@ function processDrag(s: State): void {
     if (cur.fromBoard?.orig && s.animation.current?.plan.anims.has(cur.fromBoard.orig))
       s.animation.current = undefined;
     // if moving piece is gone, cancel
-    const origPiece = cur.fromBoard ? s.pieces.get(cur.fromBoard.orig) : cur.piece;
-    if (!origPiece || !util.samePiece(origPiece, cur.piece)) cancel(s);
+    if (!isDragPieceValid(s, cur)) cancel(s);
     else {
       if (!cur.started && util.distanceSq(cur.pos, cur.origPos) >= s.draggable.distance ** 2) {
         cur.started = true;
@@ -283,6 +288,11 @@ export function end(s: State, e: sg.MouchEvent): void {
   if (!cur) return;
   // create no corresponding mouse event
   if (e.type === 'touchend' && e.cancelable !== false) e.preventDefault();
+  // The origin may have changed since the last animation frame.
+  if (!isDragPieceValid(s, cur)) {
+    cancel(s);
+    return;
+  }
   // comparing with the origin target is an easy way to test that the end event
   // has the same touch origin
   if (e.type === 'touchend' && cur.originTarget !== e.target && !cur.fromOutside) {
