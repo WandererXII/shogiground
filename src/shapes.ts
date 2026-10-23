@@ -86,7 +86,10 @@ export function renderShapes(
       current: true,
     });
 
-  const fullHash = shapes.map((sc) => sc.hash).join(';') + (outsideArrow ? outsideArrowHash : '');
+  const fullHash =
+    shapes.map((sc) => sc.hash).join(';') +
+    (outsideArrow ? outsideArrowHash : '') +
+    state.scaleDownPieces;
   if (fullHash === state.drawable.prevSvgHash) return;
   state.drawable.prevSvgHash = fullHash;
 
