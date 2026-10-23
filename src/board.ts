@@ -15,10 +15,10 @@ export function toggleOrientation(state: HeadlessState): void {
 }
 
 export function reset(state: HeadlessState): void {
+  cancelPromotion(state);
   unselect(state);
   unsetPremove(state);
   unsetPredrop(state);
-  cancelPromotion(state);
   state.animation.current = state.draggable.current = state.hovered = undefined;
 }
 
