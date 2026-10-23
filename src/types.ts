@@ -119,6 +119,7 @@ export interface PieceNode extends KeyedNode {
   sgRole: RoleString;
   sgColor: Color;
   sgAnimating?: boolean;
+  sgScaledDown?: boolean;
   sgFading?: boolean;
   sgGhost?: boolean;
   sgDragging?: boolean;

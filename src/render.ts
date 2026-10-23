@@ -97,10 +97,14 @@ export function render(s: State, boardEls: sg.BoardElements): void {
           pos[0] += anim[2];
           pos[1] += anim[3];
           translateRel(el, posToTranslate(pos, asSente), scaleDown);
-        } else if (el.sgAnimating) {
-          el.sgAnimating = false;
-          el.classList.remove('anim');
+          el.sgScaledDown = s.scaleDownPieces;
+        } else if (el.sgAnimating || el.sgScaledDown !== s.scaleDownPieces) {
+          if (el.sgAnimating) {
+            el.sgAnimating = false;
+            el.classList.remove('anim');
+          }
           translateRel(el, posToTranslate(key2pos(k), asSente), scaleDown);
+          el.sgScaledDown = s.scaleDownPieces;
         }
         // same piece: flag as same
         if (elPieceName === pieceNameOf(pieceAtKey) && (!fading || !el.sgFading)) {
@@ -157,6 +161,7 @@ export function render(s: State, boardEls: sg.BoardElements): void {
           pos[1] += anim[3];
         }
         translateRel(pMvd, posToTranslate(pos, asSente), scaleDown);
+        pMvd.sgScaledDown = s.scaleDownPieces;
       }
       // no piece in moved obj: insert the new piece
       else {
@@ -172,6 +177,7 @@ export function render(s: State, boardEls: sg.BoardElements): void {
           pos[1] += anim[3];
         }
         translateRel(pieceNode, posToTranslate(pos, asSente), scaleDown);
+        pieceNode.sgScaledDown = s.scaleDownPieces;
 
         piecesEl.appendChild(pieceNode);
       }
