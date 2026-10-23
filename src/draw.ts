@@ -107,9 +107,7 @@ function processDraw(state: State): void {
     const cur = state.drawable.current;
     const bounds = state.dom.bounds.board.bounds();
     if (cur && bounds) {
-      const dest =
-        getKeyAtDomPos(cur.pos, sentePov(state.orientation), state.dimensions, bounds) ||
-        getHandPieceAtDomPos(cur.pos, state.hands.roles, state.dom.bounds.hands.pieceBounds());
+      const dest = getDestination(state, cur.pos);
       if (cur.dest !== dest && !(cur.dest && dest && samePieceOrKey(dest, cur.dest))) {
         cur.dest = dest;
         state.dom.redrawNow();
@@ -139,12 +137,22 @@ export function move(state: State, e: sg.MouchEvent): void {
   if (pos && state.drawable.current) state.drawable.current.pos = pos;
 }
 
-export function end(state: State, _: sg.MouchEvent): void {
+export function end(state: State, e: sg.MouchEvent): void {
   const cur = state.drawable.current;
   if (cur) {
+    cur.dest = getDestination(state, eventPosition(e) || cur.pos);
     addShape(state.drawable, cur);
     cancel(state);
   }
+}
+
+function getDestination(state: State, pos: sg.NumberPair): sg.Key | sg.Piece | undefined {
+  const bounds = state.dom.bounds.board.bounds();
+  return (
+    bounds &&
+    (getKeyAtDomPos(pos, sentePov(state.orientation), state.dimensions, bounds) ||
+      getHandPieceAtDomPos(pos, state.hands.roles, state.dom.bounds.hands.pieceBounds()))
+  );
 }
 
 export function cancel(state: State): void {
