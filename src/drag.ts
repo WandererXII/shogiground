@@ -191,7 +191,7 @@ export function dragNewPiece(s: State, piece: sg.Piece, e: sg.MouchEvent, spare?
 }
 
 function isDragPieceValid(s: State, cur: DragCurrent): boolean {
-  if (!cur.fromBoard) return true;
+  if (!cur.fromBoard) return cur.spare || numberInHand(s, cur.piece) > 0;
   const origPiece = s.pieces.get(cur.fromBoard.orig);
   return !!origPiece && util.samePiece(origPiece, cur.piece);
 }
