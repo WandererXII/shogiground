@@ -195,6 +195,11 @@ function isDragPieceValid(s: State, cur: DragCurrent): boolean {
   return !!origPiece && util.samePiece(origPiece, cur.piece);
 }
 
+function tryStartDrag(s: State, cur: DragCurrent, pos: sg.NumberPair): boolean {
+  if (!cur.started && util.distanceSq(pos, cur.origPos) >= s.draggable.distance ** 2) return true;
+  return false;
+}
+
 function processDrag(s: State): void {
   requestAnimationFrame(() => {
     const cur = s.draggable.current;
@@ -207,7 +212,7 @@ function processDrag(s: State): void {
     // if moving piece is gone, cancel
     if (!isDragPieceValid(s, cur)) cancel(s);
     else {
-      if (!cur.started && util.distanceSq(cur.pos, cur.origPos) >= s.draggable.distance ** 2) {
+      if (tryStartDrag(s, cur, cur.pos)) {
         cur.started = true;
         s.dom.redraw();
       }
@@ -304,6 +309,11 @@ export function end(s: State, e: sg.MouchEvent): void {
   board.unsetPredrop(s);
   // touchend has no position; so use the last touchmove position instead
   const eventPos = util.eventPosition(e) || cur.pos;
+
+  if (tryStartDrag(s, cur, eventPos)) {
+    cur.started = true;
+  }
+
   const bounds = s.dom.bounds.board.bounds();
   const dest =
     bounds && util.getKeyAtDomPos(eventPos, util.sentePov(s.orientation), s.dimensions, bounds);
