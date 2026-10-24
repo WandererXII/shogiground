@@ -341,12 +341,12 @@ export function end(s: State, e: sg.MouchEvent): void {
       const handBounds = s.dom.bounds.hands.bounds();
       const handBoundsTop = handBounds.get('top');
       const handBoundsBottom = handBounds.get('bottom');
-      if (handBoundsTop && util.isInsideRect(handBoundsTop, cur.pos))
+      if (handBoundsTop && util.isInsideRect(handBoundsTop, eventPos))
         addToHand(s, {
           color: util.opposite(s.orientation),
           role: cur.piece.role,
         });
-      else if (handBoundsBottom && util.isInsideRect(handBoundsBottom, cur.pos))
+      else if (handBoundsBottom && util.isInsideRect(handBoundsBottom, eventPos))
         addToHand(s, { color: s.orientation, role: cur.piece.role });
 
       board.unselect(s);
