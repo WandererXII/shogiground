@@ -1,5 +1,6 @@
 /.vscode/
 /.agents/
+/.scratch/
 /esm/
 
 node_modules/
