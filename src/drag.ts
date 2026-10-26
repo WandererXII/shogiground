@@ -304,6 +304,7 @@ export function end(s: State, e: sg.MouchEvent): void {
   if (e.type === 'touchend' && cur.originTarget !== e.target && !cur.fromOutside) {
     s.draggable.current = undefined;
     if (s.hovered && !s.highlight.hovered) updateHoveredSquares(s, undefined);
+    s.dom.redraw();
     return;
   }
   board.unsetPremove(s);
