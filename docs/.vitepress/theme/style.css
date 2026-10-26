@@ -1,0 +1,66 @@
+/* Honey wood, parchment, and walnut tones echo the board artwork. */
+:root {
+  --vp-c-brand-1: #8a501c;
+  --vp-c-brand-2: #a56326;
+  --vp-c-brand-3: #92531e;
+  --vp-c-brand-soft: rgba(176, 112, 43, .13);
+
+  --vp-c-bg: #faf6ee;
+  --vp-c-bg-alt: #f0e7d8;
+  --vp-c-bg-elv: #fffaf2;
+  --vp-c-bg-soft: #f3eadc;
+  --vp-c-text-1: #37291e;
+  --vp-c-text-2: #705b48;
+  --vp-c-text-3: #8b7561;
+  --vp-c-border: #cbb69a;
+  --vp-c-divider: #dfcfb9;
+  --vp-c-gutter: #e8d9c3;
+  --vp-c-default-1: #8b7561;
+  --vp-c-default-2: #dfcfb9;
+  --vp-c-default-3: #eee1ce;
+  --vp-c-default-soft: rgba(139, 100, 56, .09);
+  --vp-code-block-bg: #f0e7d8;
+  --vp-code-color: #8a501c;
+  --vp-sidebar-bg-color: var(--vp-c-bg-alt);
+  --vp-nav-bg-color: var(--vp-c-bg);
+
+  --wood-panel-top: #f2e3ca;
+  --wood-panel-bottom: #e7d2af;
+  --wood-panel-border: #bea07a;
+  --wood-shadow: rgba(84, 51, 22, .16);
+}
+
+.dark {
+  --vp-c-brand-1: #e5b573;
+  --vp-c-brand-2: #f0c790;
+  --vp-c-brand-3: #a86b30;
+  --vp-c-brand-soft: rgba(218, 160, 84, .15);
+
+  --vp-c-bg: #211b16;
+  --vp-c-bg-alt: #1b1612;
+  --vp-c-bg-elv: #30261e;
+  --vp-c-bg-soft: #2b221b;
+  --vp-c-text-1: #f0e3cf;
+  --vp-c-text-2: #c4ad92;
+  --vp-c-text-3: #9e856c;
+  --vp-c-border: #6b523b;
+  --vp-c-divider: #4b392b;
+  --vp-c-gutter: #382a20;
+  --vp-c-default-1: #b79b7c;
+  --vp-c-default-2: #59432f;
+  --vp-c-default-3: #3e2f23;
+  --vp-c-default-soft: rgba(198, 158, 111, .09);
+  --vp-code-block-bg: #1b1612;
+  --vp-code-color: #e5b573;
+
+  --wood-panel-top: #38291d;
+  --wood-panel-bottom: #2b2018;
+  --wood-panel-border: #705135;
+  --wood-shadow: rgba(10, 5, 1, .3);
+}
+
+.demo .sg-hand-wrap sg-hp-wrap::after {
+  color: #fff1d8;
+  background-color: #50351f;
+  border-color: #c69b64;
+}

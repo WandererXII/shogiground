@@ -1,3 +1,7 @@
+---
+description: Style your Shogiground board with CSS. Set board dimensions, arrange hands, and choose board themes and shogi piece sets for your application.
+---
+
 # Styling Shogiground
 
 Shogiground requires CSS. JavaScript does not load styles automatically.
@@ -87,7 +91,7 @@ Hand pieces default to `3rem`. `--sg-hand-piece-size` sets their width and heigh
 you can also override `.sg-hand-wrap sg-hand piece` for independent dimensions.
 Hand styles do not change board height. Inline hands also need application layout
 rules: position the generated `.sg-hand-wrap.inlined` elements around the board and
-reserve space for them. See [the runtime configuration example](../examples/runtime-config.html).
+reserve space for them. See [the demo](./index.md).
 
 ## Board variants
 
@@ -134,8 +138,7 @@ and a piece stylesheet with `assets/style.css` (static hosting) or
 `shogiground/style.css` (bundler import). Variant rules now share `styles/variants.css` and are included in the default entry; `wood-grid.css` is named `themes/wood.css` and `Portella.css` is
 named `pieces/portella.css`.
 
-The old `base.css` was demo page styling, not library CSS. Demo layout now lives in
-`examples/demo.css`; consumers should supply their own layout. In particular, set
+The old `base.css` was demo page styling, not library CSS. The documentation demo supplies its own layout; consumers should supply their own layout. In particular, set
 board and hand container sizes explicitly: core fills the board container without
 the old percentage-height adjustment, and hands no longer impose fixed demo sizes
 or margins. Examples use the same library styles shipped in the package.

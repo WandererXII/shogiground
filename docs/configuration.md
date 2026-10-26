@@ -1,3 +1,7 @@
+---
+description: Configure your Shogiground board with SFEN positions, hands, moves, drops, promotions, animations, drawing tools, and event callbacks.
+---
+
 # Configuration
 
 Pass config to `Shogiground(config, wrapElements)` or update it with `ground.set(config)`.
@@ -34,7 +38,7 @@ Shogiground does not calculate legal moves, drops, check, or promotion rules. Su
 - `Notation`: `'numeric'`, `'japanese'`, `'engine'`, `'hex'`, or `'dizhi'`.
 - `MoveMetadata`: `{ premade: boolean, captured?: Piece }`.
 
-See [shared types](../src/types.ts) and [config types](../src/config.ts).
+See [shared types](https://github.com/WandererXII/shogiground/blob/master/src/types.ts) and [config types](https://github.com/WandererXII/shogiground/blob/master/src/config.ts).
 
 ## Updates
 
@@ -90,7 +94,6 @@ Defaults below apply to a new instance. Optional fields without a default start 
 | `animation.hands` | `true` | Include hands in animations. |
 | `animation.duration` | `250` | Duration in milliseconds. Values below `70` disable animation. |
 
-Increasing the duration does not re-enable animation automatically. Set `enabled: true` too.
 
 ## Hands
 
@@ -211,19 +214,89 @@ Both default to the standard shogi mapping when unset. Supply converters for cus
 | `drawable.squares` | `[]` | Square highlights: `{ key: Key, className: string }[]`. |
 | `drawable.onChange` | unset | `(shapes: DrawShape[]) => void`, called when user drawings change. |
 
-Each shape requires `orig`, `dest`, and `brush`. Origins and destinations can be a square or a complete piece identifying a hand role.
-Optional fields are `piece: { role: string, color: Color, scale?: number }`, `customSvg: string`, and `description: string`.
+Each `DrawShape` requires `orig`, `dest`, and `brush`. An endpoint can be a board square such as `'7g'` or a complete piece such as `{ role: 'pawn', color: 'sente' }`, which identifies that role in a displayed hand. Hand endpoints require the corresponding hand element and board to be attached.
+
+The endpoints and optional fields determine what is drawn. The following examples use `autoShapes` for application annotations; the same shape objects work in `shapes`, `ground.setShapes()`, and `ground.setAutoShapes()`.
+
+### Circles
+
+Set `orig` and `dest` to the same square to draw a circle around it. The outline follows the square's aspect ratio, so it is an ellipse on rectangular squares. To circle a hand role, use pieces with the same `role` and `color` for both endpoints.
+
+```ts
+ground.setAutoShapes([
+  { orig: '5e', dest: '5e', brush: 'primary' },
+  {
+    orig: { role: 'pawn', color: 'sente' },
+    dest: { role: 'pawn', color: 'sente' },
+    brush: 'alternative0',
+  },
+]);
+```
+
+### Arrows
+
+Set different endpoints to draw an arrow from `orig` toward `dest`. Arrows can connect two board squares, a square and a hand role, or two hand roles.
+
+```ts
+ground.setAutoShapes([
+  { orig: '7g', dest: '7f', brush: 'primary' },
+  { orig: { role: 'pawn', color: 'sente' }, dest: '5e', brush: 'alternative1' },
+]);
+```
+
+### Piece overlays
+
+Supply `piece: { role: string, color: Color, scale?: number }` to display a piece image at `orig`, which must be a board square. This is a visual annotation and does not change the position or hand counts. `scale` defaults to `1` and scales the image relative to the normal piece size.
+
+Use matching endpoints for clarity: a piece overlay alone does not draw a circle or arrow. To show an outline or arrow as well, add a separate shape without `piece`.
+
+```ts
+ground.setAutoShapes([
+  { orig: '5e', dest: '5e', brush: 'primary', piece: { role: 'pawn', color: 'sente', scale: 0.8 } },
+  { orig: '5e', dest: '5e', brush: 'primary' },
+]);
+```
+
+### Custom SVGs
+
+Supply `customSvg` with an SVG markup string to render your own artwork at `orig` instead of a circle or arrow. `dest` is still required by the type; set it equal to `orig`. The markup is placed inside an SVG whose view box is ten times `squareRatio` (`0 0 110 120` by default). Its coordinate origin is anchored at the shape's origin; the core stylesheet allows artwork to extend outside that box.
+
+```ts
+ground.setAutoShapes([{
+  orig: '5e',
+  dest: '5e',
+  brush: 'primary',
+  customSvg: '<circle cx="0" cy="0" r="25" fill="#e5a100" />',
+}]);
+```
+
+`brush` becomes a CSS class on the nested SVG. Only supply trusted markup: it is inserted as SVG content without sanitization. Use separate shapes for custom artwork and piece overlays.
+
+### Descriptions
+
+Add `description` to a circle or arrow to display a short text label with an elliptical background. Circle labels appear at the origin; arrow labels sit along the arrow, with placement adjusted for short or converging arrows. This is visible text, not a tooltip. Descriptions are not rendered on custom SVGs or piece overlays; include text in your SVG or add a separate circle/arrow shape when needed.
+
+```ts
+ground.setAutoShapes([
+  { orig: '7g', dest: '7f', brush: 'primary', description: '1' },
+  { orig: '5e', dest: '5e', brush: 'alternative0', description: 'A' },
+]);
+```
+
+### Square highlights and styling
+
+Square highlights use `drawable.squares` rather than `DrawShape`. Each entry adds `className` to the square at `key`.
 
 ```ts
 ground.set({
   drawable: {
-    shapes: [{ orig: '7g', dest: '7f', brush: 'green' }],
+    shapes: [{ orig: '7g', dest: '7f', brush: 'primary' }],
     squares: [{ key: '5e', className: 'target' }],
   },
 });
 ```
 
-Brushes and square classes need matching CSS. See [drawing types](../src/draw.ts).
+`brush` names the CSS class used to style a shape. Core CSS includes `primary`, `alternative0`, `alternative1`, and `alternative2`; custom brush names and square classes need matching CSS. See [Styling](./styling.md) and [drawing types](https://github.com/WandererXII/shogiground/blob/master/src/draw.ts).
 
 ## Board events
 
@@ -244,4 +317,4 @@ Move, drop, selection, premove/predrop, and promotion event callbacks are deferr
 `events.insert` and `drawable.onChange` run synchronously.
 `ground.set()` does not emit move/drop callbacks for a replacement position.
 
-See [API methods](../src/api.ts) for programmatic operations and [default state](../src/state.ts) for initialization values.
+See the [API reference](./api.md) for programmatic operations and [default state](https://github.com/WandererXII/shogiground/blob/master/src/state.ts) for initialization values.

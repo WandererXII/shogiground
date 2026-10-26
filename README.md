@@ -114,9 +114,9 @@ static hosting, see the [styling guide](docs/styling.md).
 ## Documentation
 
 - [Configuration](docs/configuration.md)
-- [Default config values](src/state.ts)
-- [API type signatures](src/api.ts)
-- [Quick examples](examples/index.html)
+- [API reference](docs/api.md)
+- [Interactive demo](docs/index.md)
+- [How to set up](docs/setup.md)
 - [Styling guide](docs/styling.md)
 - [Default CSS](assets/style.css)
 - [Core CSS](assets/styles/core.css)
@@ -139,4 +139,13 @@ To build the standalone:
 
 ```sh
 pnpm run dist:watch
+```
+
+### Documentation and demo
+
+```sh
+pnpm docs:dev
+pnpm docs:type-check
+pnpm docs:build
+pnpm docs:preview
 ```

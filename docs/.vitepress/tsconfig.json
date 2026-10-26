@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "types": ["node", "vitepress/client"]
+  },
+  "include": ["./**/*.mts", "./**/*.ts", "./theme/**/*.js"],
+  "exclude": ["./cache", "./dist"]
+}

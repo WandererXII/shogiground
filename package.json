@@ -38,10 +38,13 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.2",
+    "@types/node": "^22.20.5",
     "del-cli": "^8.0.1",
     "esbuild": "^0.28.2",
     "nodemon": "^3.1.14",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitepress": "^1.6.4",
+    "vue": "^3.5.44"
   },
   "scripts": {
     "prepublishOnly": "$npm_execpath run clean && $npm_execpath run compile && $npm_execpath run dist",
@@ -52,13 +55,17 @@
     "dist": "node esbuild.mjs",
     "dist:watch": "nodemon --watch src --ext ts --exec \"$npm_execpath run dist\"",
     "check": "biome check --error-on-warnings",
-    "check:write": "biome check --write"
+    "check:write": "biome check --write",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "docs:type-check": "tsc --project docs/.vitepress/tsconfig.json"
   },
   "files": [
     "dist",
     "esm",
     "src",
     "assets",
-    "docs"
+    "docs/*.md"
   ]
 }

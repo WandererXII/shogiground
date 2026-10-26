@@ -6,3 +6,5 @@ node_modules/
 
 tsconfig.tsbuildinfo
 .eslintcache
+/docs/.vitepress/cache/
+/docs/.vitepress/dist/
