@@ -7,6 +7,27 @@ export default defineConfig({
   description: 'The open source TypeScript shogi board UI used by Lishogi. Interactive demo, setup guide, configuration, and API documentation.',
   lang: 'en',
   base: process.env.DOCS_BASE || '/',
+  head: [
+    ['script', {}, `
+      (() => {
+        const root = document.documentElement;
+        const lock = document.createElement('meta');
+        lock.name = 'darkreader-lock';
+        const syncDarkReader = () => {
+          if (root.classList.contains('dark')) {
+            if (!lock.isConnected) document.head.appendChild(lock);
+          } else {
+            lock.remove();
+          }
+        };
+        syncDarkReader();
+        new MutationObserver(syncDarkReader).observe(root, {
+          attributes: true,
+          attributeFilter: ['class'],
+        });
+      })();
+    `],
+  ],
   sitemap: { hostname: siteUrl },
   transformHead({ page }) {
     if (page === '404.md') {
