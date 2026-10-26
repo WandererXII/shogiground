@@ -1,0 +1,5 @@
+/* Complete default appearance for all board dimensions from 1x1 through 16x16, including hands. */
+@import './styles/core.css';
+@import './styles/variants.css';
+@import './styles/themes/wood.css';
+@import './styles/pieces/ryoko.css';

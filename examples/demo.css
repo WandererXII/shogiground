@@ -44,3 +44,23 @@ nav a {
     padding-bottom: calc(100% / 11 * 12);
   }
 }
+
+/* Demo sizing; consumers supply their own container layout. */
+.main-board {
+  align-self: center;
+}
+.main-board > .sg-wrap {
+  height: calc(100% / 11 * 12);
+}
+.demo-hands .main-board > .sg-wrap {
+  height: 100%;
+}
+.sg-hand-wrap {
+  width: 200px;
+  height: 200px;
+  margin: 0 1rem;
+  --sg-hand-piece-size: calc(500px / 9);
+}
+.hand-bottom {
+  align-self: flex-end;
+}

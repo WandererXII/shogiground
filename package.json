@@ -25,6 +25,8 @@
       "types": "./esm/shogiground.d.ts",
       "import": "./esm/shogiground.js"
     },
+    "./style.css": "./assets/style.css",
+    "./styles/*": "./assets/styles/*",
     "./*": {
       "types": "./esm/*.d.ts",
       "import": "./esm/*.js"
@@ -55,6 +57,8 @@
   "files": [
     "dist",
     "esm",
-    "src"
+    "src",
+    "assets",
+    "docs"
   ]
 }

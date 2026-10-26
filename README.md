@@ -69,13 +69,28 @@ npm install --save shogiground
 
 ```js
 import { Shogiground } from 'shogiground';
+import 'shogiground/style.css';
 
 const config = {
   sfen: {
     board: 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL',
   },
 };
-const ground = Shogiground(config, { board: document.body });
+const ground = Shogiground(config, { board: document.getElementById('board') });
+```
+
+Create and size the board container, then load application CSS after the library styles:
+
+```html
+<div id="board"></div>
+```
+
+```css
+#board {
+  width: min(90vw, 500px);
+  height: auto;
+  aspect-ratio: 11 / 12;
+}
 ```
 
 #### Non-module environments
@@ -83,12 +98,18 @@ const ground = Shogiground(config, { board: document.body });
 Or you can simply pull the latest version from `jsdelivr`.
 
 ```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shogiground@latest/assets/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/shogiground@latest/dist/shogiground.min.js"></script>
 ```
 
 #### CSS
 
-To actually see and use the board you need some CSS. You can use the CSS in `examples/assets` as a starting point. But it will take some work to get it exactly how you want it.
+CSS is required. `shogiground/style.css` provides the complete default appearance,
+including hands, a wood theme, and Ryoko pieces. Supply the board container's size
+as shown above; JavaScript does not import CSS automatically.
+
+For separate core/theme/piece imports, hand layouts, supported board sizes, and
+static hosting, see the [styling guide](docs/styling.md).
 
 ## Documentation
 
@@ -96,7 +117,9 @@ To actually see and use the board you need some CSS. You can use the CSS in `exa
 - [Default config values](src/state.ts)
 - [API type signatures](src/api.ts)
 - [Quick examples](examples/index.html)
-- [Base CSS](examples/assets/css/shogiground.css)
+- [Styling guide](docs/styling.md)
+- [Default CSS](assets/style.css)
+- [Core CSS](assets/styles/core.css)
 
 ## Development
 

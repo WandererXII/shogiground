@@ -3,11 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <title>Runtime configuration regression tests</title>
-    <link rel="stylesheet" href="assets/css/base.css" />
-    <link rel="stylesheet" href="assets/css/shogiground.css" />
-    <link rel="stylesheet" href="assets/css/hands.css" />
-    <link rel="stylesheet" href="assets/css/themes/wood-grid.css" />
-    <link rel="stylesheet" href="assets/css/pieces/ryoko.css" />
+    <link rel="stylesheet" href="demo.css" />
+    <link rel="stylesheet" href="../assets/style.css" />
     <style>
       body { font-size: 14px; margin: 20px; }
       #fixture { display: flex; align-items: center; width: max-content; margin: 50px 20px; }
@@ -19,7 +16,7 @@
       #results { white-space: pre-wrap; }
     </style>
   </head>
-  <body>
+  <body class="demo-hands">
     <h1>Runtime configuration regression tests</h1>
     <p>Run <code>pnpm compile</code>, then serve the repository with live-server.</p>
     <button id="run">Run regression tests</button>

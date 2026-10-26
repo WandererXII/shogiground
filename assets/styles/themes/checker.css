@@ -1,0 +1,14 @@
+.sg-wrap sg-squares {
+  background-color: blanchedalmond;
+}
+
+.sg-wrap sg-squares sq:nth-child(even) {
+  background-color: blanchedalmond;
+}
+.sg-wrap sg-squares sq:nth-child(odd) {
+  background-color: #978fbc;
+}
+
+.sg-hand-wrap {
+  background-color: blanchedalmond;
+}

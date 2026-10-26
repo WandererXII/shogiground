@@ -1,16 +1,11 @@
-/*
-   * Shogiground base css properties.
-   *
-   * You need to include the css files in themes folder in order to have the
-   * board and pieces displayed!
-   */
+/* Required board and hand styles. Add a board theme and a piece set. */
 
 .sg-wrap {
   position: relative;
   box-sizing: border-box;
   width: 100%;
-  /* Correct shogi board ratio is 11:12, for square board, you can use height 100% */
-  height: calc(100% / 11 * 12);
+  /* The host supplies the board size; see docs/styling.md. */
+  height: 100%;
 }
 
 sg-board {
@@ -198,11 +193,10 @@ sg-pieces piece.fading {
 sg-pieces piece.ghost {
   opacity: 0.3;
 }
-piece.dragging {
-  /* will-change: transform; */
+sg-board > piece.dragging {
   z-index: 10;
 }
-piece.dragging.touch {
+sg-board > piece.dragging.touch {
   top: -50px;
 }
 
@@ -348,4 +342,102 @@ sg-square-over {
 }
 .sg-wrap .sg-shapes marker#arrowhead-alternative2 path {
   fill: #e68f00;
+}
+
+/* Hands: container size and placement belong to the host page. */
+
+sg-hand sg-hp-wrap {
+  position: relative;
+}
+
+sg-hand sg-hp-wrap::after {
+  content: attr(data-nb);
+  top: 0;
+  right: 0;
+  position: absolute;
+  line-height: 0.9em;
+  padding: 3px 0.3em;
+  font-weight: bold;
+  font-size: 1.5em;
+  color: white;
+  background-color: #2e2e2e;
+  border: 1px solid #eee;
+  border-radius: 3px;
+}
+.hand-bottom sg-hand sg-hp-wrap::after {
+  top: unset;
+  bottom: 0;
+}
+sg-hp-wrap[data-nb='0']:not(.drawing) {
+  opacity: 0.3;
+}
+sg-hp-wrap[data-nb='0']:not(.selected):not(.drawing)::after {
+  content: none;
+}
+
+.sg-hand-wrap {
+  position: relative;
+  box-sizing: border-box;
+}
+.sg-hand-wrap sg-hand {
+  display: flex;
+  flex-wrap: wrap;
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row-reverse;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+sg-hand.promotion::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #0000003f;
+}
+
+sg-hand piece {
+  display: block;
+  position: relative;
+  width: var(--sg-hand-piece-size, 3rem);
+  height: var(--sg-hand-piece-size, 3rem);
+  margin: unset;
+  cursor: pointer;
+  pointer-events: auto;
+  border: 2px solid transparent;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+
+sg-hand sg-hp-wrap.selected {
+  opacity: 1;
+  background-color: rgba(20, 85, 30, 0.5);
+}
+
+sg-hand sg-hp-wrap.preselected {
+  opacity: 1;
+  background-color: rgba(20, 30, 85, 0.5);
+}
+
+sg-hand sg-hp-wrap.current-pre {
+  background-color: rgba(20, 30, 85, 0.5);
+}
+
+sg-hand sg-hp-wrap.last-dest {
+  background-color: rgba(155, 199, 0, 0.41);
+}
+
+sg-hand sg-hp-wrap.drawing:before {
+  content: '';
+  position: absolute;
+  width: 12%;
+  height: calc(12% / 11 * 12);
+  background-color: black;
+  border-radius: 50%;
+  opacity: 0.7 !important;
 }

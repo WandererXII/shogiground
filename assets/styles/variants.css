@@ -1,0 +1,287 @@
+/* All 256 board dimensions from 1x1 through 16x16.
+ * Load after core.css. The renderer supplies the d-FILESxRANKS class.
+ * Variables are local to each board, so different dimensions can coexist. */
+
+.sg-wrap.d-1x1 { --sg-files: 1; --sg-ranks: 1; }
+.sg-wrap.d-1x2 { --sg-files: 1; --sg-ranks: 2; }
+.sg-wrap.d-1x3 { --sg-files: 1; --sg-ranks: 3; }
+.sg-wrap.d-1x4 { --sg-files: 1; --sg-ranks: 4; }
+.sg-wrap.d-1x5 { --sg-files: 1; --sg-ranks: 5; }
+.sg-wrap.d-1x6 { --sg-files: 1; --sg-ranks: 6; }
+.sg-wrap.d-1x7 { --sg-files: 1; --sg-ranks: 7; }
+.sg-wrap.d-1x8 { --sg-files: 1; --sg-ranks: 8; }
+.sg-wrap.d-1x9 { --sg-files: 1; --sg-ranks: 9; }
+.sg-wrap.d-1x10 { --sg-files: 1; --sg-ranks: 10; }
+.sg-wrap.d-1x11 { --sg-files: 1; --sg-ranks: 11; }
+.sg-wrap.d-1x12 { --sg-files: 1; --sg-ranks: 12; }
+.sg-wrap.d-1x13 { --sg-files: 1; --sg-ranks: 13; }
+.sg-wrap.d-1x14 { --sg-files: 1; --sg-ranks: 14; }
+.sg-wrap.d-1x15 { --sg-files: 1; --sg-ranks: 15; }
+.sg-wrap.d-1x16 { --sg-files: 1; --sg-ranks: 16; }
+.sg-wrap.d-2x1 { --sg-files: 2; --sg-ranks: 1; }
+.sg-wrap.d-2x2 { --sg-files: 2; --sg-ranks: 2; }
+.sg-wrap.d-2x3 { --sg-files: 2; --sg-ranks: 3; }
+.sg-wrap.d-2x4 { --sg-files: 2; --sg-ranks: 4; }
+.sg-wrap.d-2x5 { --sg-files: 2; --sg-ranks: 5; }
+.sg-wrap.d-2x6 { --sg-files: 2; --sg-ranks: 6; }
+.sg-wrap.d-2x7 { --sg-files: 2; --sg-ranks: 7; }
+.sg-wrap.d-2x8 { --sg-files: 2; --sg-ranks: 8; }
+.sg-wrap.d-2x9 { --sg-files: 2; --sg-ranks: 9; }
+.sg-wrap.d-2x10 { --sg-files: 2; --sg-ranks: 10; }
+.sg-wrap.d-2x11 { --sg-files: 2; --sg-ranks: 11; }
+.sg-wrap.d-2x12 { --sg-files: 2; --sg-ranks: 12; }
+.sg-wrap.d-2x13 { --sg-files: 2; --sg-ranks: 13; }
+.sg-wrap.d-2x14 { --sg-files: 2; --sg-ranks: 14; }
+.sg-wrap.d-2x15 { --sg-files: 2; --sg-ranks: 15; }
+.sg-wrap.d-2x16 { --sg-files: 2; --sg-ranks: 16; }
+.sg-wrap.d-3x1 { --sg-files: 3; --sg-ranks: 1; }
+.sg-wrap.d-3x2 { --sg-files: 3; --sg-ranks: 2; }
+.sg-wrap.d-3x3 { --sg-files: 3; --sg-ranks: 3; }
+.sg-wrap.d-3x4 { --sg-files: 3; --sg-ranks: 4; }
+.sg-wrap.d-3x5 { --sg-files: 3; --sg-ranks: 5; }
+.sg-wrap.d-3x6 { --sg-files: 3; --sg-ranks: 6; }
+.sg-wrap.d-3x7 { --sg-files: 3; --sg-ranks: 7; }
+.sg-wrap.d-3x8 { --sg-files: 3; --sg-ranks: 8; }
+.sg-wrap.d-3x9 { --sg-files: 3; --sg-ranks: 9; }
+.sg-wrap.d-3x10 { --sg-files: 3; --sg-ranks: 10; }
+.sg-wrap.d-3x11 { --sg-files: 3; --sg-ranks: 11; }
+.sg-wrap.d-3x12 { --sg-files: 3; --sg-ranks: 12; }
+.sg-wrap.d-3x13 { --sg-files: 3; --sg-ranks: 13; }
+.sg-wrap.d-3x14 { --sg-files: 3; --sg-ranks: 14; }
+.sg-wrap.d-3x15 { --sg-files: 3; --sg-ranks: 15; }
+.sg-wrap.d-3x16 { --sg-files: 3; --sg-ranks: 16; }
+.sg-wrap.d-4x1 { --sg-files: 4; --sg-ranks: 1; }
+.sg-wrap.d-4x2 { --sg-files: 4; --sg-ranks: 2; }
+.sg-wrap.d-4x3 { --sg-files: 4; --sg-ranks: 3; }
+.sg-wrap.d-4x4 { --sg-files: 4; --sg-ranks: 4; }
+.sg-wrap.d-4x5 { --sg-files: 4; --sg-ranks: 5; }
+.sg-wrap.d-4x6 { --sg-files: 4; --sg-ranks: 6; }
+.sg-wrap.d-4x7 { --sg-files: 4; --sg-ranks: 7; }
+.sg-wrap.d-4x8 { --sg-files: 4; --sg-ranks: 8; }
+.sg-wrap.d-4x9 { --sg-files: 4; --sg-ranks: 9; }
+.sg-wrap.d-4x10 { --sg-files: 4; --sg-ranks: 10; }
+.sg-wrap.d-4x11 { --sg-files: 4; --sg-ranks: 11; }
+.sg-wrap.d-4x12 { --sg-files: 4; --sg-ranks: 12; }
+.sg-wrap.d-4x13 { --sg-files: 4; --sg-ranks: 13; }
+.sg-wrap.d-4x14 { --sg-files: 4; --sg-ranks: 14; }
+.sg-wrap.d-4x15 { --sg-files: 4; --sg-ranks: 15; }
+.sg-wrap.d-4x16 { --sg-files: 4; --sg-ranks: 16; }
+.sg-wrap.d-5x1 { --sg-files: 5; --sg-ranks: 1; }
+.sg-wrap.d-5x2 { --sg-files: 5; --sg-ranks: 2; }
+.sg-wrap.d-5x3 { --sg-files: 5; --sg-ranks: 3; }
+.sg-wrap.d-5x4 { --sg-files: 5; --sg-ranks: 4; }
+.sg-wrap.d-5x5 { --sg-files: 5; --sg-ranks: 5; }
+.sg-wrap.d-5x6 { --sg-files: 5; --sg-ranks: 6; }
+.sg-wrap.d-5x7 { --sg-files: 5; --sg-ranks: 7; }
+.sg-wrap.d-5x8 { --sg-files: 5; --sg-ranks: 8; }
+.sg-wrap.d-5x9 { --sg-files: 5; --sg-ranks: 9; }
+.sg-wrap.d-5x10 { --sg-files: 5; --sg-ranks: 10; }
+.sg-wrap.d-5x11 { --sg-files: 5; --sg-ranks: 11; }
+.sg-wrap.d-5x12 { --sg-files: 5; --sg-ranks: 12; }
+.sg-wrap.d-5x13 { --sg-files: 5; --sg-ranks: 13; }
+.sg-wrap.d-5x14 { --sg-files: 5; --sg-ranks: 14; }
+.sg-wrap.d-5x15 { --sg-files: 5; --sg-ranks: 15; }
+.sg-wrap.d-5x16 { --sg-files: 5; --sg-ranks: 16; }
+.sg-wrap.d-6x1 { --sg-files: 6; --sg-ranks: 1; }
+.sg-wrap.d-6x2 { --sg-files: 6; --sg-ranks: 2; }
+.sg-wrap.d-6x3 { --sg-files: 6; --sg-ranks: 3; }
+.sg-wrap.d-6x4 { --sg-files: 6; --sg-ranks: 4; }
+.sg-wrap.d-6x5 { --sg-files: 6; --sg-ranks: 5; }
+.sg-wrap.d-6x6 { --sg-files: 6; --sg-ranks: 6; }
+.sg-wrap.d-6x7 { --sg-files: 6; --sg-ranks: 7; }
+.sg-wrap.d-6x8 { --sg-files: 6; --sg-ranks: 8; }
+.sg-wrap.d-6x9 { --sg-files: 6; --sg-ranks: 9; }
+.sg-wrap.d-6x10 { --sg-files: 6; --sg-ranks: 10; }
+.sg-wrap.d-6x11 { --sg-files: 6; --sg-ranks: 11; }
+.sg-wrap.d-6x12 { --sg-files: 6; --sg-ranks: 12; }
+.sg-wrap.d-6x13 { --sg-files: 6; --sg-ranks: 13; }
+.sg-wrap.d-6x14 { --sg-files: 6; --sg-ranks: 14; }
+.sg-wrap.d-6x15 { --sg-files: 6; --sg-ranks: 15; }
+.sg-wrap.d-6x16 { --sg-files: 6; --sg-ranks: 16; }
+.sg-wrap.d-7x1 { --sg-files: 7; --sg-ranks: 1; }
+.sg-wrap.d-7x2 { --sg-files: 7; --sg-ranks: 2; }
+.sg-wrap.d-7x3 { --sg-files: 7; --sg-ranks: 3; }
+.sg-wrap.d-7x4 { --sg-files: 7; --sg-ranks: 4; }
+.sg-wrap.d-7x5 { --sg-files: 7; --sg-ranks: 5; }
+.sg-wrap.d-7x6 { --sg-files: 7; --sg-ranks: 6; }
+.sg-wrap.d-7x7 { --sg-files: 7; --sg-ranks: 7; }
+.sg-wrap.d-7x8 { --sg-files: 7; --sg-ranks: 8; }
+.sg-wrap.d-7x9 { --sg-files: 7; --sg-ranks: 9; }
+.sg-wrap.d-7x10 { --sg-files: 7; --sg-ranks: 10; }
+.sg-wrap.d-7x11 { --sg-files: 7; --sg-ranks: 11; }
+.sg-wrap.d-7x12 { --sg-files: 7; --sg-ranks: 12; }
+.sg-wrap.d-7x13 { --sg-files: 7; --sg-ranks: 13; }
+.sg-wrap.d-7x14 { --sg-files: 7; --sg-ranks: 14; }
+.sg-wrap.d-7x15 { --sg-files: 7; --sg-ranks: 15; }
+.sg-wrap.d-7x16 { --sg-files: 7; --sg-ranks: 16; }
+.sg-wrap.d-8x1 { --sg-files: 8; --sg-ranks: 1; }
+.sg-wrap.d-8x2 { --sg-files: 8; --sg-ranks: 2; }
+.sg-wrap.d-8x3 { --sg-files: 8; --sg-ranks: 3; }
+.sg-wrap.d-8x4 { --sg-files: 8; --sg-ranks: 4; }
+.sg-wrap.d-8x5 { --sg-files: 8; --sg-ranks: 5; }
+.sg-wrap.d-8x6 { --sg-files: 8; --sg-ranks: 6; }
+.sg-wrap.d-8x7 { --sg-files: 8; --sg-ranks: 7; }
+.sg-wrap.d-8x8 { --sg-files: 8; --sg-ranks: 8; }
+.sg-wrap.d-8x9 { --sg-files: 8; --sg-ranks: 9; }
+.sg-wrap.d-8x10 { --sg-files: 8; --sg-ranks: 10; }
+.sg-wrap.d-8x11 { --sg-files: 8; --sg-ranks: 11; }
+.sg-wrap.d-8x12 { --sg-files: 8; --sg-ranks: 12; }
+.sg-wrap.d-8x13 { --sg-files: 8; --sg-ranks: 13; }
+.sg-wrap.d-8x14 { --sg-files: 8; --sg-ranks: 14; }
+.sg-wrap.d-8x15 { --sg-files: 8; --sg-ranks: 15; }
+.sg-wrap.d-8x16 { --sg-files: 8; --sg-ranks: 16; }
+.sg-wrap.d-9x1 { --sg-files: 9; --sg-ranks: 1; }
+.sg-wrap.d-9x2 { --sg-files: 9; --sg-ranks: 2; }
+.sg-wrap.d-9x3 { --sg-files: 9; --sg-ranks: 3; }
+.sg-wrap.d-9x4 { --sg-files: 9; --sg-ranks: 4; }
+.sg-wrap.d-9x5 { --sg-files: 9; --sg-ranks: 5; }
+.sg-wrap.d-9x6 { --sg-files: 9; --sg-ranks: 6; }
+.sg-wrap.d-9x7 { --sg-files: 9; --sg-ranks: 7; }
+.sg-wrap.d-9x8 { --sg-files: 9; --sg-ranks: 8; }
+.sg-wrap.d-9x9 { --sg-files: 9; --sg-ranks: 9; }
+.sg-wrap.d-9x10 { --sg-files: 9; --sg-ranks: 10; }
+.sg-wrap.d-9x11 { --sg-files: 9; --sg-ranks: 11; }
+.sg-wrap.d-9x12 { --sg-files: 9; --sg-ranks: 12; }
+.sg-wrap.d-9x13 { --sg-files: 9; --sg-ranks: 13; }
+.sg-wrap.d-9x14 { --sg-files: 9; --sg-ranks: 14; }
+.sg-wrap.d-9x15 { --sg-files: 9; --sg-ranks: 15; }
+.sg-wrap.d-9x16 { --sg-files: 9; --sg-ranks: 16; }
+.sg-wrap.d-10x1 { --sg-files: 10; --sg-ranks: 1; }
+.sg-wrap.d-10x2 { --sg-files: 10; --sg-ranks: 2; }
+.sg-wrap.d-10x3 { --sg-files: 10; --sg-ranks: 3; }
+.sg-wrap.d-10x4 { --sg-files: 10; --sg-ranks: 4; }
+.sg-wrap.d-10x5 { --sg-files: 10; --sg-ranks: 5; }
+.sg-wrap.d-10x6 { --sg-files: 10; --sg-ranks: 6; }
+.sg-wrap.d-10x7 { --sg-files: 10; --sg-ranks: 7; }
+.sg-wrap.d-10x8 { --sg-files: 10; --sg-ranks: 8; }
+.sg-wrap.d-10x9 { --sg-files: 10; --sg-ranks: 9; }
+.sg-wrap.d-10x10 { --sg-files: 10; --sg-ranks: 10; }
+.sg-wrap.d-10x11 { --sg-files: 10; --sg-ranks: 11; }
+.sg-wrap.d-10x12 { --sg-files: 10; --sg-ranks: 12; }
+.sg-wrap.d-10x13 { --sg-files: 10; --sg-ranks: 13; }
+.sg-wrap.d-10x14 { --sg-files: 10; --sg-ranks: 14; }
+.sg-wrap.d-10x15 { --sg-files: 10; --sg-ranks: 15; }
+.sg-wrap.d-10x16 { --sg-files: 10; --sg-ranks: 16; }
+.sg-wrap.d-11x1 { --sg-files: 11; --sg-ranks: 1; }
+.sg-wrap.d-11x2 { --sg-files: 11; --sg-ranks: 2; }
+.sg-wrap.d-11x3 { --sg-files: 11; --sg-ranks: 3; }
+.sg-wrap.d-11x4 { --sg-files: 11; --sg-ranks: 4; }
+.sg-wrap.d-11x5 { --sg-files: 11; --sg-ranks: 5; }
+.sg-wrap.d-11x6 { --sg-files: 11; --sg-ranks: 6; }
+.sg-wrap.d-11x7 { --sg-files: 11; --sg-ranks: 7; }
+.sg-wrap.d-11x8 { --sg-files: 11; --sg-ranks: 8; }
+.sg-wrap.d-11x9 { --sg-files: 11; --sg-ranks: 9; }
+.sg-wrap.d-11x10 { --sg-files: 11; --sg-ranks: 10; }
+.sg-wrap.d-11x11 { --sg-files: 11; --sg-ranks: 11; }
+.sg-wrap.d-11x12 { --sg-files: 11; --sg-ranks: 12; }
+.sg-wrap.d-11x13 { --sg-files: 11; --sg-ranks: 13; }
+.sg-wrap.d-11x14 { --sg-files: 11; --sg-ranks: 14; }
+.sg-wrap.d-11x15 { --sg-files: 11; --sg-ranks: 15; }
+.sg-wrap.d-11x16 { --sg-files: 11; --sg-ranks: 16; }
+.sg-wrap.d-12x1 { --sg-files: 12; --sg-ranks: 1; }
+.sg-wrap.d-12x2 { --sg-files: 12; --sg-ranks: 2; }
+.sg-wrap.d-12x3 { --sg-files: 12; --sg-ranks: 3; }
+.sg-wrap.d-12x4 { --sg-files: 12; --sg-ranks: 4; }
+.sg-wrap.d-12x5 { --sg-files: 12; --sg-ranks: 5; }
+.sg-wrap.d-12x6 { --sg-files: 12; --sg-ranks: 6; }
+.sg-wrap.d-12x7 { --sg-files: 12; --sg-ranks: 7; }
+.sg-wrap.d-12x8 { --sg-files: 12; --sg-ranks: 8; }
+.sg-wrap.d-12x9 { --sg-files: 12; --sg-ranks: 9; }
+.sg-wrap.d-12x10 { --sg-files: 12; --sg-ranks: 10; }
+.sg-wrap.d-12x11 { --sg-files: 12; --sg-ranks: 11; }
+.sg-wrap.d-12x12 { --sg-files: 12; --sg-ranks: 12; }
+.sg-wrap.d-12x13 { --sg-files: 12; --sg-ranks: 13; }
+.sg-wrap.d-12x14 { --sg-files: 12; --sg-ranks: 14; }
+.sg-wrap.d-12x15 { --sg-files: 12; --sg-ranks: 15; }
+.sg-wrap.d-12x16 { --sg-files: 12; --sg-ranks: 16; }
+.sg-wrap.d-13x1 { --sg-files: 13; --sg-ranks: 1; }
+.sg-wrap.d-13x2 { --sg-files: 13; --sg-ranks: 2; }
+.sg-wrap.d-13x3 { --sg-files: 13; --sg-ranks: 3; }
+.sg-wrap.d-13x4 { --sg-files: 13; --sg-ranks: 4; }
+.sg-wrap.d-13x5 { --sg-files: 13; --sg-ranks: 5; }
+.sg-wrap.d-13x6 { --sg-files: 13; --sg-ranks: 6; }
+.sg-wrap.d-13x7 { --sg-files: 13; --sg-ranks: 7; }
+.sg-wrap.d-13x8 { --sg-files: 13; --sg-ranks: 8; }
+.sg-wrap.d-13x9 { --sg-files: 13; --sg-ranks: 9; }
+.sg-wrap.d-13x10 { --sg-files: 13; --sg-ranks: 10; }
+.sg-wrap.d-13x11 { --sg-files: 13; --sg-ranks: 11; }
+.sg-wrap.d-13x12 { --sg-files: 13; --sg-ranks: 12; }
+.sg-wrap.d-13x13 { --sg-files: 13; --sg-ranks: 13; }
+.sg-wrap.d-13x14 { --sg-files: 13; --sg-ranks: 14; }
+.sg-wrap.d-13x15 { --sg-files: 13; --sg-ranks: 15; }
+.sg-wrap.d-13x16 { --sg-files: 13; --sg-ranks: 16; }
+.sg-wrap.d-14x1 { --sg-files: 14; --sg-ranks: 1; }
+.sg-wrap.d-14x2 { --sg-files: 14; --sg-ranks: 2; }
+.sg-wrap.d-14x3 { --sg-files: 14; --sg-ranks: 3; }
+.sg-wrap.d-14x4 { --sg-files: 14; --sg-ranks: 4; }
+.sg-wrap.d-14x5 { --sg-files: 14; --sg-ranks: 5; }
+.sg-wrap.d-14x6 { --sg-files: 14; --sg-ranks: 6; }
+.sg-wrap.d-14x7 { --sg-files: 14; --sg-ranks: 7; }
+.sg-wrap.d-14x8 { --sg-files: 14; --sg-ranks: 8; }
+.sg-wrap.d-14x9 { --sg-files: 14; --sg-ranks: 9; }
+.sg-wrap.d-14x10 { --sg-files: 14; --sg-ranks: 10; }
+.sg-wrap.d-14x11 { --sg-files: 14; --sg-ranks: 11; }
+.sg-wrap.d-14x12 { --sg-files: 14; --sg-ranks: 12; }
+.sg-wrap.d-14x13 { --sg-files: 14; --sg-ranks: 13; }
+.sg-wrap.d-14x14 { --sg-files: 14; --sg-ranks: 14; }
+.sg-wrap.d-14x15 { --sg-files: 14; --sg-ranks: 15; }
+.sg-wrap.d-14x16 { --sg-files: 14; --sg-ranks: 16; }
+.sg-wrap.d-15x1 { --sg-files: 15; --sg-ranks: 1; }
+.sg-wrap.d-15x2 { --sg-files: 15; --sg-ranks: 2; }
+.sg-wrap.d-15x3 { --sg-files: 15; --sg-ranks: 3; }
+.sg-wrap.d-15x4 { --sg-files: 15; --sg-ranks: 4; }
+.sg-wrap.d-15x5 { --sg-files: 15; --sg-ranks: 5; }
+.sg-wrap.d-15x6 { --sg-files: 15; --sg-ranks: 6; }
+.sg-wrap.d-15x7 { --sg-files: 15; --sg-ranks: 7; }
+.sg-wrap.d-15x8 { --sg-files: 15; --sg-ranks: 8; }
+.sg-wrap.d-15x9 { --sg-files: 15; --sg-ranks: 9; }
+.sg-wrap.d-15x10 { --sg-files: 15; --sg-ranks: 10; }
+.sg-wrap.d-15x11 { --sg-files: 15; --sg-ranks: 11; }
+.sg-wrap.d-15x12 { --sg-files: 15; --sg-ranks: 12; }
+.sg-wrap.d-15x13 { --sg-files: 15; --sg-ranks: 13; }
+.sg-wrap.d-15x14 { --sg-files: 15; --sg-ranks: 14; }
+.sg-wrap.d-15x15 { --sg-files: 15; --sg-ranks: 15; }
+.sg-wrap.d-15x16 { --sg-files: 15; --sg-ranks: 16; }
+.sg-wrap.d-16x1 { --sg-files: 16; --sg-ranks: 1; }
+.sg-wrap.d-16x2 { --sg-files: 16; --sg-ranks: 2; }
+.sg-wrap.d-16x3 { --sg-files: 16; --sg-ranks: 3; }
+.sg-wrap.d-16x4 { --sg-files: 16; --sg-ranks: 4; }
+.sg-wrap.d-16x5 { --sg-files: 16; --sg-ranks: 5; }
+.sg-wrap.d-16x6 { --sg-files: 16; --sg-ranks: 6; }
+.sg-wrap.d-16x7 { --sg-files: 16; --sg-ranks: 7; }
+.sg-wrap.d-16x8 { --sg-files: 16; --sg-ranks: 8; }
+.sg-wrap.d-16x9 { --sg-files: 16; --sg-ranks: 9; }
+.sg-wrap.d-16x10 { --sg-files: 16; --sg-ranks: 10; }
+.sg-wrap.d-16x11 { --sg-files: 16; --sg-ranks: 11; }
+.sg-wrap.d-16x12 { --sg-files: 16; --sg-ranks: 12; }
+.sg-wrap.d-16x13 { --sg-files: 16; --sg-ranks: 13; }
+.sg-wrap.d-16x14 { --sg-files: 16; --sg-ranks: 14; }
+.sg-wrap.d-16x15 { --sg-files: 16; --sg-ranks: 15; }
+.sg-wrap.d-16x16 { --sg-files: 16; --sg-ranks: 16; }
+
+.sg-wrap sg-squares {
+  grid-template: repeat(var(--sg-ranks, 9), 1fr) / repeat(var(--sg-files, 9), 1fr);
+}
+.sg-wrap sg-board piece {
+  width: calc(200% / var(--sg-files, 9));
+  height: calc(200% / var(--sg-ranks, 9));
+  /* Center the doubled piece box independently of the container aspect ratio. */
+  margin: 0;
+  translate: -25% -25%;
+}
+.sg-wrap sg-promotion sg-promotion-square,
+.sg-wrap sg-square-over {
+  width: calc(100% / var(--sg-files, 9));
+  height: calc(100% / var(--sg-ranks, 9));
+}
+/* Promotion choices use their local box rather than board sizing. */
+.sg-wrap sg-promotion sg-promotion-choices piece {
+  width: 100%;
+  height: 50%;
+  margin: 0;
+  translate: none;
+}
+.sg-wrap sg-promotion sg-promotion-choices.reversed {
+  margin: 0;
+  transform: translateY(-50%);
+}
