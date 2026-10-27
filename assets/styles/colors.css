@@ -1,0 +1,30 @@
+/* Default UI colors. Override these variables in application CSS. */
+:root {
+  --sg-keyboard-color: #005fcc;
+  --sg-promotion-overlay-color: #0000003f;
+  --sg-panel-background-color: #2e2e2e;
+  --sg-promotion-shadow-color: #000000aa;
+  --sg-selection-color: rgba(20, 85, 30, 0.5);
+  --sg-destination-color: #208530;
+  --sg-destination-shadow-color: rgba(0, 0, 0, 0.3);
+  --sg-destination-transparent-color: rgba(0, 0, 0, 0);
+  --sg-preselection-color: rgba(20, 30, 85, 0.5);
+  --sg-pre-destination-color: #203085;
+  --sg-transparent-color: transparent;
+  --sg-occupied-destination-color: rgba(20, 85, 0, 0.3);
+  --sg-pre-destination-hover-color: rgba(20, 30, 85, 0.2);
+  --sg-last-destination-color: rgba(155, 199, 0, 0.41);
+  --sg-destination-hover-color: rgba(20, 85, 30, 0.3);
+  --sg-check-center-color: rgba(255, 0, 0, 1);
+  --sg-check-inner-color: rgba(231, 0, 0, 1);
+  --sg-check-outer-color: rgba(169, 0, 0, 0);
+  --sg-check-edge-color: rgba(158, 0, 0, 0);
+  --sg-drag-overlay-color: #00000050;
+  --sg-shape-primary-color: #15781b;
+  --sg-foreground-color: white;
+  --sg-shape-alternative0-color: #882020;
+  --sg-shape-alternative1-color: #003088;
+  --sg-shape-alternative2-color: #e68f00;
+  --sg-hand-count-border-color: #eee;
+  --sg-drawing-indicator-color: black;
+}

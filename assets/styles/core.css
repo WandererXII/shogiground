@@ -1,4 +1,5 @@
 /* Required board and hand styles. Add a board theme and a piece set. */
+@import './colors.css';
 
 .sg-wrap {
   position: relative;
@@ -59,7 +60,7 @@ sg-pieces {
 
 sg-promotion {
   z-index: 5;
-  background-color: #0000003f;
+  background-color: var(--sg-promotion-overlay-color);
 }
 sg-promotion.active {
   display: block;
@@ -80,8 +81,8 @@ sg-promotion sg-promotion-square {
 sg-promotion sg-promotion-choices {
   display: flex;
   flex-direction: column;
-  background-color: #2e2e2e;
-  box-shadow: 3px 3px 7px #000000aa;
+  background-color: var(--sg-panel-background-color);
+  box-shadow: 3px 3px 7px var(--sg-promotion-shadow-color);
   border-radius: 10px;
   cursor: pointer;
   width: 100%;
@@ -106,7 +107,7 @@ sg-promotion sg-promotion-choices piece {
   pointer-events: auto;
   border-radius: 10px;
   transition: all 200ms;
-  background-color: #2e2e2e;
+  background-color: var(--sg-panel-background-color);
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
@@ -119,7 +120,7 @@ sg-promotion sg-promotion-choices piece:hover {
 sg-squares sq.keyboard-cursor,
 sg-hand sg-hp-wrap.keyboard-cursor,
 sg-promotion piece.keyboard-cursor {
-  outline: 2px dashed var(--sg-keyboard-color, #005fcc);
+  outline: 2px dashed var(--sg-keyboard-color);
   outline-offset: -6px;
 }
 sg-hand sg-hp-wrap.keyboard-cursor {
@@ -140,68 +141,76 @@ sg-squares {
 }
 sg-squares sq.dest {
   background: radial-gradient(
-    rgba(20, 85, 30, 0.5) 22%,
-    #208530 0,
-    rgba(0, 0, 0, 0.3) 0,
-    rgba(0, 0, 0, 0) 0
+    var(--sg-selection-color) 22%,
+    var(--sg-destination-color) 0,
+    var(--sg-destination-shadow-color) 0,
+    var(--sg-destination-transparent-color) 0
   );
 }
 sg-squares sq.pre-dest {
   background: radial-gradient(
-    rgba(20, 30, 85, 0.5) 22%,
-    #203085 0,
-    rgba(0, 0, 0, 0.3) 0,
-    rgba(0, 0, 0, 0) 0
+    var(--sg-preselection-color) 22%,
+    var(--sg-pre-destination-color) 0,
+    var(--sg-destination-shadow-color) 0,
+    var(--sg-destination-transparent-color) 0
   );
 }
 sg-squares sq.oc.dest {
-  background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 85, 0, 0.3) 80%);
+  background: radial-gradient(
+    var(--sg-transparent-color) 0%,
+    var(--sg-transparent-color) 80%,
+    var(--sg-occupied-destination-color) 80%
+  );
 }
 sg-squares sq.oc.pre-dest {
-  background: radial-gradient(transparent 0%, transparent 80%, rgba(20, 30, 85, 0.2) 80%);
+  background: radial-gradient(
+    var(--sg-transparent-color) 0%,
+    var(--sg-transparent-color) 80%,
+    var(--sg-pre-destination-hover-color) 80%
+  );
 }
 sg-squares sq.last-dest.oc.dest {
   background: radial-gradient(
-    rgba(155, 199, 0, 0.41) 0%,
-    rgba(155, 199, 0, 0.41) 80%,
-    rgba(20, 85, 0, 0.3) 80%
+    var(--sg-last-destination-color) 0%,
+    var(--sg-last-destination-color) 80%,
+    var(--sg-occupied-destination-color) 80%
   );
 }
 sg-squares sq.last-dest.oc.pre-dest {
   background: radial-gradient(
-    rgba(155, 199, 0, 0.41) 0%,
-    rgba(155, 199, 0, 0.41) 80%,
-    rgba(20, 30, 85, 0.2) 80%
+    var(--sg-last-destination-color) 0%,
+    var(--sg-last-destination-color) 80%,
+    var(--sg-pre-destination-hover-color) 80%
   );
 }
 sg-squares sq.dest.hover,
 sg-squares sq.last-dest.oc.dest.hover {
-  background: rgba(20, 85, 30, 0.3);
+  background: var(--sg-destination-hover-color);
 }
 sg-squares sq.pre-dest.hover,
 sg-squares sq.last-dest.oc.pre-dest.hover {
-  background: rgba(20, 30, 85, 0.2);
+  background: var(--sg-pre-destination-hover-color);
 }
 sg-squares sq.last-dest {
-  background-color: rgba(155, 199, 0, 0.41);
+  background-color: var(--sg-last-destination-color);
 }
 sg-squares sq.check {
   background: radial-gradient(
     ellipse at center,
-    rgba(255, 0, 0, 1) 0%,
-    rgba(231, 0, 0, 1) 25%,
-    rgba(169, 0, 0, 0) 89%,
-    rgba(158, 0, 0, 0) 100%
+    var(--sg-check-center-color) 0%,
+    var(--sg-check-inner-color) 25%,
+    var(--sg-check-outer-color) 89%,
+    var(--sg-check-edge-color) 100%
   );
 }
 sg-squares sq.selected {
-  background-color: rgba(20, 85, 30, 0.5);
+  background-color: var(--sg-selection-color);
 }
 sg-squares sq.preselected {
-  background-color: rgba(20, 30, 85, 0.5);
+  background-color: var(--sg-preselection-color);
 }
 sg-squares sq.current-pre {
-  background-color: rgba(20, 30, 85, 0.5);
+  background-color: var(--sg-preselection-color);
 }
 sg-pieces piece.anim {
   z-index: 4;
@@ -226,7 +235,7 @@ sg-square-over {
   left: 0;
   width: calc(100% / 9);
   height: calc(100% / 9);
-  background: #00000050;
+  background: var(--sg-drag-overlay-color);
   border-radius: 50%;
   padding: 6%;
   margin: calc(-6%);
@@ -311,10 +320,10 @@ sg-square-over {
   fill: none;
 }
 .sg-wrap .sg-shapes g.description ellipse {
-  fill: #15781b;
+  fill: var(--sg-shape-primary-color);
 }
 .sg-wrap .sg-shapes g.description text {
-  fill: white;
+  fill: var(--sg-foreground-color);
   font-size: 60%;
 }
 .sg-wrap .sg-shapes g.current line {
@@ -325,43 +334,43 @@ sg-square-over {
 }
 
 .sg-wrap .sg-shapes g.primary ellipse {
-  stroke: #15781b;
+  stroke: var(--sg-shape-primary-color);
 }
 .sg-wrap .sg-shapes g.primary line {
-  stroke: #15781b;
+  stroke: var(--sg-shape-primary-color);
 }
 .sg-wrap .sg-shapes marker#arrowhead-primary path {
-  fill: #15781b;
+  fill: var(--sg-shape-primary-color);
 }
 
 .sg-wrap .sg-shapes g.alternative0 ellipse {
-  stroke: #882020;
+  stroke: var(--sg-shape-alternative0-color);
 }
 .sg-wrap .sg-shapes g.alternative0 line {
-  stroke: #882020;
+  stroke: var(--sg-shape-alternative0-color);
 }
 .sg-wrap .sg-shapes marker#arrowhead-alternative0 path {
-  fill: #882020;
+  fill: var(--sg-shape-alternative0-color);
 }
 
 .sg-wrap .sg-shapes g.alternative1 ellipse {
-  stroke: #003088;
+  stroke: var(--sg-shape-alternative1-color);
 }
 .sg-wrap .sg-shapes g.alternative1 line {
-  stroke: #003088;
+  stroke: var(--sg-shape-alternative1-color);
 }
 .sg-wrap .sg-shapes marker#arrowhead-alternative1 path {
-  fill: #003088;
+  fill: var(--sg-shape-alternative1-color);
 }
 
 .sg-wrap .sg-shapes g.alternative2 ellipse {
-  stroke: #e68f00;
+  stroke: var(--sg-shape-alternative2-color);
 }
 .sg-wrap .sg-shapes g.alternative2 line {
-  stroke: #e68f00;
+  stroke: var(--sg-shape-alternative2-color);
 }
 .sg-wrap .sg-shapes marker#arrowhead-alternative2 path {
-  fill: #e68f00;
+  fill: var(--sg-shape-alternative2-color);
 }
 
 /* Hands: container size and placement belong to the host page. */
@@ -379,9 +388,9 @@ sg-hand sg-hp-wrap::after {
   padding: 3px 0.3em;
   font-weight: bold;
   font-size: 1.5em;
-  color: white;
-  background-color: #2e2e2e;
-  border: 1px solid #eee;
+  color: var(--sg-foreground-color);
+  background-color: var(--sg-panel-background-color);
+  border: 1px solid var(--sg-hand-count-border-color);
   border-radius: 3px;
 }
 .hand-bottom sg-hand sg-hp-wrap::after {
@@ -417,7 +426,7 @@ sg-hand.promotion::after {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #0000003f;
+  background-color: var(--sg-promotion-overlay-color);
 }
 
 sg-hand piece {
@@ -428,7 +437,7 @@ sg-hand piece {
   margin: unset;
   cursor: pointer;
   pointer-events: auto;
-  border: 2px solid transparent;
+  border: 2px solid var(--sg-transparent-color);
   background-repeat: no-repeat;
   background-size: contain;
   background-position: center;
@@ -436,20 +445,20 @@ sg-hand piece {
 
 sg-hand sg-hp-wrap.selected {
   opacity: 1;
-  background-color: rgba(20, 85, 30, 0.5);
+  background-color: var(--sg-selection-color);
 }
 
 sg-hand sg-hp-wrap.preselected {
   opacity: 1;
-  background-color: rgba(20, 30, 85, 0.5);
+  background-color: var(--sg-preselection-color);
 }
 
 sg-hand sg-hp-wrap.current-pre {
-  background-color: rgba(20, 30, 85, 0.5);
+  background-color: var(--sg-preselection-color);
 }
 
 sg-hand sg-hp-wrap.last-dest {
-  background-color: rgba(155, 199, 0, 0.41);
+  background-color: var(--sg-last-destination-color);
 }
 
 sg-hand sg-hp-wrap.drawing:before {
@@ -457,7 +466,7 @@ sg-hand sg-hp-wrap.drawing:before {
   position: absolute;
   width: 12%;
   height: calc(12% / 11 * 12);
-  background-color: black;
+  background-color: var(--sg-drawing-indicator-color);
   border-radius: 50%;
   opacity: 0.7 !important;
 }

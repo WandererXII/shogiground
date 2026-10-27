@@ -54,6 +54,7 @@ import 'shogiground/styles/pieces/ryoko.css';
 
 | Stylesheet | Contents |
 | --- | --- |
+| `styles/colors.css` | Default UI color variables; imported automatically by core |
 | `styles/core.css` | Required positioning, sizing, interactions, coordinates, drawing, promotion UI, hand counts, and default UI highlights |
 | `styles/variants.css` | Geometry for every dimension from 1×1 through 16×16; load after core |
 | `styles/themes/wood.css` | Wood texture, grid, and 9×9 star points; wood hand background |
@@ -64,7 +65,9 @@ import 'shogiground/styles/pieces/ryoko.css';
 
 Core alone does not provide board or piece artwork. For your own theme or piece
 set, replace the corresponding import and retain core. Override core's default UI
-colors in application CSS if needed. A custom piece stylesheet must match
+colors by setting the `--sg-*` variables from `styles/colors.css` in application CSS.
+For example, set `--sg-selection-color` on the board and hand containers. Color
+references have no fallback values. A custom piece stylesheet must match
 `scaleDownPieces` and the board's geometry.
 
 All referenced images ship in `assets/images/`. Bundlers can process the relative
