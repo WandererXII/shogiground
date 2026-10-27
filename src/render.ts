@@ -1,9 +1,11 @@
 import type { AnimCurrent, AnimFadings, AnimPromotions, AnimVector, AnimVectors } from './anim.js';
 import type { DragCurrent } from './drag.js';
+import { renderKeyboard, syncKeyboardState } from './keyboard.js';
 import type { State } from './state.js';
 import type * as sg from './types.js';
 import {
   createEl,
+  isKey,
   isPieceNode,
   isSquareNode,
   key2pos,
@@ -32,6 +34,9 @@ export function render(s: State, boardEls: sg.BoardElements): void {
   const promotions: AnimPromotions = curAnim ? curAnim.plan.promotions : new Map();
   const curDrag: DragCurrent | undefined = s.draggable.current;
   const curPromKey: sg.Key | undefined = s.promotion.current?.dragged ? s.selected : undefined;
+
+  syncKeyboardState(s, boardEls);
+
   const squares: SquareClasses = computeSquareClasses(s);
   const samePieces = new Set<sg.Key>();
   const movedPieces = new Map<sg.PieceName, sg.PieceNode[]>();
@@ -193,6 +198,7 @@ export function render(s: State, boardEls: sg.BoardElements): void {
   }
 
   if (promotionEl) renderPromotion(s, promotionEl);
+  renderKeyboard(s, boardEls);
 }
 
 function appendValue<K, V>(map: Map<K, V[]>, key: K, value: V): void {
@@ -203,6 +209,12 @@ function appendValue<K, V>(map: Map<K, V[]>, key: K, value: V): void {
 
 function computeSquareClasses(s: State): SquareClasses {
   const squares: SquareClasses = new Map();
+  if (s.keyboard.enabled && !s.viewOnly && !s.promotion.current && isKey(s.keyboard.current))
+    addSquare(
+      squares,
+      s.keyboard.current,
+      `keyboard-cursor${s.keyboard.focused ? ' keyboard-focused' : ''}`,
+    );
   if (s.lastDests && s.highlight.lastDests)
     for (const k of s.lastDests) addSquare(squares, k, 'last-dest');
   if (s.checks && s.highlight.check)

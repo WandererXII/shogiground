@@ -44,6 +44,7 @@ onBeforeUnmount(() => {
       <h2 id="demo-heading">Interactive demo</h2>
       <p class="intro demo-intro">
         Try moving and dropping pieces, drawing on the board, and changing the configuration below.
+        To try promotion, move a pawn into the opponent's territory.
       </p>
       <section class="board-stage" aria-label="Interactive board">
         <div id="demo-layout" class="demo-layout">

@@ -6,6 +6,10 @@ import type { WrapElements, WrapElementsBoolean } from './types.js';
 import { wrapBoard, wrapHand } from './wrap.js';
 
 function attachBoard(state: State, boardWrap: HTMLElement): void {
+  const restoreFocus =
+    state.keyboard.enabled &&
+    !state.viewOnly &&
+    state.dom.elements.board?.board === document.activeElement;
   detachElements({ board: true }, state, true);
   const elements = wrapBoard(boardWrap, state);
 
@@ -22,6 +26,7 @@ function attachBoard(state: State, boardWrap: HTMLElement): void {
   state.promotion.prevPromotionHash = '';
 
   render(state, elements);
+  if (restoreFocus) elements.board.focus({ preventScroll: true });
 }
 
 function attachHands(state: State, handTopWrap?: HTMLElement, handBottomWrap?: HTMLElement): void {

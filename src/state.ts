@@ -92,6 +92,11 @@ export interface HeadlessState {
     deleteOnTouch: boolean; // selecting a piece on the board or in hand will remove it - board editor
     addSparesToHand: boolean; // add selected spare piece to hand - board editor
   };
+  keyboard: {
+    enabled: boolean; // arrow keys, Enter and Escape on the focused board
+    current?: sg.Key | sg.Piece; // cursor, independent of the selected piece
+    focused: boolean;
+  };
   promotion: {
     promotesTo: (role: sg.RoleString) => sg.RoleString | undefined;
     unpromotesTo: (role: sg.RoleString) => sg.RoleString | undefined;
@@ -104,6 +109,7 @@ export interface HeadlessState {
       promotedPiece: sg.Piece;
       key: sg.Key;
       dragged: boolean; // no animations with drag
+      keyboardChoice?: boolean; // undefined defaults to the promoted option
     };
     events: {
       initiated?: () => void; // called when promotion dialog is started
@@ -169,6 +175,7 @@ export function defaults(): HeadlessState {
       addToHandOnDropOff: false,
     },
     selectable: { enabled: true, forceSpares: false, deleteOnTouch: false, addSparesToHand: false },
+    keyboard: { enabled: false, focused: false },
     promotion: {
       movePromotionDialog: () => false,
       forceMovePromotion: () => false,

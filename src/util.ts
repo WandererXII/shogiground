@@ -37,6 +37,10 @@ export const distanceSq = (pos1: sg.Pos, pos2: sg.Pos): number => {
   return dx * dx + dy * dy;
 };
 
+export function isKey(value: sg.Key | sg.Piece | undefined): value is sg.Key {
+  return typeof value === 'string';
+}
+
 export const samePiece = (p1: sg.Piece, p2: sg.Piece): boolean =>
   p1.role === p2.role && p1.color === p2.color;
 

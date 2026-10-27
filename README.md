@@ -24,7 +24,7 @@ users of your website.
 ## Features
 
 - Written in TypeScript with no runtime dependencies
-- Click, drag & drop, touch support, premoves, predrops, and animations
+- Click, drag & drop, touch support, keyboard navigation, premoves, predrops, and animations
 - Configurable CSS styling, board highlights, and SVG arrows and circles
 - SFEN import/export and board dimensions up to 16×16
 - No built-in shogi rules, so you can supply your own logic for shogi and variants

@@ -17,6 +17,10 @@ sg-board {
   left: 0;
 }
 
+.sg-wrap sg-board:focus {
+  outline: none;
+}
+
 sg-board piece {
   position: absolute;
   top: 0;
@@ -110,6 +114,22 @@ sg-promotion sg-promotion-choices piece {
 
 sg-promotion sg-promotion-choices piece:hover {
   border-radius: 0px;
+}
+
+sg-squares sq.keyboard-cursor,
+sg-hand sg-hp-wrap.keyboard-cursor,
+sg-promotion piece.keyboard-cursor {
+  outline: 2px dashed var(--sg-keyboard-color, #005fcc);
+  outline-offset: -6px;
+}
+sg-hand sg-hp-wrap.keyboard-cursor {
+  opacity: 1;
+}
+sg-squares sq.keyboard-cursor.keyboard-focused,
+sg-hand sg-hp-wrap.keyboard-cursor.keyboard-focused,
+sg-promotion piece.keyboard-cursor.keyboard-focused {
+  outline-width: 3px;
+  outline-style: solid;
 }
 
 sg-squares {
@@ -368,7 +388,7 @@ sg-hand sg-hp-wrap::after {
   top: unset;
   bottom: 0;
 }
-sg-hp-wrap[data-nb='0']:not(.drawing) {
+sg-hp-wrap[data-nb='0']:not(.drawing)  piece{
   opacity: 0.3;
 }
 sg-hp-wrap[data-nb='0']:not(.selected):not(.drawing)::after {

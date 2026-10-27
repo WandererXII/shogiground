@@ -173,6 +173,22 @@ After updating the turn and legal destination maps, call `ground.playPremove()` 
 | `selectable.deleteOnTouch` | `false` | Delete a selected piece from its board square or hand. |
 | `selectable.addSparesToHand` | `false` | Add selected spare pieces to hand. |
 
+## Keyboard controls
+
+Keyboard controls default to disabled and can be toggled at runtime. They are unavailable in `viewOnly` mode.
+
+```ts
+ground.set({ keyboard: { enabled: true } });
+```
+
+Tab to the board or click it or a hand to focus it. Tab leaves the board.
+
+- **Arrows:** move the cursor through board squares and visible hand slots in screen directions.
+- **Enter:** select a piece or attempt a move/drop using the configured rules.
+- **Escape:** cancel selection, premove/predrop, or promotion; release focus when idle.
+
+In a promotion dialog, arrows switch choices and Enter confirms. The cursor is independent of piece selection and starts at the board's center.
+
 ## Promotion
 
 Supply promotion rules for your variant. The default role callbacks return `undefined`; all four decision callbacks return `false`.

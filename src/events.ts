@@ -1,18 +1,17 @@
-import { anim } from './anim.js';
-import { cancelPromotion, selectSquare, userDrop, userMove } from './board.js';
+import { cancelPromotion } from './board.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
+import { bindKeyboard, focusBoard } from './keyboard.js';
+import { choosePromotion } from './promotion.js';
 import { usesBounds } from './shapes.js';
 import type { State } from './state.js';
 import type * as sg from './types.js';
 import {
-  callUserFunction,
   eventPosition,
   getHandPieceAtDomPos,
   isMiddleButton,
   isPieceNode,
   isRightButton,
-  samePiece,
 } from './util.js';
 
 type MouchBind = (e: sg.MouchEvent) => void;
@@ -58,6 +57,8 @@ export function bindBoard(s: State, boardEls: sg.BoardElements): sg.Unbind {
         }),
       );
     }
+
+    unbinds.push(bindKeyboard(s, boardEls.board));
   }
 
   return () => {
@@ -75,6 +76,7 @@ export function bindHand(s: State, handEl: HTMLElement): sg.Unbind {
     const onStart = startDragFromHand(s) as EventListener;
     for (const ev of ['mousedown', 'touchstart'])
       unbinds.push(unbindable(handEl, ev, onStart, { passive: false }));
+
     unbinds.push(
       unbindable(handEl, 'click', () => {
         if (s.promotion.current) {
@@ -86,6 +88,8 @@ export function bindHand(s: State, handEl: HTMLElement): sg.Unbind {
         if (s.disableContextMenu || s.drawable.enabled) e.preventDefault();
       }),
     );
+
+    unbinds.push(unbindable(handEl, 'mousedown', () => focusBoard(s), { capture: true }));
   }
 
   return () => {
@@ -192,18 +196,8 @@ function promote(s: State, e: sg.MouchEvent): void {
   e.stopPropagation();
 
   const target = e.target as HTMLElement | null;
-  const cur = s.promotion.current;
-  if (target && isPieceNode(target) && cur) {
-    const piece = { color: target.sgColor, role: target.sgRole };
-    const prom = !samePiece(cur.piece, piece);
-    if (cur.dragged || (s.turnColor !== s.activeColor && s.activeColor !== 'both')) {
-      if (s.selected) userMove(s, s.selected, cur.key, prom);
-      else if (s.selectedPiece) userDrop(s, s.selectedPiece, cur.key, prom);
-    } else anim((s) => selectSquare(s, cur.key, prom), s);
-
-    callUserFunction(s.promotion.events.after, piece);
-  } else anim((s) => cancelPromotion(s), s);
-  s.promotion.current = undefined;
-
-  s.dom.redraw();
+  choosePromotion(
+    s,
+    target && isPieceNode(target) ? { color: target.sgColor, role: target.sgRole } : undefined,
+  );
 }

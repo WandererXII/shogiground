@@ -296,6 +296,12 @@ export const fields = [
     signature: '() => void',
   },
   {
+    path: 'keyboard.enabled',
+    group: 'Dragging and selection',
+    description: 'Navigate the focused board and hands with arrows, Enter to select, and Escape to cancel.',
+    type: 'boolean',
+  },
+  {
     path: 'draggable.enabled',
     group: 'Dragging and selection',
     description: 'Enable dragging moves and drops.',

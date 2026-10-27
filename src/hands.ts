@@ -1,6 +1,6 @@
 import type { HeadlessState } from './state.js';
 import type * as sg from './types.js';
-import { samePiece } from './util.js';
+import { isKey, samePiece } from './util.js';
 
 export function numberInHand(s: HeadlessState, piece: sg.Piece): number {
   return s.hands.handMap.get(piece.color)?.get(piece.role) || 0;
@@ -29,6 +29,19 @@ export function renderHand(s: HeadlessState, handEl: HTMLElement): void {
   while (wrapEl) {
     const pieceEl = wrapEl.firstElementChild as sg.PieceNode;
     const piece = { role: pieceEl.sgRole, color: pieceEl.sgColor };
+
+    const cursor = s.keyboard.current;
+    wrapEl.classList.toggle(
+      'keyboard-cursor',
+      s.keyboard.enabled &&
+        !s.viewOnly &&
+        !s.promotion.current &&
+        !!cursor &&
+        !isKey(cursor) &&
+        samePiece(cursor, piece),
+    );
+    wrapEl.classList.toggle('keyboard-focused', s.keyboard.focused);
+
     const num = numberInHand(s, piece);
     const isSelected = !!s.selectedPiece && samePiece(piece, s.selectedPiece) && !s.droppable.spare;
 

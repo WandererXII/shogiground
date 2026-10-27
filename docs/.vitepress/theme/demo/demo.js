@@ -9,12 +9,44 @@ export function mountDemo(root) {
   const status = root.querySelector('#config-status');
   const editor = root.querySelector('#config-fields');
   const controls = new Map();
+  const promotions = {
+    pawn: 'tokin',
+    lance: 'promotedlance',
+    knight: 'promotedknight',
+    silver: 'promotedsilver',
+    bishop: 'horse',
+    rook: 'dragon',
+  };
   let ground;
+
+  function inPromotionZone(key, color) {
+    const rank = key.charCodeAt(key.length - 1) - 97;
+    return color === 'sente' ? rank < 3 : rank >= ground.state.dimensions.ranks - 3;
+  }
+
+  function forceMovePromotion(orig, dest) {
+    const piece = ground.state.pieces.get(orig);
+    if (!piece) return false;
+    const rank = dest.charCodeAt(dest.length - 1) - 97;
+    const remaining = piece.color === 'sente' ? rank : ground.state.dimensions.ranks - 1 - rank;
+    return ((piece.role === 'pawn' || piece.role === 'lance') && remaining === 0) ||
+      (piece.role === 'knight' && remaining < 2);
+  }
 
   function createGround() {
     return Shogiground(
       {
         sfen: { board: startingBoard, hands: 'Pp' },
+        promotion: {
+          promotesTo: role => promotions[role],
+          unpromotesTo: role => Object.keys(promotions).find(key => promotions[key] === role),
+          movePromotionDialog: (orig, dest) => {
+            const piece = ground.state.pieces.get(orig);
+            return !!piece && !!promotions[piece.role] && !forceMovePromotion(orig, dest) &&
+              (inPromotionZone(orig, piece.color) || inPromotionZone(dest, piece.color));
+          },
+          forceMovePromotion,
+        },
         events: {
           change: sync,
           select: sync,
