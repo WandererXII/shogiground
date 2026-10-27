@@ -1,13 +1,15 @@
 import { defineConfig } from 'vitepress';
 
+const base = `${(process.env.DOCS_BASE || '/').replace(/\/+$/, '')}/`;
 const siteUrl = `${(process.env.DOCS_URL || 'https://wandererxii.github.io/shogiground').replace(/\/+$/, '')}/`;
 
 export default defineConfig({
   title: 'Shogiground',
   description: 'The open source TypeScript shogi board UI used by Lishogi. Interactive demo, setup guide, configuration, and API documentation.',
   lang: 'en',
-  base: process.env.DOCS_BASE || '/',
+  base,
   head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}favicon.svg` }],
     ['script', {}, `
       (() => {
         const root = document.documentElement;
