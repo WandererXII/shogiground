@@ -73,7 +73,7 @@ export function renderShapes(
     };
   });
 
-  const shapes: Shape[] = d.shapes.concat(d.autoShapes).map((s: DrawShape) => {
+  const shapes: Shape[] = d.autoShapes.concat(d.shapes).map((s: DrawShape) => {
     return {
       shape: s,
       hash: s.customSvg
