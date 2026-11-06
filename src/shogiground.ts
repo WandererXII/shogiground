@@ -78,8 +78,11 @@ function debounceRedraw(f: (...args: any[]) => void): (...args: any[]) => void {
     if (redrawing) return;
     redrawing = true;
     requestAnimationFrame(() => {
-      f(...args);
-      redrawing = false;
+      try {
+        f(...args);
+      } finally {
+        redrawing = false;
+      }
     });
   };
 }
