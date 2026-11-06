@@ -69,14 +69,16 @@ export function renderShapes(
   const pieceShapes = [...pieceMap.values()].map((s) => {
     return {
       shape: s,
-      hash: shapeHash(s, arrowDests, false, hashBounds),
+      hash: pieceShapeHash(s, state.scaleDownPieces),
     };
   });
 
   const shapes: Shape[] = d.shapes.concat(d.autoShapes).map((s: DrawShape) => {
     return {
       shape: s,
-      hash: shapeHash(s, arrowDests, false, hashBounds),
+      hash: s.customSvg
+        ? customShapeHash(s, hashBounds)
+        : shapeHash(s, arrowDests, false, hashBounds),
     };
   });
   if (cur)
@@ -170,40 +172,42 @@ function syncDefs(
   }
 }
 
-// append and remove only. No updates.
+// append, remove and reorder only. No updates.
 export function syncShapes(
   shapes: Shape[],
   root: HTMLElement | SVGElement,
   renderShape: (shape: Shape) => HTMLElement | SVGElement | undefined,
   outsideArrow?: boolean,
 ): void {
-  const hashesInDom = new Map(); // by hash
-  const toRemove: SVGElement[] = [];
-  for (const sc of shapes) hashesInDom.set(sc.hash, false);
-  if (outsideArrow) hashesInDom.set(outsideArrowHash, true);
-  let el: SVGElement | undefined = root.firstElementChild as SVGElement;
-  let elHash: Hash | null;
+  const elsInDom = new Map<Hash | null, Element[]>(); // by hash
+  let el = root.firstElementChild;
   while (el) {
-    elHash = el.getAttribute('sgHash');
-    // found a shape element that's here to stay
-    if (hashesInDom.has(elHash)) hashesInDom.set(elHash, true);
-    // or remove it
-    else toRemove.push(el);
-    el = el.nextElementSibling as SVGElement | undefined;
-  }
-  // remove old shapes
-  for (const el of toRemove) root.removeChild(el);
-  // insert shapes that are not yet in dom
-  for (const sc of shapes) {
-    if (!hashesInDom.get(sc.hash)) {
-      const shapeEl = renderShape(sc);
-      if (shapeEl) root.appendChild(shapeEl);
+    const elHash = el.getAttribute('sgHash');
+    // the outside arrow is managed by renderShapes
+    if (!outsideArrow || elHash !== outsideArrowHash) {
+      const els = elsInDom.get(elHash);
+      if (els) els.push(el);
+      else elsInDom.set(elHash, [el]);
     }
+    el = el.nextElementSibling;
   }
+  // found shape elements that are here to stay
+  const kept = shapes.map((sc) => elsInDom.get(sc.hash)?.shift());
+  // remove old shapes
+  for (const els of elsInDom.values()) {
+    for (const el of els) root.removeChild(el);
+  }
+  // walk the dom along with shapes, inserting new elements and moving misplaced ones
+  el = root.firstElementChild;
+  shapes.forEach((sc, i) => {
+    const shapeEl = kept[i] || renderShape(sc);
+    if (shapeEl === el) el = el?.nextElementSibling ?? null;
+    else if (shapeEl) root.insertBefore(shapeEl, el);
+  });
 }
 
 function shapeHash(
-  { orig, dest, brush, piece, customSvg, description }: DrawShape,
+  { orig, dest, brush, piece, description }: DrawShape,
   arrowDests: ArrowDests,
   current: boolean,
   boundHash: (piece: sg.Piece) => string,
@@ -217,8 +221,25 @@ function shapeHash(
     brush,
     (arrowDests.get(isPiece(dest) ? pieceNameOf(dest) : dest) || 0) > 1,
     piece && pieceHash(piece),
-    customSvg && customSvgHash(customSvg),
     description,
+  ]
+    .filter((x) => x)
+    .join(',');
+}
+
+function pieceShapeHash({ orig, piece }: DrawShape, scaleDown: boolean): Hash {
+  return [scaleDown, isPiece(orig) ? pieceHash(orig) : orig, piece && pieceHash(piece)].join(',');
+}
+
+function customShapeHash(
+  { orig, brush, customSvg }: DrawShape,
+  boundHash: (piece: sg.Piece) => string,
+): Hash {
+  return [
+    isPiece(orig) && boundHash(orig),
+    isPiece(orig) ? pieceHash(orig) : orig,
+    brush,
+    customSvg && customSvgHash(customSvg),
   ]
     .filter((x) => x)
     .join(',');
@@ -245,7 +266,7 @@ function renderSVGShape(
   const orig = pieceOrKeyToPos(shape.orig, state);
   if (!orig) return;
   if (shape.customSvg) {
-    return renderCustomSvg(shape.brush, shape.customSvg, orig, state.squareRatio);
+    return renderCustomSvg(shape.brush, shape.customSvg, orig, state.squareRatio, hash);
   } else {
     let el: SVGElement | undefined;
     const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state);
@@ -289,11 +310,15 @@ function renderCustomSvg(
   customSvg: string,
   pos: sg.Pos,
   ratio: sg.NumberPair,
+  hash: Hash,
 ): SVGElement {
   const [x, y] = pos;
 
   // Translate to top-left of `orig` square
-  const g = setAttributes(createSVGElement('g'), { transform: `translate(${x},${y})` });
+  const g = setAttributes(createSVGElement('g'), {
+    transform: `translate(${x},${y})`,
+    sgHash: hash,
+  });
 
   const svg = setAttributes(createSVGElement('svg'), {
     class: brush,
@@ -348,13 +373,14 @@ function renderArrow(
   });
 }
 
-export function renderPiece(state: State, { shape }: Shape): sg.PieceNode | undefined {
+export function renderPiece(state: State, { shape, hash }: Shape): sg.PieceNode | undefined {
   if (!shape.piece || isPiece(shape.orig)) return;
 
   const orig = shape.orig;
   const scale = (shape.piece.scale || 1) * (state.scaleDownPieces ? 0.5 : 1);
 
   const pieceEl = createEl('piece', pieceNameOf(shape.piece)) as sg.PieceNode;
+  pieceEl.setAttribute('sgHash', hash);
   pieceEl.sgKey = orig;
   pieceEl.sgScale = scale;
   translateRel(
