@@ -3,7 +3,7 @@ import type * as sg from './types.js';
 import { pos2key } from './util.js';
 
 export function inferDimensions(boardSfen: sg.BoardSfen): sg.Dimensions {
-  const ranks = boardSfen.split('/');
+  const ranks = boardSfen.split(/[ _]/, 1)[0].split('/');
   const firstFile = ranks[0].split('');
   let filesCnt = 0;
   let cnt = 0;
