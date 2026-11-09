@@ -1,3 +1,11 @@
+## Unreleased
+
+- Add opt-in keyboard controls for the board, hands, moves, drops, and promotion.
+- Keep arrowheads visible when another board is hidden. For custom CSS, replace `marker#arrowhead-primary path` with `marker[data-brush="primary"] path` (substitute the brush name as needed).
+- Ship `shogiground/style.css`, board themes, and piece sets with npm. Use CSS variables to customize colors. Replace the examples with a documentation site and interactive demo.
+- Remeasure the board before clicks and drags. Add `refreshBounds()` and always listen for `shogiground.resize` so callers can refresh bounds and drawings after layout changes.
+- Fix runtime configuration updates, preserve custom container classes, and correct edge cases in dragging, drops, selection, touch cancellation, and promotion. Improve shape layering, default brushes, and overlay rendering, and copy shape arrays supplied by callers.
+
 ## v0.10.4
 
 - Fire `onChange` event when removing a piece from hand via `deleteOnTouch`.
