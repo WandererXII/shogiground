@@ -101,9 +101,9 @@ export function wrapBoard(boardWrap: HTMLElement, s: State): BoardElements {
   const dimCls = `d-${s.dimensions.files}x${s.dimensions.ranks}`;
 
   // remove all other dimension classes
-  boardWrap.classList.forEach((c) => {
-    if (c.substring(0, 2) === 'd-' && c !== dimCls) boardWrap.classList.remove(c);
-  });
+  for (const c of Array.from(boardWrap.classList)) {
+    if (/^d-\d+x\d+$/.test(c) && c !== dimCls) boardWrap.classList.remove(c);
+  }
 
   // ensure the sg-wrap class and dimensions class is set beforehand to avoid recomputing styles
   boardWrap.classList.add('sg-wrap', dimCls);
@@ -144,9 +144,9 @@ export function wrapHand(handWrap: HTMLElement, pos: 'top' | 'bottom', s: State)
   const roleCntCls = `r-${s.hands.roles.length}`;
 
   // remove all other role count classes
-  handWrap.classList.forEach((c) => {
-    if (c.substring(0, 2) === 'r-' && c !== roleCntCls) handWrap.classList.remove(c);
-  });
+  for (const c of Array.from(handWrap.classList)) {
+    if (/^r-\d+$/.test(c) && c !== roleCntCls) handWrap.classList.remove(c);
+  }
 
   // ensure the sg-hand-wrap class, hand pos class and role number class is set beforehand to avoid recomputing styles
   handWrap.classList.add('sg-hand-wrap', `hand-${pos}`, roleCntCls);
