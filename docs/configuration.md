@@ -182,6 +182,8 @@ Keyboard controls default to disabled and can be toggled at runtime. They are un
 ground.set({ keyboard: { enabled: true } });
 ```
 
+Set `keyboard.ariaLabel` to provide a localized accessible label for the board, either at initialization or with `ground.set()`. The default is “Shogi board. Use arrow keys to navigate, Enter to select, Escape to cancel.” Set `ariaLabel` to `undefined` to restore the default.
+
 Tab to the board or click it or a hand to focus it. Tab leaves the board.
 
 - **Arrows:** move the cursor through board squares and visible hand slots in screen directions.

@@ -37,7 +37,7 @@ type ConfigurableState = Omit<
   premovable: Omit<HeadlessState['premovable'], 'current' | 'dests'>;
   predroppable: Omit<HeadlessState['predroppable'], 'current' | 'dests'>;
   draggable: Omit<HeadlessState['draggable'], 'current'>;
-  keyboard: Pick<HeadlessState['keyboard'], 'enabled'>;
+  keyboard: Pick<HeadlessState['keyboard'], 'enabled' | 'ariaLabel'>;
   promotion: Omit<HeadlessState['promotion'], 'current' | 'prevPromotionHash'>;
   drawable: Omit<HeadlessState['drawable'], 'current' | 'prevSvgHash' | 'piece'>;
 };

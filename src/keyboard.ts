@@ -33,12 +33,12 @@ const directions: Record<string, sg.Pos> = {
   ArrowDown: [0, 1],
 };
 
-const keyboardAttributes = new Map([
-  ['tabindex', '0'],
-  ['role', 'group'],
-  ['aria-label', 'Shogi board. Use arrow keys to navigate, Enter to select, Escape to cancel.'],
-]);
-const previousAttributes = new WeakMap<HTMLElement, Map<string, string | null>>();
+const defaultAriaLabel =
+  'Shogi board. Use arrow keys to navigate, Enter to select, Escape to cancel.';
+const keyboardAttributes = new WeakMap<
+  HTMLElement,
+  { originalAttributes: Map<string, string | null>; ariaLabel: string }
+>();
 
 export function focusBoard(s: State): void {
   if (s.keyboard.enabled && !s.viewOnly && !s.dom.destroyed)
@@ -120,21 +120,31 @@ export function syncKeyboardState(s: State, elements: sg.BoardElements): void {
 export function renderKeyboard(s: State, elements: sg.BoardElements): void {
   const enabled = s.keyboard.enabled && !s.viewOnly;
   const el = elements.board;
-  const previous = previousAttributes.get(el);
+  const previous = keyboardAttributes.get(el);
   if (enabled) {
+    const ariaLabel = s.keyboard.ariaLabel ?? defaultAriaLabel;
     if (!previous) {
-      previousAttributes.set(
-        el,
-        new Map(Array.from(keyboardAttributes.keys(), (name) => [name, el.getAttribute(name)])),
-      );
-      for (const [name, value] of keyboardAttributes) el.setAttribute(name, value);
+      const attributes = new Map([
+        ['tabindex', '0'],
+        ['role', 'group'],
+        ['aria-label', ariaLabel],
+      ]);
+      const originalAttributes = new Map<string, string | null>();
+      for (const [name, value] of attributes) {
+        originalAttributes.set(name, el.getAttribute(name));
+        el.setAttribute(name, value);
+      }
+      keyboardAttributes.set(el, { originalAttributes, ariaLabel });
+    } else if (previous.ariaLabel !== ariaLabel) {
+      el.setAttribute('aria-label', ariaLabel);
+      previous.ariaLabel = ariaLabel;
     }
   } else if (previous) {
-    for (const [name, value] of previous) {
+    for (const [name, value] of previous.originalAttributes) {
       if (value === null) el.removeAttribute(name);
       else el.setAttribute(name, value);
     }
-    previousAttributes.delete(el);
+    keyboardAttributes.delete(el);
   }
   if (!enabled && !previous) return;
 

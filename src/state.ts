@@ -94,6 +94,7 @@ export interface HeadlessState {
   };
   keyboard: {
     enabled: boolean; // arrow keys, Enter and Escape on the focused board
+    ariaLabel?: string; // accessible label for the keyboard-enabled board
     current?: sg.Key | sg.Piece; // cursor, independent of the selected piece
     focused: boolean;
   };
