@@ -28,6 +28,21 @@ type Hash = string;
 
 const outsideArrowHash = 'outsideArrow';
 const defaultBrush = 'primary';
+const markerPrefixes = new WeakMap<SVGElement, string>();
+let nextMarkerScope = 0;
+
+function getMarkerPrefix(svg: SVGElement): string {
+  let prefix = markerPrefixes.get(svg);
+  if (!prefix) {
+    prefix = `sg-arrowhead-${++nextMarkerScope}`;
+    markerPrefixes.set(svg, prefix);
+  }
+  return prefix;
+}
+
+function markerId(prefix: string, brush: string): string {
+  return `${prefix}-${brush || defaultBrush}`;
+}
 
 export function renderShapes(
   state: State,
@@ -95,6 +110,8 @@ export function renderShapes(
   if (fullHash === state.drawable.prevSvgHash) return;
   state.drawable.prevSvgHash = fullHash;
 
+  const markerPrefix = getMarkerPrefix(svg);
+
   /*
     -- DOM hierarchy --
     <svg class="sg-shapes"> (<= svg)
@@ -118,17 +135,17 @@ export function renderShapes(
   const shapesEl = svg.querySelector('g') as SVGElement;
   const customSvgsEl = customSvg.querySelector('g') as SVGElement;
 
-  syncDefs(shapes, outsideArrow ? curD : undefined, defsEl);
+  syncDefs(shapes, outsideArrow ? curD : undefined, defsEl, markerPrefix);
   syncShapes(
     shapes.filter((s) => !s.shape.customSvg && (!s.shape.piece || s.current)),
     shapesEl,
-    (shape) => renderSVGShape(state, shape, arrowDests),
+    (shape) => renderSVGShape(state, shape, arrowDests, markerPrefix),
     outsideArrow,
   );
   syncShapes(
     shapes.filter((s) => s.shape.customSvg),
     customSvgsEl,
-    (shape) => renderSVGShape(state, shape, arrowDests),
+    (shape) => renderSVGShape(state, shape, arrowDests, markerPrefix),
   );
   syncShapes(pieceShapes, freePieces, (shape) => renderPiece(state, shape));
 
@@ -141,7 +158,14 @@ export function renderShapes(
         class: shapeClass(curD.brush, true, true),
         sgHash: outsideArrowHash,
       });
-      const el = renderArrow(curD.brush, orig, orig, state.squareRatio, true, false);
+      const el = renderArrow(
+        markerId(markerPrefix, curD.brush),
+        orig,
+        orig,
+        state.squareRatio,
+        true,
+        false,
+      );
       g.appendChild(el);
       curD.arrow = el;
       shapesEl.appendChild(g);
@@ -154,21 +178,22 @@ function syncDefs(
   shapes: Shape[],
   outsideShape: DrawCurrent | undefined,
   defsEl: SVGElement,
+  markerPrefix: string,
 ): void {
   const brushes = new Set<string>();
   for (const s of shapes) {
-    if (!samePieceOrKey(s.shape.dest, s.shape.orig)) brushes.add(s.shape.brush);
+    if (!samePieceOrKey(s.shape.dest, s.shape.orig)) brushes.add(s.shape.brush || defaultBrush);
   }
-  if (outsideShape) brushes.add(outsideShape.brush);
+  if (outsideShape) brushes.add(outsideShape.brush || defaultBrush);
   const keysInDom = new Set();
   let el: SVGElement | undefined = defsEl.firstElementChild as SVGElement;
   while (el) {
-    keysInDom.add(el.getAttribute('sgKey'));
+    keysInDom.add(el.getAttribute('data-brush'));
     el = el.nextElementSibling as SVGElement | undefined;
   }
-  for (const key of brushes) {
-    const brush = key || defaultBrush;
-    if (!keysInDom.has(brush)) defsEl.appendChild(renderMarker(brush));
+  for (const brush of brushes) {
+    if (!keysInDom.has(brush))
+      defsEl.appendChild(renderMarker(markerId(markerPrefix, brush), brush));
   }
 }
 
@@ -262,6 +287,7 @@ function renderSVGShape(
   state: State,
   { shape, current, hash }: Shape,
   arrowDests: ArrowDests,
+  markerPrefix: string,
 ): SVGElement | undefined {
   const orig = pieceOrKeyToPos(shape.orig, state);
   if (!orig) return;
@@ -272,7 +298,7 @@ function renderSVGShape(
     const dest = !samePieceOrKey(shape.orig, shape.dest) && pieceOrKeyToPos(shape.dest, state);
     if (dest) {
       el = renderArrow(
-        shape.brush,
+        markerId(markerPrefix, shape.brush),
         orig,
         dest,
         state.squareRatio,
@@ -347,7 +373,7 @@ function renderEllipse(pos: sg.Pos, ratio: sg.NumberPair, current: boolean): SVG
 }
 
 function renderArrow(
-  brush: string,
+  markerId: string,
   orig: sg.Pos,
   dest: sg.Pos,
   ratio: sg.NumberPair,
@@ -365,7 +391,7 @@ function renderArrow(
   return setAttributes(createSVGElement('line'), {
     'stroke-width': lineWidth(current, ratio),
     'stroke-linecap': 'round',
-    'marker-end': `url(#arrowhead-${brush || defaultBrush})`,
+    'marker-end': `url(#${markerId})`,
     x1: a[0],
     y1: a[1],
     x2: b[0] - xo,
@@ -431,9 +457,10 @@ function renderDescription(
   return g;
 }
 
-function renderMarker(brush: string): SVGElement {
+function renderMarker(id: string, brush: string): SVGElement {
   const marker = setAttributes(createSVGElement('marker'), {
-    id: `arrowhead-${brush}`,
+    id,
+    'data-brush': brush,
     orient: 'auto',
     markerWidth: 4,
     markerHeight: 8,
@@ -445,7 +472,6 @@ function renderMarker(brush: string): SVGElement {
       d: 'M0,0 V4 L3,2 Z',
     }),
   );
-  marker.setAttribute('sgKey', brush);
   return marker;
 }
 

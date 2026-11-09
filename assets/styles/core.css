@@ -339,7 +339,7 @@ sg-square-over {
 .sg-wrap .sg-shapes g.primary line {
   stroke: var(--sg-shape-primary-color);
 }
-.sg-wrap .sg-shapes marker#arrowhead-primary path {
+.sg-wrap .sg-shapes marker[data-brush='primary'] path {
   fill: var(--sg-shape-primary-color);
 }
 
@@ -349,7 +349,7 @@ sg-square-over {
 .sg-wrap .sg-shapes g.alternative0 line {
   stroke: var(--sg-shape-alternative0-color);
 }
-.sg-wrap .sg-shapes marker#arrowhead-alternative0 path {
+.sg-wrap .sg-shapes marker[data-brush='alternative0'] path {
   fill: var(--sg-shape-alternative0-color);
 }
 
@@ -359,7 +359,7 @@ sg-square-over {
 .sg-wrap .sg-shapes g.alternative1 line {
   stroke: var(--sg-shape-alternative1-color);
 }
-.sg-wrap .sg-shapes marker#arrowhead-alternative1 path {
+.sg-wrap .sg-shapes marker[data-brush='alternative1'] path {
   fill: var(--sg-shape-alternative1-color);
 }
 
@@ -369,7 +369,7 @@ sg-square-over {
 .sg-wrap .sg-shapes g.alternative2 line {
   stroke: var(--sg-shape-alternative2-color);
 }
-.sg-wrap .sg-shapes marker#arrowhead-alternative2 path {
+.sg-wrap .sg-shapes marker[data-brush='alternative2'] path {
   fill: var(--sg-shape-alternative2-color);
 }
 
