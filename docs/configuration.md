@@ -92,7 +92,7 @@ Defaults below apply to a new instance. Optional fields without a default start 
 | --- | --- | --- |
 | `animation.enabled` | `true` | Animate position changes. |
 | `animation.hands` | `true` | Include hands in animations. |
-| `animation.duration` | `250` | Duration in milliseconds. Values below `70` disable animation. |
+| `animation.duration` | `250` | Duration in milliseconds. Values below `70` skip animation without changing `animation.enabled`. |
 
 
 ## Hands

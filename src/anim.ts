@@ -1,5 +1,5 @@
 import { allKeys, colors } from './constants.js';
-import type { State } from './state.js';
+import type { HeadlessState, State } from './state.js';
 import type * as sg from './types.js';
 import * as util from './util.js';
 
@@ -27,8 +27,12 @@ export interface AnimCurrent {
   plan: AnimPlan;
 }
 
+export function shouldAnimate({ enabled, duration }: HeadlessState['animation']): boolean {
+  return enabled && duration >= 70;
+}
+
 export function anim<A>(mutation: Mutation<A>, state: State): A {
-  return state.animation.enabled ? animate(mutation, state) : render(mutation, state);
+  return shouldAnimate(state.animation) ? animate(mutation, state) : render(mutation, state);
 }
 
 export function render<A>(mutation: Mutation<A>, state: State): A {

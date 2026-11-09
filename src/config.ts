@@ -1,3 +1,4 @@
+import { shouldAnimate } from './anim.js';
 import { clearPreDests, setChecks, unselect } from './board.js';
 import { inferDimensions, sfenToBoard, sfenToHands } from './sfen.js';
 import type { HeadlessState } from './state.js';
@@ -52,9 +53,7 @@ export interface Config extends DeepPartial<ConfigurableState, sg.Piece> {
 export function applyAnimation(state: HeadlessState, config: Config): void {
   if (config.animation) {
     deepMerge(state.animation, config.animation);
-    // no need for such short animations
-    if ((state.animation.duration || 0) < 70) state.animation.enabled = false;
-    if (!state.animation.enabled) state.animation.current = undefined;
+    if (!shouldAnimate(state.animation)) state.animation.current = undefined;
   }
 }
 
