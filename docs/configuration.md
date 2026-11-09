@@ -190,6 +190,8 @@ Tab to the board or click it or a hand to focus it. Tab leaves the board.
 
 In a promotion dialog, arrows switch choices and Enter confirms. The cursor is independent of piece selection and starts at the board's center.
 
+With `selectable.enabled: false`, Enter follows the same selection rules as a click. Ordinary moves and drops require dragging. Enter can still confirm a promotion dialog opened by a drag.
+
 ## Promotion
 
 Supply promotion rules for your variant. The default role callbacks return `undefined`; all four decision callbacks return `false`.
@@ -206,8 +208,8 @@ Supply promotion rules for your variant. The default role callbacks return `unde
 | Callback | Arguments | Called when |
 | --- | --- | --- |
 | `promotion.events.initiated` | `()` | The promotion dialog opens. |
-| `promotion.events.after` | `(piece: Piece)` | The user chooses a piece. |
-| `promotion.events.cancel` | `()` | An open dialog closes without a choice, including when a programmatic action dismisses it. |
+| `promotion.events.after` | `(piece: Piece)` | Confirming the choice plays the move or drop. |
+| `promotion.events.cancel` | `()` | An open dialog closes without playing a move or drop. This includes dismissal, rejected choices, and choices that queue a premove or predrop. |
 
 ## Forsyth conversion
 

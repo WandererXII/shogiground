@@ -62,12 +62,12 @@ export function start(s: State, e: sg.MouchEvent): void {
   const hadPredrop = !!s.predroppable.current;
   if (s.selectable.deleteOnTouch) board.deletePiece(s, orig);
   else if (s.selected) {
-    if (!board.promotionDialogMove(s, s.selected, orig)) {
+    if (!s.selectable.enabled || !board.promotionDialogMove(s, s.selected, orig)) {
       if (board.canMove(s, s.selected, orig)) anim((state) => board.selectSquare(state, orig), s);
       else board.selectSquare(s, orig);
     }
   } else if (s.selectedPiece) {
-    if (!board.promotionDialogDrop(s, s.selectedPiece, orig)) {
+    if (!s.selectable.enabled || !board.promotionDialogDrop(s, s.selectedPiece, orig)) {
       if (board.canDrop(s, s.selectedPiece, orig))
         anim((state) => board.selectSquare(state, orig), s);
       else board.selectSquare(s, orig);

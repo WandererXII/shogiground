@@ -305,8 +305,9 @@ function activate(s: State, cursor: Cursor): void {
     } else board.selectPiece(s, cursor);
   } else if (s.selectable.deleteOnTouch) board.deletePiece(s, cursor);
   else if (
-    !(s.selected && board.promotionDialogMove(s, s.selected, cursor)) &&
-    !(s.selectedPiece && board.promotionDialogDrop(s, s.selectedPiece, cursor))
+    !s.selectable.enabled ||
+    (!(s.selected && board.promotionDialogMove(s, s.selected, cursor)) &&
+      !(s.selectedPiece && board.promotionDialogDrop(s, s.selectedPiece, cursor)))
   )
     anim((state) => board.selectSquare(state, cursor), s);
 
