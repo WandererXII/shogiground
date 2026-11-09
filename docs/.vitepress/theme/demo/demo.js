@@ -17,7 +17,47 @@ export function mountDemo(root) {
     bishop: 'horse',
     rook: 'dragon',
   };
+  // Sente's legal moves and drops from the starting position.
+  const moveDests = {
+    '9g': ['9f'], '8g': ['8f'], '7g': ['7f'], '6g': ['6f'], '5g': ['5f'],
+    '4g': ['4f'], '3g': ['3f'], '2g': ['2f'], '1g': ['1f'],
+    '9i': ['9h'], '7i': ['6h', '7h'], '6i': ['5h', '6h', '7h'], '5i': ['4h', '5h', '6h'],
+    '4i': ['3h', '4h', '5h'], '3i': ['3h', '4h'], '1i': ['1h'],
+    '2h': ['1h', '3h', '4h', '5h', '6h', '7h'],
+  };
+  const dropDests = {
+    'sente silver': [...'bdefh']
+      .flatMap((rank) => [9, 8, 7, 6, 5, 4, 3, 2, 1].map((file) => `${file}${rank}`))
+      .filter((key) => !['8b', '2b', '8h', '2h'].includes(key)),
+  };
   let ground;
+
+  function boardKeys() {
+    const { files, ranks } = ground.state.dimensions;
+    const keys = [];
+    for (let rank = 0; rank < ranks; rank++)
+      for (let file = files; file > 0; file--) keys.push(`${file}${String.fromCharCode(97 + rank)}`);
+    return keys;
+  }
+
+  // Simple premove hints: one step in any direction, never onto an own piece.
+  function premoveDests(orig, pieces) {
+    const color = pieces.get(orig)?.color;
+    const file = parseInt(orig);
+    const rank = orig.charCodeAt(orig.length - 1);
+    return boardKeys().filter((key) => {
+      const distance = Math.max(
+        Math.abs(parseInt(key) - file),
+        Math.abs(key.charCodeAt(key.length - 1) - rank),
+      );
+      return distance === 1 && pieces.get(key)?.color !== color;
+    });
+  }
+
+  // Predrops may target any square not occupied by an own piece.
+  function predropDests(piece, pieces) {
+    return boardKeys().filter((key) => pieces.get(key)?.color !== piece.color);
+  }
 
   function inPromotionZone(key, color) {
     const rank = key.charCodeAt(key.length - 1) - 97;
@@ -36,7 +76,12 @@ export function mountDemo(root) {
   function createGround() {
     return Shogiground(
       {
-        sfen: { board: startingBoard, hands: 'Pp' },
+        sfen: { board: startingBoard, hands: 'SPp' },
+        activeColor: 'sente',
+        movable: { free: false, dests: new Map(Object.entries(moveDests)) },
+        droppable: { free: false, dests: new Map(Object.entries(dropDests)) },
+        premovable: { generate: premoveDests },
+        predroppable: { generate: predropDests },
         promotion: {
           promotesTo: role => promotions[role],
           unpromotesTo: role => Object.keys(promotions).find(key => promotions[key] === role),
@@ -374,7 +419,9 @@ export function mountDemo(root) {
             input.min = '0';
             input.step = 'any';
           }
-          if (field.type === 'json') input.placeholder = 'JSON value';
+          if (field.type === 'json')
+            input.placeholder = field.readonly ? 'Nothing generated' : 'JSON value';
+          input.readOnly = !!field.readonly;
         }
         const error = document.createElement('p');
         error.id = `${id}-error`;
@@ -395,8 +442,8 @@ export function mountDemo(root) {
           }
           announce();
         }
-        input.addEventListener('change', apply);
-        if (input.tagName === 'INPUT')
+        if (!field.readonly) input.addEventListener('change', apply);
+        if (input.tagName === 'INPUT' && !field.readonly)
           input.addEventListener('input', () => {
             clearTimeout(timer);
             timer = setTimeout(apply, 200);
@@ -415,7 +462,12 @@ export function mountDemo(root) {
           },
         });
         value.append(input, error);
-        if (field.type === 'json') {
+        if (field.readonly) {
+          const note = document.createElement('p');
+          note.className = 'field-note';
+          note.textContent = 'Read-only. Generated when a piece is selected, cleared on board changes.';
+          value.append(note);
+        } else if (field.type === 'json') {
           const note = document.createElement('p');
           note.className = 'field-note';
           note.textContent = field.path.endsWith('.dests')

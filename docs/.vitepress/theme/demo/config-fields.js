@@ -248,6 +248,13 @@ export const fields = [
     signature: '(key: Key, pieces: Map<Key, Piece>) => Key[]',
   },
   {
+    path: 'premovable.dests',
+    group: 'Premoves and predrops',
+    description: 'Map<Key, Key[]> of premove destinations returned by premovable.generate.',
+    type: 'json',
+    readonly: true,
+  },
+  {
     path: 'predroppable.enabled',
     group: 'Premoves and predrops',
     description: "Allow queuing drops outside the active color's turn.",
@@ -266,6 +273,13 @@ export const fields = [
       '(piece: Piece, pieces: Map<Key, Piece>) => Key[]. Return possible predrop destinations.',
     type: 'callback',
     signature: '(piece: Piece, pieces: Map<Key, Piece>) => Key[]',
+  },
+  {
+    path: 'predroppable.dests',
+    group: 'Premoves and predrops',
+    description: 'Map<PieceName, Key[]> of predrop destinations returned by predroppable.generate.',
+    type: 'json',
+    readonly: true,
   },
   {
     path: 'premovable.events.set',
