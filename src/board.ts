@@ -21,6 +21,7 @@ export function setPieces(state: HeadlessState, pieces: sg.PiecesDiff): void {
     if (piece) state.pieces.set(key, piece);
     else state.pieces.delete(key);
   }
+  unselectMissingPiece(state);
   clearPreDests(state);
 }
 
@@ -324,6 +325,14 @@ export function unselect(state: HeadlessState): void {
     state.promotion.current = state.hovered = undefined;
     callUserFunction(state.promotion.events.cancel);
   }
+}
+
+export function unselectMissingPiece(state: HeadlessState): void {
+  if (
+    (state.selected && !state.pieces.has(state.selected)) ||
+    (state.selectedPiece && !state.droppable.spare && numberInHand(state, state.selectedPiece) <= 0)
+  )
+    unselect(state);
 }
 
 function isMovable(state: HeadlessState, orig: sg.Key): boolean {

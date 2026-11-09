@@ -1,5 +1,5 @@
 import { shouldAnimate } from './anim.js';
-import { clearPreDests, setChecks, unselect } from './board.js';
+import { clearPreDests, setChecks, unselect, unselectMissingPiece } from './board.js';
 import { inferDimensions, sfenToBoard, sfenToHands } from './sfen.js';
 import type { HeadlessState } from './state.js';
 import type * as sg from './types.js';
@@ -83,6 +83,7 @@ export function configure(state: HeadlessState, config: Config): void {
   if (config.sfen?.hands) {
     state.hands.handMap = sfenToHands(config.sfen.hands, state.forsyth.fromForsyth);
   }
+  if (config.sfen?.board || config.sfen?.hands) unselectMissingPiece(state);
 
   // apply config values that could be undefined yet meaningful
   if ('checks' in config) setChecks(state, config.checks || false);

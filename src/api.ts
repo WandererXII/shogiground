@@ -189,7 +189,10 @@ export function start(state: State): Api {
     },
 
     removeFromHand(piece: sg.Piece, count: number): void {
-      render((state) => removeFromHand(state, piece, count), state);
+      render((state) => {
+        removeFromHand(state, piece, count);
+        board.unselectMissingPiece(state);
+      }, state);
     },
 
     selectSquare(key, prom, force): void {
