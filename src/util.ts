@@ -70,7 +70,7 @@ export const posToTranslateRel =
     posToTranslateBase(pos, dims, asSente, 100, 100);
 
 export const translateAbs = (el: HTMLElement, pos: sg.NumberPair, scale: number): void => {
-  el.style.transform = `translate(${pos[0]}px,${pos[1]}px) scale(${scale}`;
+  el.style.transform = `translate(${pos[0]}px,${pos[1]}px) scale(${scale})`;
 };
 
 export const translateRel = (
