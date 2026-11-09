@@ -207,7 +207,7 @@ Supply promotion rules for your variant. The default role callbacks return `unde
 | --- | --- | --- |
 | `promotion.events.initiated` | `()` | The promotion dialog opens. |
 | `promotion.events.after` | `(piece: Piece)` | The user chooses a piece. |
-| `promotion.events.cancel` | `()` | The user cancels the dialog. |
+| `promotion.events.cancel` | `()` | An open dialog closes without a choice, including when a programmatic action dismisses it. |
 
 ## Forsyth conversion
 

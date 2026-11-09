@@ -1,5 +1,5 @@
 import { anim } from './anim.js';
-import { cancelPromotion, selectSquare, userDrop, userMove } from './board.js';
+import { selectSquare, unselect, userDrop, userMove } from './board.js';
 import type { State } from './state.js';
 import type { Piece } from './types.js';
 import { callUserFunction, samePiece } from './util.js';
@@ -8,6 +8,7 @@ import { callUserFunction, samePiece } from './util.js';
 export function choosePromotion(s: State, piece?: Piece): void {
   const cur = s.promotion.current;
   if (piece && cur) {
+    s.promotion.current = s.hovered = undefined;
     const prom = !samePiece(cur.piece, piece);
     if (cur.dragged || (s.turnColor !== s.activeColor && s.activeColor !== 'both')) {
       if (s.selected) userMove(s, s.selected, cur.key, prom);
@@ -15,7 +16,6 @@ export function choosePromotion(s: State, piece?: Piece): void {
     } else anim((s) => selectSquare(s, cur.key, prom), s);
 
     callUserFunction(s.promotion.events.after, piece);
-  } else anim((s) => cancelPromotion(s), s);
-  s.promotion.current = undefined;
+  } else if (cur) unselect(s);
   s.dom.redraw();
 }

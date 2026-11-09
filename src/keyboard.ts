@@ -82,7 +82,6 @@ export function bindKeyboard(s: State, el: HTMLElement): sg.Unbind {
         s.draggable.current ||
         s.drawable.current
       );
-      board.cancelPromotion(s);
       cancelDrag(s);
       cancelDraw(s);
       board.cancelMoveOrDrop(s);

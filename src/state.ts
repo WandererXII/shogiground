@@ -114,7 +114,7 @@ export interface HeadlessState {
     events: {
       initiated?: () => void; // called when promotion dialog is started
       after?: (piece: sg.Piece) => void; // called after user selects a piece
-      cancel?: () => void; // called after user cancels the selection
+      cancel?: () => void; // called when an open dialog is dismissed without a choice
     };
     prevPromotionHash: string;
   };

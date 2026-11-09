@@ -5,17 +5,11 @@ import { callUserFunction, opposite, pieceNameOf, samePiece } from './util.js';
 
 export function toggleOrientation(state: HeadlessState): void {
   state.orientation = opposite(state.orientation);
-  state.animation.current =
-    state.draggable.current =
-    state.promotion.current =
-    state.hovered =
-    state.selected =
-    state.selectedPiece =
-      undefined;
+  unselect(state);
+  state.animation.current = state.draggable.current = state.hovered = undefined;
 }
 
 export function reset(state: HeadlessState): void {
-  cancelPromotion(state);
   unselect(state);
   unsetPremove(state);
   unsetPredrop(state);
@@ -324,8 +318,12 @@ export function clearPreDests(state: HeadlessState): void {
 }
 
 export function unselect(state: HeadlessState): void {
-  state.selected = state.selectedPiece = state.promotion.current = undefined;
+  state.selected = state.selectedPiece = undefined;
   state.droppable.spare = false;
+  if (state.promotion.current) {
+    state.promotion.current = state.hovered = undefined;
+    callUserFunction(state.promotion.events.cancel);
+  }
 }
 
 function isMovable(state: HeadlessState, orig: sg.Key): boolean {
@@ -478,22 +476,12 @@ export function cancelMoveOrDrop(state: HeadlessState): void {
   unselect(state);
 }
 
-export function cancelPromotion(state: HeadlessState): void {
-  if (!state.promotion.current) return;
-
-  unselect(state);
-  state.promotion.current = undefined;
-  state.hovered = undefined;
-  callUserFunction(state.promotion.events.cancel);
-}
-
 export function stop(state: HeadlessState): void {
   state.activeColor =
     state.movable.dests =
     state.droppable.dests =
     state.draggable.current =
     state.animation.current =
-    state.promotion.current =
     state.hovered =
       undefined;
   cancelMoveOrDrop(state);

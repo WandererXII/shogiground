@@ -1,4 +1,4 @@
-import { cancelPromotion } from './board.js';
+import { unselect } from './board.js';
 import * as drag from './drag.js';
 import * as draw from './draw.js';
 import { bindKeyboard, focusBoard } from './keyboard.js';
@@ -80,7 +80,7 @@ export function bindHand(s: State, handEl: HTMLElement): sg.Unbind {
     unbinds.push(
       unbindable(handEl, 'click', () => {
         if (s.promotion.current) {
-          cancelPromotion(s);
+          unselect(s);
           s.dom.redraw();
         }
       }),
