@@ -255,13 +255,13 @@ export function start(state: State): Api {
 
     setAutoShapes(shapes: DrawShape[]): void {
       render((state) => {
-        state.drawable.autoShapes = shapes;
+        state.drawable.autoShapes = shapes.slice();
       }, state);
     },
 
     setShapes(shapes: DrawShape[]): void {
       render((state) => {
-        state.drawable.shapes = shapes;
+        state.drawable.shapes = shapes.slice();
       }, state);
     },
 

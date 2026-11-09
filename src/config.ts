@@ -61,12 +61,14 @@ export function configure(state: HeadlessState, config: Config): void {
   // don't merge, just override.
   if (config.movable?.dests) state.movable.dests = undefined;
   if (config.droppable?.dests) state.droppable.dests = undefined;
-  if (config.drawable?.shapes) state.drawable.shapes = [];
-  if (config.drawable?.autoShapes) state.drawable.autoShapes = [];
   if (config.drawable?.squares) state.drawable.squares = [];
   if (config.hands?.roles) state.hands.roles = [];
 
   deepMerge(state, config);
+
+  const { shapes, autoShapes } = config.drawable ?? {};
+  if (shapes) state.drawable.shapes = shapes.slice();
+  if (autoShapes) state.drawable.autoShapes = autoShapes.slice();
 
   // if a sfen was provided, replace the pieces, except the currently dragged one
   if (config.sfen?.board) {
@@ -77,7 +79,7 @@ export function configure(state: HeadlessState, config: Config): void {
       const piece = state.selected ? state.pieces.get(state.selected) : state.selectedPiece;
       if (!piece || !samePiece(piece, state.promotion.current.piece)) unselect(state);
     }
-    state.drawable.shapes = config.drawable?.shapes || [];
+    if (!shapes) state.drawable.shapes = [];
   }
 
   if (config.sfen?.hands) {

@@ -222,7 +222,8 @@ function addShape(drawable: Drawable, cur: DrawCurrent): void {
       });
   }
 
-  if (!similar || diffPiece || similar.brush !== cur.brush) drawable.shapes.push(cur as DrawShape);
+  if (!similar || diffPiece || similar.brush !== cur.brush)
+    drawable.shapes.push({ orig: cur.orig, dest: cur.dest, brush: cur.brush });
   onChange(drawable);
 }
 
