@@ -27,6 +27,7 @@ export function setPieces(state: HeadlessState, pieces: sg.PiecesDiff): void {
     if (piece) state.pieces.set(key, piece);
     else state.pieces.delete(key);
   }
+  clearPreDests(state);
 }
 
 export function setChecks(state: HeadlessState, checksValue: sg.Key[] | sg.Color | boolean): void {
@@ -84,6 +85,7 @@ export function baseMove(
   if (dest === state.selected || orig === state.selected) unselect(state);
   state.pieces.set(dest, promPiece || origPiece);
   state.pieces.delete(orig);
+  clearPreDests(state);
   state.lastDests = [orig, dest];
   state.lastPiece = undefined;
   state.checks = undefined;
@@ -108,6 +110,7 @@ export function baseDrop(
   )
     unselect(state);
   state.pieces.set(key, promPiece || piece);
+  clearPreDests(state);
   state.lastDests = [key];
   state.lastPiece = piece;
   state.checks = undefined;
@@ -235,7 +238,10 @@ function promotePiece(s: HeadlessState, piece: sg.Piece): sg.Piece | undefined {
 }
 
 export function deletePiece(state: HeadlessState, key: sg.Key): void {
-  if (state.pieces.delete(key)) callUserFunction(state.events.change);
+  if (state.pieces.delete(key)) {
+    clearPreDests(state);
+    callUserFunction(state.events.change);
+  }
 }
 
 export function selectSquare(
@@ -306,35 +312,19 @@ export function selectPiece(
 export function setSelected(state: HeadlessState, key: sg.Key): void {
   unselect(state);
   state.selected = key;
-  setPreDests(state);
 }
 
 export function setSelectedPiece(state: HeadlessState, piece: sg.Piece): void {
   unselect(state);
   state.selectedPiece = piece;
-  setPreDests(state);
 }
 
-export function setPreDests(state: HeadlessState): void {
+export function clearPreDests(state: HeadlessState): void {
   state.premovable.dests = state.predroppable.dests = undefined;
-
-  if (state.selected && isPremovable(state, state.selected) && state.premovable.generate)
-    state.premovable.dests = state.premovable.generate(state.selected, state.pieces);
-  else if (
-    state.selectedPiece &&
-    isPredroppable(state, state.selectedPiece) &&
-    state.predroppable.generate
-  )
-    state.predroppable.dests = state.predroppable.generate(state.selectedPiece, state.pieces);
 }
 
 export function unselect(state: HeadlessState): void {
-  state.selected =
-    state.selectedPiece =
-    state.premovable.dests =
-    state.predroppable.dests =
-    state.promotion.current =
-      undefined;
+  state.selected = state.selectedPiece = state.promotion.current = undefined;
   state.droppable.spare = false;
 }
 
@@ -400,22 +390,38 @@ function isPredroppable(state: HeadlessState, piece: sg.Piece): boolean {
   );
 }
 
+export function premoveDests(state: HeadlessState, orig: sg.Key): sg.Key[] {
+  if (!isPremovable(state, orig) || !state.premovable.generate) return [];
+  if (!state.premovable.dests) state.premovable.dests = new Map();
+  let dests = state.premovable.dests.get(orig);
+  if (!dests) {
+    dests = state.premovable.generate(orig, state.pieces);
+    state.premovable.dests.set(orig, dests);
+  }
+  return dests;
+}
+
+export function predropDests(state: HeadlessState, piece: sg.Piece): sg.Key[] {
+  if (!isPredroppable(state, piece) || !state.predroppable.generate) return [];
+  if (!state.predroppable.dests) state.predroppable.dests = new Map();
+  const name = pieceNameOf(piece);
+  let dests = state.predroppable.dests.get(name);
+  if (!dests) {
+    dests = state.predroppable.generate(piece, state.pieces);
+    state.predroppable.dests.set(name, dests);
+  }
+  return dests;
+}
+
 export function canPremove(state: HeadlessState, orig: sg.Key, dest: sg.Key): boolean {
-  return (
-    orig !== dest &&
-    isPremovable(state, orig) &&
-    !!state.premovable.generate &&
-    state.premovable.generate(orig, state.pieces).includes(dest)
-  );
+  return orig !== dest && premoveDests(state, orig).includes(dest);
 }
 
 export function canPredrop(state: HeadlessState, piece: sg.Piece, dest: sg.Key): boolean {
   const destPiece = state.pieces.get(dest);
   return (
-    isPredroppable(state, piece) &&
     (!destPiece || destPiece.color !== state.activeColor) &&
-    !!state.predroppable.generate &&
-    state.predroppable.generate(piece, state.pieces).includes(dest)
+    predropDests(state, piece).includes(dest)
   );
 }
 

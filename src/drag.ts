@@ -336,8 +336,10 @@ export function end(s: State, e: sg.MouchEvent): void {
     !dest &&
     (!originHandBounds || !util.isInsideRect(originHandBounds, eventPos))
   ) {
-    if (cur.fromBoard) s.pieces.delete(cur.fromBoard.orig);
-    else if (cur.fromOutside && !cur.spare) removeFromHand(s, cur.piece);
+    if (cur.fromBoard) {
+      s.pieces.delete(cur.fromBoard.orig);
+      board.clearPreDests(s);
+    } else if (cur.fromOutside && !cur.spare) removeFromHand(s, cur.piece);
 
     if (s.draggable.addToHandOnDropOff) {
       const handBounds = s.dom.bounds.hands.bounds();

@@ -1,4 +1,5 @@
 import type { AnimCurrent, AnimFadings, AnimPromotions, AnimVector, AnimVectors } from './anim.js';
+import { predropDests, premoveDests } from './board.js';
 import type { DragCurrent } from './drag.js';
 import { renderKeyboard, syncKeyboardState } from './keyboard.js';
 import type { State } from './state.js';
@@ -232,11 +233,9 @@ function computeSquareClasses(s: State): SquareClasses {
         }
     }
     if (s.premovable.showDests) {
-      const pDests = s.premovable.dests;
-      if (pDests)
-        for (const k of pDests) {
-          addSquare(squares, k, `pre-dest${s.pieces.has(k) ? ' oc' : ''}`);
-        }
+      for (const k of premoveDests(s, s.selected)) {
+        addSquare(squares, k, `pre-dest${s.pieces.has(k) ? ' oc' : ''}`);
+      }
     }
   } else if (s.selectedPiece) {
     if (s.droppable.showDests) {
@@ -247,11 +246,9 @@ function computeSquareClasses(s: State): SquareClasses {
         }
     }
     if (s.predroppable.showDests) {
-      const pDests = s.predroppable.dests;
-      if (pDests)
-        for (const k of pDests) {
-          addSquare(squares, k, `pre-dest${s.pieces.has(k) ? ' oc' : ''}`);
-        }
+      for (const k of predropDests(s, s.selectedPiece)) {
+        addSquare(squares, k, `pre-dest${s.pieces.has(k) ? ' oc' : ''}`);
+      }
     }
   }
   const premove = s.premovable.current;

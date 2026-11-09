@@ -57,7 +57,7 @@ export interface HeadlessState {
   premovable: {
     enabled: boolean; // allow premoves for color that can not move
     showDests: boolean; // whether to add the pre-dest class on squares
-    dests?: sg.Key[]; // premove destinations for the current selection
+    dests?: sg.MoveDests; // generated premove destinations by origin, cleared on board changes
     current?: { orig: sg.Key; dest: sg.Key; prom: boolean };
     generate?: (key: sg.Key, pieces: sg.Pieces) => sg.Key[];
     events: {
@@ -68,7 +68,7 @@ export interface HeadlessState {
   predroppable: {
     enabled: boolean; // allow predrops for color that can not move
     showDests: boolean; // whether to add the pre-dest class on squares
-    dests?: sg.Key[]; // premove destinations for the drop selection
+    dests?: sg.DropDests; // generated predrop destinations by piece, cleared on board changes
     current?: { piece: sg.Piece; key: sg.Key; prom: boolean };
     generate?: (piece: sg.Piece, pieces: sg.Pieces) => sg.Key[];
     events: {

@@ -1,4 +1,4 @@
-import { setChecks, setPreDests, unselect } from './board.js';
+import { clearPreDests, setChecks, unselect } from './board.js';
 import { inferDimensions, sfenToBoard, sfenToHands } from './sfen.js';
 import type { HeadlessState } from './state.js';
 import type * as sg from './types.js';
@@ -95,8 +95,8 @@ export function configure(state: HeadlessState, config: Config): void {
   if ('lastDests' in config && !config.lastDests) state.lastDests = undefined;
   else if (config.lastDests) state.lastDests = config.lastDests;
 
-  // fix move/premove dests
-  setPreDests(state);
+  // the board or generators may have changed
+  clearPreDests(state);
 
   applyAnimation(state, config);
 }
