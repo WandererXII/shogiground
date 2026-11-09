@@ -5,7 +5,7 @@ import { applyAnimation, configure } from './config.js';
 import { detachElements, redrawAll } from './dom.js';
 import { cancel as dragCancel, dragNewPiece } from './drag.js';
 import type { DrawShape, SquareHighlight } from './draw.js';
-import { bindDocument } from './events.js';
+import { bindDocument, clearBounds, refreshBounds } from './events.js';
 import { addToHand, removeFromHand } from './hands.js';
 import { boardToSfen, handsToSfen, inferDimensions } from './sfen.js';
 import type { State } from './state.js';
@@ -84,6 +84,9 @@ export interface Api {
 
   // for piece dropping and board editors
   dragNewPiece(piece: sg.Piece, event: sg.MouchEvent, spare?: boolean): void;
+
+  // remeasure the board and hands after the page layout moved them
+  refreshBounds(): void;
 
   // unbinds all events
   // (important for document-wide events like scroll and mousemove)
@@ -269,7 +272,12 @@ export function start(state: State): Api {
     },
 
     dragNewPiece(piece, event, spare): void {
+      clearBounds(state);
       dragNewPiece(state, piece, event, spare);
+    },
+
+    refreshBounds(): void {
+      refreshBounds(state);
     },
 
     destroy(): void {

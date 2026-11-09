@@ -179,6 +179,15 @@ Detach the selected containers and release their element listeners while preserv
 ground.detach({ board: true, hands: { top: true, bottom: true } });
 ```
 
+### `refreshBounds()`
+
+Remeasure the board and hands, and redraw shapes that depend on their size. Shogiground remeasures on scroll, window resize, container resize, and at the start of each click or drag. Call this when the page layout moves the board some other way and you need shapes to follow immediately. Dispatching a `shogiground.resize` event on `document.body` does the same for every instance on the page.
+
+```ts
+ground.refreshBounds();
+document.body.dispatchEvent(new Event('shogiground.resize'));
+```
+
 ## Cleanup
 
 ### `destroy()`

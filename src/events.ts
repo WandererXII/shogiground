@@ -17,17 +17,19 @@ import {
 type MouchBind = (e: sg.MouchEvent) => void;
 type StateMouchBind = (d: State, e: sg.MouchEvent) => void;
 
-function clearBounds(s: State): void {
+export function clearBounds(s: State): void {
   s.dom.bounds.board.bounds.clear();
   s.dom.bounds.hands.bounds.clear();
   s.dom.bounds.hands.pieceBounds.clear();
 }
 
+export function refreshBounds(s: State): void {
+  clearBounds(s);
+  if (usesBounds(s.drawable.shapes.concat(s.drawable.autoShapes))) s.dom.redrawShapes();
+}
+
 function onResize(s: State): () => void {
-  return () => {
-    clearBounds(s);
-    if (usesBounds(s.drawable.shapes.concat(s.drawable.autoShapes))) s.dom.redrawShapes();
-  };
+  return () => refreshBounds(s);
 }
 
 export function bindBoard(s: State, boardEls: sg.BoardElements): sg.Unbind {
@@ -111,11 +113,9 @@ export function bindDocument(s: State): sg.Unbind {
   const unbinds: sg.Unbind[] = [];
   unbinds.push(() => s.dom.resizeObserver?.disconnect());
 
-  // Old versions of Edge and Safari do not support ResizeObserver. Send
-  // shogiground.resize if a user action has changed the bounds of the board.
-  if (!('ResizeObserver' in window)) {
-    unbinds.push(unbindable(document.body, 'shogiground.resize', onResize(s)));
-  }
+  // ResizeObserver misses position changes and is missing in old Edge and Safari.
+  // Hosts can send shogiground.resize after changing the layout around the board.
+  unbinds.push(unbindable(document.body, 'shogiground.resize', onResize(s)));
 
   if (!s.viewOnly) {
     const onmove = dragOrDraw(s, drag.move, draw.move);
@@ -150,8 +150,11 @@ function unbindable(
   return () => el.removeEventListener(eventName, callback, options);
 }
 
+// Bounds are measured afresh for each gesture, because content around the board
+// can move it without a scroll or resize.
 function startDragOrDraw(s: State): MouchBind {
   return (e) => {
+    clearBounds(s);
     if (s.draggable.current) drag.cancel(s);
     else if (s.drawable.current) draw.cancel(s);
     else if (e.shiftKey || isRightButton(e) || s.drawable.forced) {
@@ -172,6 +175,7 @@ function startDragFromHand(s: State): MouchBind {
   return (e) => {
     if (s.promotion.current) return;
 
+    clearBounds(s);
     const pos = eventPosition(e);
     const piece = pos && getHandPieceAtDomPos(pos, s.hands.roles, s.dom.bounds.hands.pieceBounds());
 
