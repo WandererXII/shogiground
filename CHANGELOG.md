@@ -1,4 +1,4 @@
-## Unreleased
+## v0.11.0
 
 - Add opt-in keyboard controls for the board, hands, moves, drops, and promotion.
 - Keep arrowheads visible when another board is hidden. For custom CSS, replace `marker#arrowhead-primary path` with `marker[data-brush="primary"] path` (substitute the brush name as needed).
